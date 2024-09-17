@@ -1,10 +1,10 @@
-package site.billbill.billbill;
+package site.billbill.apiserver;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class BillbillApplicationTests {
+class BillApiServerApplicationTests {
 
 	@Test
 	void contextLoads() {
