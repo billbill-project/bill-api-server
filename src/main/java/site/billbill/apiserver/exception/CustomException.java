@@ -2,6 +2,7 @@ package site.billbill.apiserver.exception;
 
 import lombok.*;
 import org.springframework.http.HttpStatus;
+import site.billbill.apiserver.common.enums.exception.ErrorCode;
 
 @Getter
 @Setter

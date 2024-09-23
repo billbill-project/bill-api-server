@@ -1,9 +1,7 @@
-package site.billbill.apiserver.exception;
+package site.billbill.apiserver.common.enums.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 @Getter
 @AllArgsConstructor
