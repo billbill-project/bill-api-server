@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Getter
-@RequiredArgsConstructor
 @AllArgsConstructor
 public enum ErrorCode {
 
