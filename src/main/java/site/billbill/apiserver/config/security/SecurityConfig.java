@@ -9,5 +9,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+    // TODO : 설정해야됨
     private final AuthenticationConfiguration configuration;
 }
