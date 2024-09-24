@@ -1,4 +1,4 @@
-package site.billbill.apiserver.common.jwt;
+package site.billbill.apiserver.common.utils.jwt;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
