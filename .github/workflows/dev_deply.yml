@@ -45,7 +45,7 @@ jobs:
 
       # 6. Docker Hub 이미지 푸시
       - name: docker Hub push
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/github-actions-demo
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/bill-api
 
       #7. EC2 배포
       - name: Docker image pull & Deploy to EC2
