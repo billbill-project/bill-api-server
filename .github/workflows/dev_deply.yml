@@ -59,14 +59,14 @@ jobs:
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/bill-api:latest
             sudo docker stop $(sudo docker ps -a -q)
             sudo docker tag jainefer/bill-api:latest bill-api
-            sudo docker run -d --name bill-api -p 80:8080 \
+            sudo docker run --name bill-api -p 80:8080 \
               -e SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }} \
               -e SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }} \
               -e SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }} \
               -e SPRING_DATASOURCE_DRIVER_CLASS_NAME=${{ secrets.SPRING_DATASOURCE_DRIVER_CLASS_NAME }} \
-              -e JWT_BILL_SECRET_KEY =${{secrets.JWT_BILL_SECRET_KEY}} \
-              -e JWT_BILL_ACCESS_TOKEN_EXPIRED =${{secrets.JWT_BILL_ACCESS_TOKEN_EXPIRED}} \
-              -e JWT_BILL_REFRESH_TOKEN_EXPIRED =${{secrets.JWT_BILL_REFRESH_TOKEN_EXPIRED}} \
+              -e JWT_BILL_SECRET_KEY=${{secrets.JWT_BILL_SECRET_KEY}} \
+              -e JWT_BILL_ACCESS_TOKEN_EXPIRED=${{secrets.JWT_BILL_ACCESS_TOKEN_EXPIRED}} \
+              -e JWT_BILL_REFRESH_TOKEN_EXPIRED=${{secrets.JWT_BILL_REFRESH_TOKEN_EXPIRED}} \
               ${{ secrets.DOCKERHUB_USERNAME }}/bill-api:latest
             sudo docker rm $(sudo docker ps --filter 'status=exited' -a -q)
             sudo docker image prune -a -f
