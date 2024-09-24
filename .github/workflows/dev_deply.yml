@@ -58,7 +58,8 @@ jobs:
           script : |
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/bill-api:latest
             sudo docker stop $(sudo docker ps -a -q)
-            sudo docker run -d --log-driver=syslog -p 8080:8080 \
+            sudo docker tag jainefer/bill-api:latest bill-api
+            sudo docker run -d --name bill-api -p 80:8080 \
               -e SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }} \
               -e SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }} \
               -e SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }} \
