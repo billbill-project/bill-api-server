@@ -7,13 +7,19 @@ import site.billbill.apiserver.common.enums.exception.ErrorCode;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class CustomException extends RuntimeException {
     private ErrorCode errorCode;
     private HttpStatus status;
 
+    public CustomException(ErrorCode errorCode, String message, HttpStatus status) {
+        super(message);
+        this.errorCode = errorCode;
+        this.status = status;
+    }
+
     public CustomException(ErrorCode errorCode, String message) {
         super(message);
         this.errorCode = errorCode;
+        this.status = HttpStatus.INTERNAL_SERVER_ERROR;
     }
 }
