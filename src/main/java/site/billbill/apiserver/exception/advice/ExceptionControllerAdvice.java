@@ -14,51 +14,34 @@ import java.util.NoSuchElementException;
 public class ExceptionControllerAdvice {
 
     @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<ExceptionResponse.Payload> handleNoSuchElement(NoSuchElementException ex) {
-        ExceptionResponse exceptionResult = new ExceptionResponse(
-                false,
-                new ExceptionResponse.Payload(
-                        HttpStatus.NOT_FOUND.value(),
-                        HttpStatus.NOT_FOUND.getReasonPhrase()
-                )
-        );
-        return new ResponseEntity<>(exceptionResult.getData(), HttpStatus.NOT_FOUND);
+    public ResponseEntity<ExceptionResponse> handleNoSuchElement(NoSuchElementException ex) {
+        ExceptionResponse exceptionResult = new ExceptionResponse();
+        exceptionResult.setCode("404");
+        exceptionResult.setMessage(ex.getMessage());
+        return new ResponseEntity<>(exceptionResult, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ExceptionResponse.Payload> handleIllegalArgumentException(IllegalArgumentException ex) {
-        ExceptionResponse exceptionResult = new ExceptionResponse(
-                false,
-                new ExceptionResponse.Payload(
-                        HttpStatus.BAD_REQUEST.value(),
-                        ex.getMessage()
-                )
-        );
-        return new ResponseEntity<>(exceptionResult.getData(), HttpStatus.BAD_REQUEST);
+    public ResponseEntity<ExceptionResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
+        ExceptionResponse exceptionResult = new ExceptionResponse();
+        exceptionResult.setCode("400");
+        exceptionResult.setMessage(ex.getMessage());
+        return new ResponseEntity<>(exceptionResult, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(HttpServerErrorException.class)
-    public ResponseEntity<ExceptionResponse.Payload> handlerHttpServerErrorException(HttpServerErrorException ex) {
-        ExceptionResponse exceptionResult = new ExceptionResponse(
-                false,
-                new ExceptionResponse.Payload(
-                        ex.getStatusCode().value(),
-                        ex.getMessage()
-                )
-        );
-        return new ResponseEntity<>(exceptionResult.getData(), ex.getStatusCode());
+    public ResponseEntity<ExceptionResponse> handlerHttpServerErrorException(HttpServerErrorException ex) {
+        ExceptionResponse exceptionResult = new ExceptionResponse();
+        exceptionResult.setCode(ex.getStatusCode().toString());
+        exceptionResult.setMessage(ex.getMessage());
+        return new ResponseEntity<>(exceptionResult, ex.getStatusCode());
     }
 
     @ExceptionHandler(CustomException.class)
-    public ResponseEntity<ExceptionResponse.Payload> handlerBloomCustomException(CustomException ex) {
-        ExceptionResponse exceptionResult = new ExceptionResponse(
-                false,
-                new ExceptionResponse.Payload(
-                        ex.getErrorCode().getCode(),
-                        ex.getMessage()
-                )
-        );
-        System.out.println(ex.getStatus());
-        return new ResponseEntity<>(exceptionResult.getData(), ex.getStatus());
+    public ResponseEntity<ExceptionResponse> handlerBloomCustomException(CustomException ex) {
+        ExceptionResponse exceptionResult = new ExceptionResponse();
+        exceptionResult.setCode(ex.getStatus().toString());
+        exceptionResult.setMessage(ex.getMessage());
+        return new ResponseEntity<>(exceptionResult, ex.getStatus());
     }
 }
