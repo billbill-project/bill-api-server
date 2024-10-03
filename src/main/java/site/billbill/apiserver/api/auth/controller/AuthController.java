@@ -30,7 +30,7 @@ import site.billbill.apiserver.common.utils.jwt.dto.JwtDto;
 public class AuthController {
     private final AuthService authService;
 
-    @Operation(summary = "회원 가입", description = "회원 가입 API")
+    @Operation(summary = "회원 가입(일반)", description = "일반 회원 가입 API")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "201",

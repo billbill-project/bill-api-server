@@ -44,7 +44,7 @@ public class JWTUtil {
         this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
     }
 
-    JwtDto generateJwtDto(String userId, UserRole role) {
+    public JwtDto generateJwtDto(String userId, UserRole role) {
         Date now = new Date();
         Date accessTokenExpiresIn = new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME);
         Date refreshTokenExpiresIn = new Date(now.getTime() + REFRESH_TOKEN_EXPIRE_TIME);

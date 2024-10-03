@@ -13,7 +13,7 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 public class BaseResponse<T> {
     @Schema(description = "성공 여부", example = "true")
-    private Boolean isSuccess = true;
+    private boolean isSuccess = true;
     @Schema(description = "응답 코드", example = "SUCCESS")
     private String code = "SUCCESS";
     @Schema(description = "응답 메세지", example = "string")
