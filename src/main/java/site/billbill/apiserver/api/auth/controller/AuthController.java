@@ -20,12 +20,6 @@ import site.billbill.apiserver.common.utils.jwt.dto.JwtDto;
 @RestController
 @Tag(name = "Auth", description = "Auth API")
 @RequestMapping("/api/v1/auth")
-//@ApiResponses(value = {
-//        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-//        @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
-//        @ApiResponse(responseCode = "404", description = "Not Found", content = @Content),
-//        @ApiResponse(responseCode = "500", description = "Server Error", content = @Content)
-//})
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
