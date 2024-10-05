@@ -41,18 +41,10 @@ public class SwaggerConfig {
     }
 
     @Bean
-    public GroupedOpenApi publicApi() {
+    public GroupedOpenApi privateV1Api() {
         return GroupedOpenApi.builder()
-                .group("public")
-                .pathsToMatch("/api/**")
+                .group("privateV1")
+                .pathsToMatch("/api/v1/**")
                 .build();
     }
-
-//    @Bean
-//    public GroupedOpenApi privateApi() {
-//        return GroupedOpenApi.builder()
-//                .group("external")
-//                .pathsToMatch("/external/**")
-//                .build();
-//    }
 }

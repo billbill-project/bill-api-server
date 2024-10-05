@@ -1,0 +1,12 @@
+package site.billbill.apiserver.repository.user;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import site.billbill.apiserver.model.user.UserIdentityJpaEntity;
+
+import java.util.Optional;
+
+@Repository
+public interface UserIdentityRepository extends JpaRepository<UserIdentityJpaEntity, String> {
+    Optional<UserIdentityJpaEntity> findByNameAndPhoneNumber(String name, String phoneNumber);
+}
