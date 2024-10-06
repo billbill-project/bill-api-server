@@ -74,7 +74,7 @@ public class JWTUtil {
         return new JwtDto(accessToken, refreshToken, "Bearer", accessTokenExpiresIn.getTime() / 1000, role.name());
     }
 
-    boolean isValidToken(String token) {
+    public boolean isValidToken(String token) {
         try {
             if(getClaims(token).get("type").equals("AT")) return true;
         } catch (ExpiredJwtException e) {
@@ -91,14 +91,14 @@ public class JWTUtil {
         return false;
     }
 
-    Claims getClaims(String token) {
+    public Claims getClaims(String token) {
         return Jwts.parser()
                 .build()
                 .parseEncryptedClaims(token)
                 .getPayload();
     }
 
-    String putUserMDC(Claims claims) {
+    public String putUserMDC(Claims claims) {
         String userId= claims.getSubject();
         String role = claims.get("role", String.class);
 
@@ -119,6 +119,12 @@ public class JWTUtil {
             return true;
         }
         return false;
+    }
+
+    public UserRole getUserRole(String token) {
+        Claims claims = getClaims(token);
+         String role = claims.get("role", String.class);
+         return UserRole.valueOf(role);
     }
 
 }
