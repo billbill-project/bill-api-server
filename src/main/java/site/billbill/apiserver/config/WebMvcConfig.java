@@ -1,16 +1,22 @@
 package site.billbill.apiserver.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import site.billbill.apiserver.config.interceptor.BillApiInterceptor;
 
 @Configuration
+@RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
-    // TODO : 추가 설정해야됨
+    private final BillApiInterceptor billApiInterceptor;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-
+        registry.addInterceptor(billApiInterceptor)
+                .excludePathPatterns("/docs/**", "/error", "/api/v1/auth/signup")
+                .addPathPatterns("/**");
     }
 
     @Override

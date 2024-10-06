@@ -21,8 +21,11 @@ import site.billbill.apiserver.common.utils.jwt.dto.JwtDto;
 @Tag(name = "Auth", description = "Auth API")
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@ApiResponses(value = {
+        @ApiResponse(responseCode = "500", description = "Server Error", content = @Content)
+})
 public class AuthController {
-    
+
     private final AuthService authService;
 
     @Operation(summary = "회원 가입(일반)", description = "일반 회원 가입 API")
