@@ -11,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import site.billbill.apiserver.api.auth.domain.UserBaseInfo;
 import site.billbill.apiserver.api.auth.dto.request.LocationRequest;
+import site.billbill.apiserver.api.auth.dto.request.LoginRequest;
 import site.billbill.apiserver.api.auth.dto.request.SignupRequest;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.enums.user.UserRole;
@@ -42,14 +43,14 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public JwtDto signup(SignupRequest request) {
         // Check new by name & phoneNumber
-        Optional<UserIdentityJpaEntity> entity =
-                userIdentityRepository.findByNameAndPhoneNumber(
+        boolean isExists =
+                userIdentityRepository.existsByNameAndPhoneNumber(
                         request.getIdentity().getName(),
                         request.getIdentity().getPhoneNumber()
                 );
 
         // if user already exists
-        if (entity.isPresent()) {
+        if (isExists) {
             throw new CustomException(ErrorCode.Conflict, "이미 존재하는 회원입니다.", HttpStatus.CONFLICT);
         }
 
@@ -72,6 +73,29 @@ public class AuthServiceImpl implements AuthService {
         return jwtUtil.generateJwtDto(userId, UserRole.USER);
     }
 
+    @Override
+    public JwtDto login(LoginRequest request) {
+        // bring user's phone number
+        Optional<UserIdentityJpaEntity> userIdentityJpaEntity = userIdentityRepository.findByPhoneNumber(request.getPhoneNumber());
+
+        if(userIdentityJpaEntity.isEmpty()) throw new CustomException(ErrorCode.NotFound, "전화번호를 확인해주세요", HttpStatus.NOT_FOUND);
+
+        // bring user's password
+        String userId = userIdentityJpaEntity.get().getUserId();
+        Optional<UserJpaEntity> userJpaEntity = userRepository.findById(userId);
+        if(userJpaEntity.isEmpty()) throw new CustomException(ErrorCode.NotFound, "해당 회원이 존재하지 않습니다.", HttpStatus.NOT_FOUND);
+
+        String encryptedPassword = userJpaEntity.get().getPassword();
+        if(!checkPassword(request.getPassword(), encryptedPassword)) throw new CustomException(ErrorCode.InvalidArgument, "비밀번호를 확인해 주세요.", HttpStatus.BAD_REQUEST);
+
+
+        return jwtUtil.generateJwtDto(userId, userJpaEntity.get().getRole());
+    }
+
+    private boolean checkPassword(String password, String encryptedPassword) {
+        return bCryptPasswordEncoder.matches(password, encryptedPassword);
+    }
+
     /**
      * Method that save location
      * @param location address, longitude, latitude
@@ -82,7 +106,6 @@ public class AuthServiceImpl implements AuthService {
             LocationRequest location
     ) {
         // TODO location.service 패키지로 이동 예정
-
         // check if location already exists
         Optional<UserLocationJpaEntity> locationJpaEntity = userLocationRepository.findByUserId(userId);
         UserLocationJpaEntity userLocation = locationJpaEntity.orElseGet(UserLocationJpaEntity::new); // if not exists, use new

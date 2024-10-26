@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import site.billbill.apiserver.api.auth.dto.request.LoginRequest;
 import site.billbill.apiserver.api.auth.dto.request.SignupRequest;
 import site.billbill.apiserver.api.auth.service.AuthService;
 import site.billbill.apiserver.common.response.BaseResponse;
@@ -22,6 +23,9 @@ import site.billbill.apiserver.common.utils.jwt.dto.JwtDto;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @ApiResponses(value = {
+        @ApiResponse(responseCode = "400", description = "Server Error", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Server Error", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Server Error", content = @Content),
         @ApiResponse(responseCode = "500", description = "Server Error", content = @Content)
 })
 public class AuthController {
@@ -34,7 +38,15 @@ public class AuthController {
     public BaseResponse<JwtDto> signup(
             @RequestBody SignupRequest request
     ) {
-        JwtDto data = authService.signup(request);
-        return new BaseResponse<>(data);
+        return new BaseResponse<>(authService.signup(request));
+    }
+
+    @Operation(summary = "로그인(일반)", description = "일반 로그인 API")
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/login")
+    public BaseResponse<JwtDto> login(
+            @RequestBody LoginRequest request
+    ) {
+        return new BaseResponse<>(authService.login(request));
     }
 }
