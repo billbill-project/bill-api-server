@@ -2,7 +2,6 @@ package site.billbill.apiserver.config.interceptor;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
@@ -71,7 +70,7 @@ public class BillApiInterceptor implements HandlerInterceptor {
         // token check
         String token = resolveToken(request);
 
-        if (token != null && jwtUtil.isValidToken(token)) {
+        if (token != null && jwtUtil.isValidAccessToken(token)) {
             // if token is valid
             // 관리자용 api가 생길 경우 해당 예외처리 필요
 

@@ -8,4 +8,6 @@ public interface AuthService {
     JwtDto signup(SignupRequest request);
 
     JwtDto login(LoginRequest request);
+
+    JwtDto reissue(String refreshToken);
 }

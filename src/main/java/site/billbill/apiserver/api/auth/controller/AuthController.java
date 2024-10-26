@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import site.billbill.apiserver.api.auth.dto.request.LoginRequest;
+import site.billbill.apiserver.api.auth.dto.request.ReissueRequest;
 import site.billbill.apiserver.api.auth.dto.request.SignupRequest;
 import site.billbill.apiserver.api.auth.service.AuthService;
 import site.billbill.apiserver.common.response.BaseResponse;
@@ -35,18 +36,21 @@ public class AuthController {
     @Operation(summary = "회원 가입(일반)", description = "일반 회원 가입 API")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/signup")
-    public BaseResponse<JwtDto> signup(
-            @RequestBody SignupRequest request
-    ) {
+    public BaseResponse<JwtDto> signup(@RequestBody SignupRequest request) {
         return new BaseResponse<>(authService.signup(request));
     }
 
     @Operation(summary = "로그인(일반)", description = "일반 로그인 API")
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/login")
-    public BaseResponse<JwtDto> login(
-            @RequestBody LoginRequest request
-    ) {
+    public BaseResponse<JwtDto> login(@RequestBody LoginRequest request) {
         return new BaseResponse<>(authService.login(request));
+    }
+
+    @Operation(summary = "토큰 재발급", description = "리프레쉬 토큰 기반 액세스 토큰을 재발급 받는 API")
+    @ResponseStatus(HttpStatus.OK)
+    @PatchMapping("/reissue")
+    public BaseResponse<JwtDto> reissue(@RequestBody ReissueRequest request) {
+        return new BaseResponse<>(authService.reissue(request.getRefreshToken()));
     }
 }
