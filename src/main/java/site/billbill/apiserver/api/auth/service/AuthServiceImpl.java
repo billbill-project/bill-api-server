@@ -147,6 +147,7 @@ public class AuthServiceImpl implements AuthService {
             LocationRequest location
     ) {
         // TODO location.service 패키지로 이동 예정
+        
         // check if location already exists
         Optional<UserLocationJpaEntity> locationJpaEntity = userLocationRepository.findByUserId(userId);
         UserLocationJpaEntity userLocation = locationJpaEntity.orElseGet(UserLocationJpaEntity::new); // if not exists, use new
