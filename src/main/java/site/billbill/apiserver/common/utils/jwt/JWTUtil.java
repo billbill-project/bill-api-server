@@ -1,21 +1,19 @@
 package site.billbill.apiserver.common.utils.jwt;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.enums.user.UserRole;
 import site.billbill.apiserver.common.utils.jwt.dto.JwtDto;
+import site.billbill.apiserver.exception.CustomException;
 
+import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Date;
 
@@ -26,7 +24,7 @@ public class JWTUtil {
     private final long ACCESS_TOKEN_EXPIRE_TIME;
     private final long REFRESH_TOKEN_EXPIRE_TIME;
     private String issuer = "BillBillServer";
-    private Key key;
+    private final SecretKey key;
 
     public static String MDC_USER_ID = "userId";
     public static String MDC_USER_ROLE = "role";
@@ -53,52 +51,53 @@ public class JWTUtil {
                 .issuer(issuer)
                 .subject(userId)
                 .expiration(accessTokenExpiresIn)
+                .issuedAt(new Date())
+                .signWith(key)
                 .claim("userId", userId)
                 .claim("role", role.name())
                 .claim("type", "AT")
-                .issuedAt(new Date())
-                .signWith(key)
                 .compact();
 
         String refreshToken = Jwts.builder()
                 .issuer(issuer)
                 .subject(userId)
                 .expiration(refreshTokenExpiresIn)
+                .issuedAt(new Date())
+                .signWith(key)
                 .claim("userId", userId)
                 .claim("role", role.name())
                 .claim("type", "RT")
-                .issuedAt(new Date())
-                .signWith(key)
                 .compact();
 
         return new JwtDto(accessToken, refreshToken, "Bearer", accessTokenExpiresIn.getTime() / 1000, role.name());
     }
 
-    boolean isValidToken(String token) {
+    public boolean isValidAccessToken(String token) {
         try {
             if(getClaims(token).get("type").equals("AT")) return true;
         } catch (ExpiredJwtException e) {
-            log.error("Bill Access 토큰 시간이 만료 되었습니다.{}", e.getMessage());
+            log.error("Bill Access 토큰 시간이 만료 되었습니다. {}", e.getMessage());
             return false;
         } catch (SignatureException e) {
-            log.error("Bill Access 토큰 서명값이 유효하지 않습니다.{}", e.getMessage());
+            log.error("Bill Access 토큰 서명값이 유효하지 않습니다. {}", e.getMessage());
             return false;
         } catch (JwtException e) {
-            log.error("Bill Access 토큰 헤더값이 유효하지 않습니다.{}", e.getMessage());
+            log.error("Bill Access 토큰 헤더값이 유효하지 않습니다. {}", e.getMessage());
             return false;
         }
 
         return false;
     }
 
-    Claims getClaims(String token) {
+    public Claims getClaims(String token) {
         return Jwts.parser()
+                .verifyWith(key)
                 .build()
-                .parseEncryptedClaims(token)
+                .parseSignedClaims(token)
                 .getPayload();
     }
 
-    String putUserMDC(Claims claims) {
+    public String putUserMDC(Claims claims) {
         String userId= claims.getSubject();
         String role = claims.get("role", String.class);
 
@@ -121,4 +120,26 @@ public class JWTUtil {
         return false;
     }
 
+    public UserRole getUserRole(String token) {
+        Claims claims = getClaims(token);
+         String role = claims.get("role", String.class);
+         return UserRole.valueOf(role);
+    }
+
+    public boolean isValidRefreshToken(String token) {
+        try {
+            if(getClaims(token).get("type").equals("RT")) return true;
+        } catch (ExpiredJwtException e) {
+            log.error("Bill Refresh 토큰 시간이 만료 되었습니다. {}", e.getMessage());
+            throw new CustomException(ErrorCode.BadRequest, "Bill Refresh 토큰 시간이 만료되었습니다. ", HttpStatus.BAD_REQUEST);
+        } catch (SignatureException e) {
+            log.error("Bill Refresh 토큰 서명값이 유효하지 않습니다. {}", e.getMessage());
+            return false;
+        } catch (JwtException e) {
+            log.error("Bill Refresh 토큰 헤더값이 유효하지 않습니다. {}", e.getMessage());
+            return false;
+        }
+
+        return false;
+    }
 }

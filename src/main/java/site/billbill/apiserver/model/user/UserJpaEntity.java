@@ -23,12 +23,16 @@ public class UserJpaEntity extends BaseTime {
     @Id
     @Column(name = "user_id", nullable = false)
     private String userId;
+    @Column(name="email", nullable = true)
+    private String email;
+    @Column(name="password", nullable = false)
+    private String password;
     @Column(name = "nickname", nullable = false)
     private String nickname;
     @Column(name = "profile", nullable = true)
     private String profile;
-    @Column(name = "confidence_score", nullable = false)
-    private int confidenceScore = 0;
+    @Column(name = "bill_pace", nullable = false)
+    private int billPace = 0;
     @Enumerated(EnumType.STRING)
     @Column(name = "provider", nullable = true)
     private Provider provider;
@@ -51,6 +55,7 @@ public class UserJpaEntity extends BaseTime {
         this.userId = info.getUserId();
         this.nickname = info.getNickname();
         this.profile = info.getProfileImage();
+        this.password = info.getPassword();
         this.provider = null;
         this.providerId = null;
         this.role = UserRole.USER;
