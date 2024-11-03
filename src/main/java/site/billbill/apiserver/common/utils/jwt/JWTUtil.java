@@ -44,7 +44,7 @@ public class JWTUtil {
         Date refreshTokenExpiresIn = new Date(now.getTime() + REFRESH_TOKEN_EXPIRE_TIME);
 
         String issuer = "BillBillServer";
-        
+
         String accessToken = Jwts.builder()
                 .issuer(issuer)
                 .subject(userId)
