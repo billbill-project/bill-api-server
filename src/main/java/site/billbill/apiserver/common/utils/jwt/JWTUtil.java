@@ -14,16 +14,13 @@ import site.billbill.apiserver.common.utils.jwt.dto.JwtDto;
 import site.billbill.apiserver.exception.CustomException;
 
 import javax.crypto.SecretKey;
-import java.security.Key;
 import java.util.Date;
 
 @Slf4j
 @Component
 public class JWTUtil {
-    private final String secretKey;
     private final long ACCESS_TOKEN_EXPIRE_TIME;
     private final long REFRESH_TOKEN_EXPIRE_TIME;
-    private String issuer = "BillBillServer";
     private final SecretKey key;
 
     public static String MDC_USER_ID = "userId";
@@ -35,7 +32,6 @@ public class JWTUtil {
             @Value("${jwt.bill.access-token-expired}") long ACCESS_TOKEN_EXPIRE_TIME,
             @Value("${jwt.bill.refresh-token-expired}") long REFRESH_TOKEN_EXPIRE_TIME
     ) {
-        this.secretKey = secretKey;
         this.ACCESS_TOKEN_EXPIRE_TIME = ACCESS_TOKEN_EXPIRE_TIME;
         this.REFRESH_TOKEN_EXPIRE_TIME = REFRESH_TOKEN_EXPIRE_TIME;
 
@@ -46,6 +42,8 @@ public class JWTUtil {
         Date now = new Date();
         Date accessTokenExpiresIn = new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME);
         Date refreshTokenExpiresIn = new Date(now.getTime() + REFRESH_TOKEN_EXPIRE_TIME);
+
+        String issuer = "BillBillServer";
 
         String accessToken = Jwts.builder()
                 .issuer(issuer)
@@ -77,9 +75,6 @@ public class JWTUtil {
             if(getClaims(token).get("type").equals("AT")) return true;
         } catch (ExpiredJwtException e) {
             log.error("Bill Access 토큰 시간이 만료 되었습니다. {}", e.getMessage());
-            return false;
-        } catch (SignatureException e) {
-            log.error("Bill Access 토큰 서명값이 유효하지 않습니다. {}", e.getMessage());
             return false;
         } catch (JwtException e) {
             log.error("Bill Access 토큰 헤더값이 유효하지 않습니다. {}", e.getMessage());
@@ -132,9 +127,6 @@ public class JWTUtil {
         } catch (ExpiredJwtException e) {
             log.error("Bill Refresh 토큰 시간이 만료 되었습니다. {}", e.getMessage());
             throw new CustomException(ErrorCode.BadRequest, "Bill Refresh 토큰 시간이 만료되었습니다. ", HttpStatus.BAD_REQUEST);
-        } catch (SignatureException e) {
-            log.error("Bill Refresh 토큰 서명값이 유효하지 않습니다. {}", e.getMessage());
-            return false;
         } catch (JwtException e) {
             log.error("Bill Refresh 토큰 헤더값이 유효하지 않습니다. {}", e.getMessage());
             return false;
