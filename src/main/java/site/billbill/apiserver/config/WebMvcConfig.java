@@ -15,7 +15,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(billApiInterceptor)
-                .excludePathPatterns("/docs/**", "/error", "/api/v1/auth/**")
+                .excludePathPatterns("/docs/**", "/swagger-ui/**", "/error", "/api/v1/auth/**")
                 .addPathPatterns("/**");
     }
 
