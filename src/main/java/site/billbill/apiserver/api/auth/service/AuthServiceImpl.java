@@ -81,7 +81,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public JwtDto login(LoginRequest request) {
         // bring user's phone number
-        Optional<UserIdentityJpaEntity> userIdentityJpaEntity = userIdentityRepository.findByPhoneNumber(request.getPhoneNumber());
+        Optional<UserIdentityJpaEntity> userIdentityJpaEntity = userIdentityRepository.findUserByPhoneNumberWithoutWithdraw(request.getPhoneNumber());
 
         if (userIdentityJpaEntity.isEmpty())
             throw new CustomException(ErrorCode.NotFound, "전화번호를 확인해주세요", HttpStatus.NOT_FOUND);
