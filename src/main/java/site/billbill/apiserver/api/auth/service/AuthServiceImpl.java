@@ -106,8 +106,8 @@ public class AuthServiceImpl implements AuthService {
             String userId = jwtUtil.getClaims(refreshToken).getSubject();
             UserRole role = jwtUtil.getUserRole(refreshToken);
 
-            if (isUserWithdraw(userId))
-                throw new CustomException(ErrorCode.Unauthorized, "탈퇴한 회원입니다.", HttpStatus.UNAUTHORIZED);
+            if (isUserWithdraw(userId)) // true면 탈퇴한 거임
+                throw new CustomException(ErrorCode.NotFound, "해당 회원이 존재하지 않습니다.", HttpStatus.NOT_FOUND);
 
             return jwtUtil.generateJwtDto(userId, role);
         } else {
@@ -122,8 +122,7 @@ public class AuthServiceImpl implements AuthService {
      * @return isWithdrew true/false
      */
     private boolean isUserWithdraw(String userId) {
-        // TODO 로직 구현해야 됨
-        return false;
+        return userRepository.findByUserIdAndWithdrawStatus(userId, true).isPresent();
     }
 
     /**

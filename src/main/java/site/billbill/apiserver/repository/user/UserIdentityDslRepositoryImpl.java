@@ -26,7 +26,6 @@ public class UserIdentityDslRepositoryImpl implements UserIdentityDslRepository 
                 .where(qUserIdentity.phoneNumber.eq(phoneNumber))
                 .where(qUser.withdrawStatus.isFalse());
 
-
         return Optional.ofNullable(qb.fetchOne());
     }
 }
