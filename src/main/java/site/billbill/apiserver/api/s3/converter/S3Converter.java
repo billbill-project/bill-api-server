@@ -12,10 +12,5 @@ public class S3Converter {
                 .urls(urls)
                 .build();
     }
-    public static S3Request.uploadReqeust toS3UploadReqeust(List<MultipartFile> files,String option){
-        return S3Request.uploadReqeust.builder()
-                .files(files)
-                .option(option)
-                .build();
-    }
+
 }
