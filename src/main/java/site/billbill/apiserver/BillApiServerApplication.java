@@ -13,7 +13,7 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 @ConfigurationPropertiesScan("site.billbill.apiserver.config")
 @OpenAPIDefinition(
         servers = {
-                @Server(url = "http://43.203.210.224", description = "dev server"),
+                @Server(url = "43.203.210.224", description = "dev server"),
                 @Server(url = "http://localhost:8080", description = "local server"),
         }
 )
