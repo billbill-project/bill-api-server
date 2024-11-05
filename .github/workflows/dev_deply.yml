@@ -80,6 +80,6 @@ jobs:
               -e SPRINGDOC_SWAGGER_UI_OPERATIONS_SORTER=${{secrets.SPRINGDOC_SWAGGER_UI_OPERATIONS_SORTER}} \
               -e SPRINGDOC_SWAGGER_UI_PATH=${{secrets.SPRINGDOC_SWAGGER_UI_PATH}} \
               -e SPRING_DEVTOOLS_LIVERELOAD_ENABLE=${{secrets.SPRING_DEVTOOLS_LIVERELOAD_ENABLE}} \
-              ${secrets.DOCKERHUB_USERNAME}/bill-api:latest
+              ${{secrets.DOCKERHUB_USERNAME}}/bill-api:latest
             sudo docker rm $(sudo docker ps --filter 'status=exited' -a -q)
             sudo docker image prune -a -f
