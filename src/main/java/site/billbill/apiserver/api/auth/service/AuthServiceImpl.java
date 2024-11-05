@@ -45,14 +45,10 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public JwtDto signup(SignupRequest request) {
         // Check new by name & phoneNumber
-        boolean isExists =
-                userIdentityRepository.existsByNameAndPhoneNumber(
-                        request.getIdentity().getName(),
-                        request.getIdentity().getPhoneNumber()
-                );
+        Optional<UserIdentityJpaEntity> identityJpaEntity = userIdentityRepository.findUserByPhoneNumberWithoutWithdraw(request.getIdentity().getPhoneNumber());
 
         // if user already exists
-        if (isExists) {
+        if (identityJpaEntity.isPresent()) {
             throw new CustomException(ErrorCode.Conflict, "이미 존재하는 회원입니다.", HttpStatus.CONFLICT);
         }
 

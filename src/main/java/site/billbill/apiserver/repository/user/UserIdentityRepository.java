@@ -8,7 +8,4 @@ import java.util.Optional;
 
 @Repository
 public interface UserIdentityRepository extends JpaRepository<UserIdentityJpaEntity, String>, UserIdentityDslRepository {
-    boolean existsByNameAndPhoneNumber(String name, String phoneNumber);
-
-    Optional<UserIdentityJpaEntity> findByPhoneNumber(String phoneNumber);
 }
