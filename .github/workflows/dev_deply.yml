@@ -61,6 +61,8 @@ jobs:
               sudo docker stop bill-api
               sudo docker rm bill-api
             fi
+            echo "SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}"
+            echo "SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}"
             sudo docker tag ${{ secrets.DOCKERHUB_USERNAME }}/bill-api:latest bill-api
             sudo docker run --name bill-api -d -p 80:8080 \
               -e SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }} \
