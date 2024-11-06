@@ -65,10 +65,10 @@ jobs:
             echo "SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}"
             sudo docker tag ${{ secrets.DOCKERHUB_USERNAME }}/bill-api:latest bill-api
             sudo docker run --name bill-api -d -p 80:8080 \
+              -e SPRING_DATASOURCE_DRIVER_CLASS_NAME=${{ secrets.SPRING_DATASOURCE_DRIVER_CLASS_NAME }} \
               -e SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }} \
               -e SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }} \
               -e SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }} \
-              -e SPRING_DATASOURCE_DRIVER_CLASS_NAME=${{ secrets.SPRING_DATASOURCE_DRIVER_CLASS_NAME }} \
               -e JWT_BILL_SECRET_KEY=${{ secrets.JWT_BILL_SECRET_KEY }} \
               -e JWT_BILL_ACCESS_TOKEN_EXPIRED=${{ secrets.JWT_BILL_ACCESS_TOKEN_EXPIRED }} \
               -e JWT_BILL_REFRESH_TOKEN_EXPIRED=${{ secrets.JWT_BILL_REFRESH_TOKEN_EXPIRED }} \
