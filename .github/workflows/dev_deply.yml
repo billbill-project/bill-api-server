@@ -56,16 +56,11 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_PRIVATE_KEY}}
           script: |
-            
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/bill-api:latest
-            
-           
             if [ $(sudo docker ps -a -q -f name=bill-api) ]; then
               sudo docker stop bill-api
               sudo docker rm bill-api
             fi
-            
-            
             sudo docker tag ${{ secrets.DOCKERHUB_USERNAME }}/bill-api:latest bill-api
             sudo docker run --name bill-api -d -p 80:8080 \
               -e SPRING_DATASOURCE_URL = ${{ secrets.SPRING_DATASOURCE_URL }} \
