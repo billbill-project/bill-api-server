@@ -71,6 +71,8 @@ jobs:
               -e JWT_BILL_SECRET_KEY=${{secrets.JWT_BILL_SECRET_KEY}} \
               -e JWT_BILL_ACCESS_TOKEN_EXPIRED=${{secrets.JWT_BILL_ACCESS_TOKEN_EXPIRED}} \
               -e JWT_BILL_REFRESH_TOKEN_EXPIRED=${{secrets.JWT_BILL_REFRESH_TOKEN_EXPIRED}} \
+              -e SPRINGDOC_API_DOCS_PATH=${{secrets.SPRINGDOC_API_DOCS_PATH}} \
+              -e SPRINGDOC_CACHE_DISABLED=${{secrets.SPRINGDOC_CACHE_DISABLED}} \
               ${{ secrets.DOCKERHUB_USERNAME }}/bill-api:latest
             sudo docker rm $(sudo docker ps --filter 'status=exited' -a -q)
             sudo docker image prune -a -f
