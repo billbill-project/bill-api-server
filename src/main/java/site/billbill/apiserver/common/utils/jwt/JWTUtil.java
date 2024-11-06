@@ -16,6 +16,8 @@ import site.billbill.apiserver.exception.CustomException;
 import javax.crypto.SecretKey;
 import java.util.Date;
 
+import static org.apache.commons.lang3.StringUtils.substring;
+
 @Slf4j
 @Component
 public class JWTUtil {

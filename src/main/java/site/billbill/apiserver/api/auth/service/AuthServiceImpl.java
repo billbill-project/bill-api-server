@@ -45,14 +45,10 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public JwtDto signup(SignupRequest request) {
         // Check new by name & phoneNumber
-        boolean isExists =
-                userIdentityRepository.existsByNameAndPhoneNumber(
-                        request.getIdentity().getName(),
-                        request.getIdentity().getPhoneNumber()
-                );
+        Optional<UserIdentityJpaEntity> identityJpaEntity = userIdentityRepository.findUserByPhoneNumberWithoutWithdraw(request.getIdentity().getPhoneNumber());
 
         // if user already exists
-        if (isExists) {
+        if (identityJpaEntity.isPresent()) {
             throw new CustomException(ErrorCode.Conflict, "이미 존재하는 회원입니다.", HttpStatus.CONFLICT);
         }
 
@@ -81,7 +77,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public JwtDto login(LoginRequest request) {
         // bring user's phone number
-        Optional<UserIdentityJpaEntity> userIdentityJpaEntity = userIdentityRepository.findByPhoneNumber(request.getPhoneNumber());
+        Optional<UserIdentityJpaEntity> userIdentityJpaEntity = userIdentityRepository.findUserByPhoneNumberWithoutWithdraw(request.getPhoneNumber());
 
         if (userIdentityJpaEntity.isEmpty())
             throw new CustomException(ErrorCode.NotFound, "전화번호를 확인해주세요", HttpStatus.NOT_FOUND);
@@ -106,8 +102,8 @@ public class AuthServiceImpl implements AuthService {
             String userId = jwtUtil.getClaims(refreshToken).getSubject();
             UserRole role = jwtUtil.getUserRole(refreshToken);
 
-            if (isUserWithdraw(userId))
-                throw new CustomException(ErrorCode.Unauthorized, "탈퇴한 회원입니다.", HttpStatus.UNAUTHORIZED);
+            if (isUserWithdraw(userId)) // true면 탈퇴한 거임
+                throw new CustomException(ErrorCode.NotFound, "해당 회원이 존재하지 않습니다.", HttpStatus.NOT_FOUND);
 
             return jwtUtil.generateJwtDto(userId, role);
         } else {
@@ -122,8 +118,7 @@ public class AuthServiceImpl implements AuthService {
      * @return isWithdrew true/false
      */
     private boolean isUserWithdraw(String userId) {
-        // TODO 로직 구현해야 됨
-        return false;
+        return userRepository.findByUserIdAndWithdrawStatus(userId, true).isPresent();
     }
 
     /**

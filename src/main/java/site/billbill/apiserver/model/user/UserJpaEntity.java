@@ -12,6 +12,8 @@ import site.billbill.apiserver.common.enums.user.Provider;
 import site.billbill.apiserver.common.enums.user.UserRole;
 import site.billbill.apiserver.model.BaseTime;
 
+import java.time.OffsetDateTime;
+
 @DynamicUpdate
 @Entity
 @Table(name = "users")
@@ -49,6 +51,12 @@ public class UserJpaEntity extends BaseTime {
     @Convert(converter = BooleanConverter.class)
     @Column(name = "notification_alarm", nullable = false)
     private boolean notificationAlarm = true;
+    @Convert(converter = BooleanConverter.class)
+    @Column(name = "withdraw_status", nullable = false)
+    private boolean withdrawStatus = false;
+    @Column(name = "withdraw_at")
+    private OffsetDateTime withdrawAt;
+
 
     public UserJpaEntity(UserBaseInfo info) {
         this.userId = info.getUserId();
