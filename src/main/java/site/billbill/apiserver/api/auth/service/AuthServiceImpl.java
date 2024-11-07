@@ -58,7 +58,6 @@ public class AuthServiceImpl implements AuthService {
         String userId = ULIDUtil.generatorULID("USER");
         UserIdentityJpaEntity userIdentity = UserIdentityJpaEntity.toJpaEntity(userId, request.getIdentity());
         UserJpaEntity user = new UserJpaEntity(new UserBaseInfo(userId, request.getProfileImage(), request.getNickname(), encryptedPassword));
-
         UserAgreeHistJpaEntity userAgree = new UserAgreeHistJpaEntity(userId, request.getAgree().isServiceAgree(), request.getAgree().isPrivacyAgree(), request.getAgree().isMarketingAgree(), request.getAgree().isThirdPartyAgree());
         UserDeviceJpaEntity userDevice = new UserDeviceJpaEntity(userId, ULIDUtil.generatorULID("DEVICE"), request.getDevice().getDeviceToken(), request.getDevice().getDeviceType(), request.getDevice().getAppVersion());
 

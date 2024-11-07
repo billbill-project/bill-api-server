@@ -1,10 +1,7 @@
 package site.billbill.apiserver.model.user;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.DynamicUpdate;
 import site.billbill.apiserver.api.auth.domain.UserBaseInfo;
 import site.billbill.apiserver.common.converter.BooleanConverter;
@@ -15,7 +12,7 @@ import site.billbill.apiserver.model.BaseTime;
 import java.time.OffsetDateTime;
 
 @DynamicUpdate
-@Entity
+@Entity @Builder
 @Table(name = "users")
 @Getter @Setter
 @NoArgsConstructor

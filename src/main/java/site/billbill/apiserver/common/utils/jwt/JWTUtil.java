@@ -42,8 +42,8 @@ public class JWTUtil {
 
     public JwtDto generateJwtDto(String userId, UserRole role) {
         Date now = new Date();
-        Date accessTokenExpiresIn = new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME);
-        Date refreshTokenExpiresIn = new Date(now.getTime() + REFRESH_TOKEN_EXPIRE_TIME);
+        Date accessTokenExpiresIn = new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME*1000);
+        Date refreshTokenExpiresIn = new Date(now.getTime() + REFRESH_TOKEN_EXPIRE_TIME*1000);
 
         String issuer = "BillBillServer";
 
