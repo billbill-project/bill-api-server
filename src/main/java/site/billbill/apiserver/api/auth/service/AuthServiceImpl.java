@@ -22,12 +22,8 @@ import site.billbill.apiserver.common.utils.ULID.ULIDUtil;
 import site.billbill.apiserver.common.utils.jwt.JWTUtil;
 import site.billbill.apiserver.common.utils.jwt.dto.JwtDto;
 import site.billbill.apiserver.exception.CustomException;
-import site.billbill.apiserver.model.user.UserIdentityJpaEntity;
-import site.billbill.apiserver.model.user.UserJpaEntity;
-import site.billbill.apiserver.model.user.UserLocationJpaEntity;
-import site.billbill.apiserver.repository.user.UserIdentityRepository;
-import site.billbill.apiserver.repository.user.UserLocationReposity;
-import site.billbill.apiserver.repository.user.UserRepository;
+import site.billbill.apiserver.model.user.*;
+import site.billbill.apiserver.repository.user.*;
 
 import java.util.Optional;
 
@@ -38,6 +34,8 @@ public class AuthServiceImpl implements AuthService {
     private final UserIdentityRepository userIdentityRepository;
     private final UserRepository userRepository;
     private final UserLocationReposity userLocationRepository;
+    private final UserDeviceRepository userDeviceRepository;
+    private final UserAgreeHistRepository userAgreeHistRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final JWTUtil jwtUtil;
 
@@ -47,14 +45,10 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public JwtDto signup(SignupRequest request) {
         // Check new by name & phoneNumber
-        boolean isExists =
-                userIdentityRepository.existsByNameAndPhoneNumber(
-                        request.getIdentity().getName(),
-                        request.getIdentity().getPhoneNumber()
-                );
+        Optional<UserIdentityJpaEntity> identityJpaEntity = userIdentityRepository.findUserByPhoneNumberWithoutWithdraw(request.getIdentity().getPhoneNumber());
 
         // if user already exists
-        if (isExists) {
+        if (identityJpaEntity.isPresent()) {
             throw new CustomException(ErrorCode.Conflict, "이미 존재하는 회원입니다.", HttpStatus.CONFLICT);
         }
 
@@ -65,11 +59,14 @@ public class AuthServiceImpl implements AuthService {
         UserIdentityJpaEntity userIdentity = UserIdentityJpaEntity.toJpaEntity(userId, request.getIdentity());
         UserJpaEntity user = new UserJpaEntity(new UserBaseInfo(userId, request.getProfileImage(), request.getNickname(), encryptedPassword));
 
-        // TODO : 동의 여부 & 장치 정보 저장 로직 추가 필요
+        UserAgreeHistJpaEntity userAgree = new UserAgreeHistJpaEntity(userId, request.getAgree().isServiceAgree(), request.getAgree().isPrivacyAgree(), request.getAgree().isMarketingAgree(), request.getAgree().isThirdPartyAgree());
+        UserDeviceJpaEntity userDevice = new UserDeviceJpaEntity(userId, ULIDUtil.generatorULID("DEVICE"), request.getDevice().getDeviceToken(), request.getDevice().getDeviceType(), request.getDevice().getAppVersion());
 
         // save new user
         userRepository.save(user);
         userIdentityRepository.save(userIdentity);
+        userDeviceRepository.save(userDevice);
+        userAgreeHistRepository.save(userAgree);
 
         // save location
         saveLocation(userId, request.getLocation());
@@ -80,7 +77,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public JwtDto login(LoginRequest request) {
         // bring user's phone number
-        Optional<UserIdentityJpaEntity> userIdentityJpaEntity = userIdentityRepository.findByPhoneNumber(request.getPhoneNumber());
+        Optional<UserIdentityJpaEntity> userIdentityJpaEntity = userIdentityRepository.findUserByPhoneNumberWithoutWithdraw(request.getPhoneNumber());
 
         if (userIdentityJpaEntity.isEmpty())
             throw new CustomException(ErrorCode.NotFound, "전화번호를 확인해주세요", HttpStatus.NOT_FOUND);
@@ -105,8 +102,8 @@ public class AuthServiceImpl implements AuthService {
             String userId = jwtUtil.getClaims(refreshToken).getSubject();
             UserRole role = jwtUtil.getUserRole(refreshToken);
 
-            if (isUserWithdraw(userId))
-                throw new CustomException(ErrorCode.Unauthorized, "탈퇴한 회원입니다.", HttpStatus.UNAUTHORIZED);
+            if (isUserWithdraw(userId)) // true면 탈퇴한 거임
+                throw new CustomException(ErrorCode.NotFound, "해당 회원이 존재하지 않습니다.", HttpStatus.NOT_FOUND);
 
             return jwtUtil.generateJwtDto(userId, role);
         } else {
@@ -121,8 +118,7 @@ public class AuthServiceImpl implements AuthService {
      * @return isWithdrew true/false
      */
     private boolean isUserWithdraw(String userId) {
-        // TODO 로직 구현해야 됨
-        return false;
+        return userRepository.findByUserIdAndWithdrawStatus(userId, true).isPresent();
     }
 
     /**
@@ -147,7 +143,6 @@ public class AuthServiceImpl implements AuthService {
             LocationRequest location
     ) {
         // TODO location.service 패키지로 이동 예정
-        
         // check if location already exists
         Optional<UserLocationJpaEntity> locationJpaEntity = userLocationRepository.findByUserId(userId);
         UserLocationJpaEntity userLocation = locationJpaEntity.orElseGet(UserLocationJpaEntity::new); // if not exists, use new

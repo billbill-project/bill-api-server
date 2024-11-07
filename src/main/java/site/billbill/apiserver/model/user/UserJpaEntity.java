@@ -5,13 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.apache.catalina.User;
 import org.hibernate.annotations.DynamicUpdate;
 import site.billbill.apiserver.api.auth.domain.UserBaseInfo;
 import site.billbill.apiserver.common.converter.BooleanConverter;
 import site.billbill.apiserver.common.enums.user.Provider;
 import site.billbill.apiserver.common.enums.user.UserRole;
 import site.billbill.apiserver.model.BaseTime;
+
+import java.time.OffsetDateTime;
 
 @DynamicUpdate
 @Entity
@@ -50,6 +51,12 @@ public class UserJpaEntity extends BaseTime {
     @Convert(converter = BooleanConverter.class)
     @Column(name = "notification_alarm", nullable = false)
     private boolean notificationAlarm = true;
+    @Convert(converter = BooleanConverter.class)
+    @Column(name = "withdraw_status", nullable = false)
+    private boolean withdrawStatus = false;
+    @Column(name = "withdraw_at")
+    private OffsetDateTime withdrawAt;
+
 
     public UserJpaEntity(UserBaseInfo info) {
         this.userId = info.getUserId();

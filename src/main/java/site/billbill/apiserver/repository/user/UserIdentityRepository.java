@@ -7,8 +7,5 @@ import site.billbill.apiserver.model.user.UserIdentityJpaEntity;
 import java.util.Optional;
 
 @Repository
-public interface UserIdentityRepository extends JpaRepository<UserIdentityJpaEntity, String> {
-    boolean existsByNameAndPhoneNumber(String name, String phoneNumber);
-
-    Optional<UserIdentityJpaEntity> findByPhoneNumber(String phoneNumber);
+public interface UserIdentityRepository extends JpaRepository<UserIdentityJpaEntity, String>, UserIdentityDslRepository {
 }

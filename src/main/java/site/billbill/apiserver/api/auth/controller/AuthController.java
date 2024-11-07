@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import site.billbill.apiserver.api.auth.dto.request.IdentityRequest;
 import site.billbill.apiserver.api.auth.dto.request.LoginRequest;
 import site.billbill.apiserver.api.auth.dto.request.ReissueRequest;
 import site.billbill.apiserver.api.auth.dto.request.SignupRequest;
@@ -53,4 +54,11 @@ public class AuthController {
     public BaseResponse<JwtDto> reissue(@RequestBody ReissueRequest request) {
         return new BaseResponse<>(authService.reissue(request.getRefreshToken()));
     }
+
+//    @Operation(summary = "휴대폰 본인인증", description = "PASS NICE 본인인증 API")
+//    @ResponseStatus(HttpStatus.OK)
+//    @PostMapping("/identity")
+//    public BaseResponse<JwtDto> identity(@RequestBody IdentityRequest request) {
+//        return null;
+//    }
 }
