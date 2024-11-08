@@ -87,6 +87,8 @@ jobs:
               -e CLOUD_AWS_S3_BUCKET=${{secrets.CLOUD_AWS_S3_BUCKET}} \
               -e CLOUD_AWS_REGION_AUTO=false \
               -e CLOUD_AWS_STACK_AUTO=false \
+              -e SPRING_SERVLET_MULTIPART_MAXFILESIZE=${{secrets.SPRING_SERVLET_MULTIPART_MAXFILESIZE}} \
+              -e SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE=${{secrets.SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE}} \
               ${{ secrets.DOCKERHUB_USERNAME }}/bill-api:latest
   
             sudo docker rm $(sudo docker ps --filter 'status=exited' -a -q)

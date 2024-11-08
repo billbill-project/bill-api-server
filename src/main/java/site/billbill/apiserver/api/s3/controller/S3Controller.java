@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jboss.logging.MDC;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import site.billbill.apiserver.api.s3.Service.S3Service;
@@ -23,7 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class S3Controller {
     private final S3Service s3Service;
-    @PostMapping("/{option}")
+    @PostMapping(value="/{option}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public BaseResponse<S3Response.uploadResponse> upload(@Valid List<MultipartFile> images,
                                                           @PathVariable("option") String option, @RequestParam(value ="id",required = false) Long id) {
         String userId = "";
