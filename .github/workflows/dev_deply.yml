@@ -81,6 +81,14 @@ jobs:
               -e SPRINGDOC_SWAGGER_UI_OPERATIONS_SORTER=${{ secrets.SPRINGDOC_SWAGGER_UI_OPERATIONS_SORTER }} \
               -e SPRINGDOC_SWAGGER_UI_PATH=${{ secrets.SPRINGDOC_SWAGGER_UI_PATH }} \
               -e SPRING_DEVTOOLS_LIVERELOAD_ENABLE=${{ secrets.SPRING_DEVTOOLS_LIVERELOAD_ENABLE }} \
+              -e CLOUD_AWS_CREDENTIALS_ACCESS_KEY=${{ secrets.CLOUD_AWS_CREDENTIALS_ACCESS_KEY }} \
+              -e CLOUD_AWS_CREDENTIALS_SECRET_KEY=${{secrets.CLOUD_AWS_CREDENTIALS_SECRET_KEY }} \
+              -e CLOUD_AWS_REGION_STATIC=${{secrets.CLOUD_AWS_REGION_STATIC}} \
+              -e CLOUD_AWS_S3_BUCKET=${{secrets.CLOUD_AWS_S3_BUCKET}} \
+              -e CLOUD_AWS_REGION_AUTO=false \
+              -e CLOUD_AWS_STACK_AUTO=false \
+              -e SPRING_SERVLET_MULTIPART_MAXFILESIZE=${{secrets.SPRING_SERVLET_MULTIPART_MAXFILESIZE}} \
+              -e SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE=${{secrets.SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE}} \
               ${{ secrets.DOCKERHUB_USERNAME }}/bill-api:latest
   
             sudo docker rm $(sudo docker ps --filter 'status=exited' -a -q)
