@@ -25,13 +25,14 @@ public class S3Controller {
     private final S3Service s3Service;
     @PostMapping("/{option}")
     public BaseResponse<S3Response.uploadResponse> upload(@Valid List<MultipartFile> images,
-                                                          @PathVariable("option") String option, @RequestParam(value ="id") long id) {
-        long userId = 0;
+                                                          @PathVariable("option") String option, @RequestParam(value ="id",required = false) Long id) {
+        String userId = "";
         if(MDC.get(JWTUtil.MDC_USER_ID) != null) {
-            userId= (long) MDC.get(JWTUtil.MDC_USER_ID);
+            userId=  MDC.get(JWTUtil.MDC_USER_ID).toString();
+
         }
         return switch (option) {
-            case "posts" -> new BaseResponse<>(s3Service.uploadPostsFiles(images, userId,id));
+            case "post" -> new BaseResponse<>(s3Service.uploadPostsFiles(images, userId,id));
             case "chat" -> new BaseResponse<>(s3Service.uploadChatFiles(images, userId,id));
             case "user" -> new BaseResponse<>(s3Service.uploadUserFiles(images));
             default -> null;
