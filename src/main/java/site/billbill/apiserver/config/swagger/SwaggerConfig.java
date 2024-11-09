@@ -31,6 +31,7 @@ public class SwaggerConfig {
                 )
                 .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
                 .info(apiInfo());
+        
     }
 
     private Info apiInfo() {
