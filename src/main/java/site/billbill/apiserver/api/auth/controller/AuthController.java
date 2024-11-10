@@ -2,20 +2,16 @@ package site.billbill.apiserver.api.auth.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import site.billbill.apiserver.api.auth.dto.request.IdentityRequest;
-import site.billbill.apiserver.api.auth.dto.request.LoginRequest;
-import site.billbill.apiserver.api.auth.dto.request.ReissueRequest;
-import site.billbill.apiserver.api.auth.dto.request.SignupRequest;
+import site.billbill.apiserver.api.auth.dto.request.*;
 import site.billbill.apiserver.api.auth.service.AuthService;
+import site.billbill.apiserver.api.auth.service.OAuthService;
 import site.billbill.apiserver.common.response.BaseResponse;
 import site.billbill.apiserver.common.utils.jwt.dto.JwtDto;
 
@@ -33,6 +29,7 @@ import site.billbill.apiserver.common.utils.jwt.dto.JwtDto;
 public class AuthController {
 
     private final AuthService authService;
+    private final OAuthService oAuthService;
 
     @Operation(summary = "회원 가입(일반)", description = "일반 회원 가입 API")
     @ResponseStatus(HttpStatus.CREATED)
@@ -53,6 +50,12 @@ public class AuthController {
     @PatchMapping("/reissue")
     public BaseResponse<JwtDto> reissue(@RequestBody ReissueRequest request) {
         return new BaseResponse<>(authService.reissue(request.getRefreshToken()));
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/login/oauth2/code/kakao")
+    public BaseResponse<JwtDto> kakaoLogin(@RequestParam("code") String code) {
+        return new BaseResponse<>(oAuthService.kakaoLogin(code));
     }
 
 //    @Operation(summary = "휴대폰 본인인증", description = "PASS NICE 본인인증 API")
