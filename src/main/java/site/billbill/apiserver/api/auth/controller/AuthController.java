@@ -53,8 +53,8 @@ public class AuthController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/oauth2/code/kakao/callback")
-    public BaseResponse<JwtDto> kakaoLogin(@RequestParam("code") String code) {
+    @GetMapping("/oauth2/code/kakao/callback")
+    public BaseResponse<JwtDto> kakaoCallback(@RequestParam("code") String code) {
         return new BaseResponse<JwtDto>(oAuthService.kakaoCallback(code));
     }
 

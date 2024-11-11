@@ -23,15 +23,16 @@ public class KakaoUtil {
     @Value("${kakao.redirect-uri}")
     private String redirectUri;
     @Value("${kakao.provider.token-uri}")
-    private String TOKEN_URL_HOST;
-    @Value("${kakao.provider.user-info-uri")
-    private String USER_INFO_URL_HOST;
+    private String TOKEN_URL;
+    @Value("${kakao.provider.user-info-uri}")
+    private String USER_INFO_URL;
+    @Value("${kakao.provider.authorization-uri}")
+    private String AUTHORIZATION_URL;
 
     public String getAccessToken(String code) {
-        KakaoTokenResponse kakaoTokenResponse = WebClient.create(TOKEN_URL_HOST).post()
+        KakaoTokenResponse kakaoTokenResponse = WebClient.create(TOKEN_URL).post()
                 .uri(uriBuilder -> uriBuilder
                         .scheme("https")
-                        .path("/oauth/token")
                         .queryParam("grant_type", "authorization_code")
                         .queryParam("client_id", clientId)
                         .queryParam("code", code)
@@ -55,11 +56,10 @@ public class KakaoUtil {
 
     public KakaoUserInfoResponse getUserInfo(String accessToken) {
 
-        KakaoUserInfoResponse userInfo = WebClient.create(USER_INFO_URL_HOST)
+        KakaoUserInfoResponse userInfo = WebClient.create(USER_INFO_URL)
                 .get()
                 .uri(uriBuilder -> uriBuilder
                         .scheme("https")
-                        .path("/v2/user/me")
                         .build(true))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken) // access token 인가
                 .header(HttpHeaders.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString())
