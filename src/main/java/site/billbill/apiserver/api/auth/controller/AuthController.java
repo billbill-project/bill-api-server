@@ -53,9 +53,9 @@ public class AuthController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/login/oauth2/code/kakao")
+    @PostMapping("/oauth2/code/kakao/callback")
     public BaseResponse<JwtDto> kakaoLogin(@RequestParam("code") String code) {
-        return new BaseResponse<>(oAuthService.kakaoLogin(code));
+        return new BaseResponse<JwtDto>(oAuthService.kakaoCallback(code));
     }
 
 //    @Operation(summary = "휴대폰 본인인증", description = "PASS NICE 본인인증 API")

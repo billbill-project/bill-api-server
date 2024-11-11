@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<UserJpaEntity, String> {
     Optional<UserJpaEntity> findByUserIdAndWithdrawStatus(String userId, boolean withdrawStatus);
+    Optional<UserJpaEntity> findByProviderId(String providerId);
 }
