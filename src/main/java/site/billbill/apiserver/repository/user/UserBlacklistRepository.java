@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 import site.billbill.apiserver.model.user.UserBlacklistJpaEntity;
 
 @Repository
-public interface UserBlacklistRepository extends JpaRepository<UserBlacklistJpaEntity, Long> {
+public interface UserBlacklistRepository extends JpaRepository<UserBlacklistJpaEntity, Long>, UserBlacklistDslRepository {
 }

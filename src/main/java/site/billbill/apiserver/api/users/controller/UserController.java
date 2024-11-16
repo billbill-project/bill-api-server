@@ -7,12 +7,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import site.billbill.apiserver.api.users.dto.request.BlacklistRequest;
+import site.billbill.apiserver.api.users.dto.response.BlacklistResponse;
 import site.billbill.apiserver.api.users.dto.response.ProfileResponse;
 import site.billbill.apiserver.api.users.service.UserService;
 import site.billbill.apiserver.common.response.BaseResponse;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -48,5 +53,16 @@ public class UserController {
     public BaseResponse<String> blackUser(@RequestBody BlacklistRequest request) {
         userService.blockUser(request.getUserId());
         return new BaseResponse<>(null);
+    }
+
+    @Operation(summary = "내 차단목록 조회", description = "회원 본인의 차단 목록을 조회하는 API")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/blacklist")
+    public BaseResponse<List<BlacklistResponse>> blacklist(
+            @RequestParam(name = "size", defaultValue = "20") int size,
+            @RequestParam(name = "page", defaultValue = "1") int page
+    ) {
+        Pageable pageable = PageRequest.of((page < 1 ? 0 : page - 1), size);
+        return new BaseResponse<>(userService.getBlacklist(pageable));
     }
 }

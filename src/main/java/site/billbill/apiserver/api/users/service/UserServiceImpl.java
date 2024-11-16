@@ -3,8 +3,10 @@ package site.billbill.apiserver.api.users.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import site.billbill.apiserver.api.users.dto.response.BlacklistResponse;
 import site.billbill.apiserver.api.users.dto.response.ProfileResponse;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.jwt.JWTUtil;
@@ -16,6 +18,7 @@ import site.billbill.apiserver.repository.user.UserBlacklistRepository;
 import site.billbill.apiserver.repository.user.UserIdentityRepository;
 import site.billbill.apiserver.repository.user.UserRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -63,5 +66,12 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         userBlacklistRepository.save(userBlacklist);
+    }
+
+    @Override
+    public List<BlacklistResponse> getBlacklist(Pageable pageable) {
+        String userId = MDC.get(JWTUtil.MDC_USER_ID);
+
+        return userBlacklistRepository.getBlacklistByUserId(userId, pageable);
     }
 }
