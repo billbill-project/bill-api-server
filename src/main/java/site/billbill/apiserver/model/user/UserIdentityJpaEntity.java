@@ -4,10 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import site.billbill.apiserver.api.auth.dto.request.IdentityRequest;
 import site.billbill.apiserver.model.BaseTime;
 
@@ -16,8 +13,8 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "users_identity")
-@Getter
-@Setter
+@Getter @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserIdentityJpaEntity extends BaseTime {
