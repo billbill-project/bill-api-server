@@ -1,4 +1,4 @@
-package site.billbill.apiserver.common.utils.oauth.kakao;
+package site.billbill.apiserver.common.utils.users.oauth.kakao;
 
 import io.netty.handler.codec.http.HttpHeaderValues;
 import lombok.*;
@@ -14,7 +14,6 @@ import site.billbill.apiserver.external.oauth.kakao.dto.response.KakaoUserInfoRe
 
 @Component
 @Slf4j
-@Getter @Setter @Builder
 @RequiredArgsConstructor
 @AllArgsConstructor
 public class KakaoUtil {

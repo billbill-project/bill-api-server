@@ -1,5 +1,6 @@
 package site.billbill.apiserver.api.auth.controller;
 
+import com.nimbusds.openid.connect.sdk.assurance.IdentityVerification;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -58,10 +59,10 @@ public class AuthController {
         return new BaseResponse<JwtDto>(oAuthService.kakaoCallback(code));
     }
 
-//    @Operation(summary = "휴대폰 본인인증", description = "PASS NICE 본인인증 API")
-//    @ResponseStatus(HttpStatus.OK)
-//    @PostMapping("/identity")
-//    public BaseResponse<JwtDto> identity(@RequestBody IdentityRequest request) {
-//        return null;
-//    }
+    @Operation(summary = "휴대폰 본인인증", description = "PASS NICE 본인인증 API")
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/identity")
+    public BaseResponse<JwtDto> identity(@RequestBody IdentityVerificationRequest request) {
+        return null;
+    }
 }

@@ -9,7 +9,7 @@ import site.billbill.apiserver.common.enums.user.UserRole;
 import site.billbill.apiserver.common.utils.ULID.ULIDUtil;
 import site.billbill.apiserver.common.utils.jwt.JWTUtil;
 import site.billbill.apiserver.common.utils.jwt.dto.JwtDto;
-import site.billbill.apiserver.common.utils.oauth.kakao.KakaoUtil;
+import site.billbill.apiserver.common.utils.users.oauth.kakao.KakaoUtil;
 import site.billbill.apiserver.exception.CustomException;
 import site.billbill.apiserver.external.oauth.kakao.dto.response.KakaoUserInfoResponse;
 import site.billbill.apiserver.model.user.UserIdentityJpaEntity;
