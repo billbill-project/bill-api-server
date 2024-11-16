@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import site.billbill.apiserver.api.users.dto.request.BlacklistRequest;
 import site.billbill.apiserver.api.users.dto.response.ProfileResponse;
 import site.billbill.apiserver.api.users.service.UserService;
 import site.billbill.apiserver.common.response.BaseResponse;
@@ -39,5 +40,13 @@ public class UserController {
     @GetMapping("/profile/{userId}")
     public BaseResponse<ProfileResponse> profile(@PathVariable String userId) {
         return new BaseResponse<ProfileResponse>(userService.getProfileInfo(userId));
+    }
+
+    @Operation(summary = "회원 차단하기", description = "회원 차단 API")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/blacklist")
+    public BaseResponse<String> blackUser(@RequestBody BlacklistRequest request) {
+        userService.blockUser(request.getUserId());
+        return new BaseResponse<>(null);
     }
 }

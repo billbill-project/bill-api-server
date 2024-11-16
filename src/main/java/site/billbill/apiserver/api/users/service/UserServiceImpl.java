@@ -9,8 +9,10 @@ import site.billbill.apiserver.api.users.dto.response.ProfileResponse;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.jwt.JWTUtil;
 import site.billbill.apiserver.exception.CustomException;
+import site.billbill.apiserver.model.user.UserBlacklistJpaEntity;
 import site.billbill.apiserver.model.user.UserIdentityJpaEntity;
 import site.billbill.apiserver.model.user.UserJpaEntity;
+import site.billbill.apiserver.repository.user.UserBlacklistRepository;
 import site.billbill.apiserver.repository.user.UserIdentityRepository;
 import site.billbill.apiserver.repository.user.UserRepository;
 
@@ -22,6 +24,7 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserIdentityRepository userIdentityRepository;
+    private final UserBlacklistRepository userBlacklistRepository;
     private final JWTUtil jWTUtil;
 
     @Override
@@ -46,5 +49,19 @@ public class UserServiceImpl implements UserService {
                 .nickname(user.get().getNickname())
                 .phoneNumber(userIdentity.get().getPhoneNumber())
                 .build();
+    }
+
+    @Override
+    public void blockUser(String userId) {
+        String currentUserId = MDC.get(JWTUtil.MDC_USER_ID);
+
+        UserBlacklistJpaEntity userBlacklist = UserBlacklistJpaEntity.builder()
+                .blacklistSeq(null)
+                .userId(currentUserId)
+                .blackedId(userId)
+                .delYn(false)
+                .build();
+
+        userBlacklistRepository.save(userBlacklist);
     }
 }
