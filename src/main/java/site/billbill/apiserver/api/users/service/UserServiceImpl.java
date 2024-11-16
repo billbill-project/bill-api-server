@@ -25,9 +25,14 @@ public class UserServiceImpl implements UserService {
     private final JWTUtil jWTUtil;
 
     @Override
-    public ProfileResponse getProfile() {
+    public ProfileResponse getProfileInfo() {
         String userId = MDC.get(JWTUtil.MDC_USER_ID);
 
+        return getProfileInfo(userId);
+    }
+
+    @Override
+    public ProfileResponse getProfileInfo(String userId) {
         Optional<UserJpaEntity> user = userRepository.findById(userId);
         Optional<UserIdentityJpaEntity> userIdentity = userIdentityRepository.findById(userId);
 

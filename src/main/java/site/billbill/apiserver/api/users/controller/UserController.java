@@ -28,9 +28,16 @@ public class UserController {
     private final UserService userService;
 
     @Operation(summary = "내 프로필 조회", description = "내 프로필 조회 API")
-    @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/profile")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/profile")
     public BaseResponse<ProfileResponse> profile() {
-        return new BaseResponse<ProfileResponse>(userService.getProfile());
+        return new BaseResponse<ProfileResponse>(userService.getProfileInfo());
+    }
+
+    @Operation(summary = "타 회원 프로필 조회", description = "타 회원 프로필 조회 API")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/profile/{userId}")
+    public BaseResponse<ProfileResponse> profile(@PathVariable String userId) {
+        return new BaseResponse<ProfileResponse>(userService.getProfileInfo(userId));
     }
 }
