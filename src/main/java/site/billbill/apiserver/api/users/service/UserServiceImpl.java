@@ -74,4 +74,15 @@ public class UserServiceImpl implements UserService {
 
         return userBlacklistRepository.getBlacklistByUserId(userId, pageable);
     }
+
+    @Override
+    public void blockCancel(String userId) {
+        String currentUserId = MDC.get(JWTUtil.MDC_USER_ID);
+
+        Optional<UserBlacklistJpaEntity> blacklist = userBlacklistRepository.findByUserIdAndBlackedId(currentUserId, userId);
+
+        if (blacklist.isEmpty()) throw new CustomException(ErrorCode.NotFound, "차단한 회원이 아닙니다.", HttpStatus.NOT_FOUND);
+
+        userBlacklistRepository.deleteById(blacklist.get().getBlacklistSeq());
+    }
 }

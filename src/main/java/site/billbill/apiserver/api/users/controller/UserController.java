@@ -65,4 +65,12 @@ public class UserController {
         Pageable pageable = PageRequest.of((page < 1 ? 0 : page - 1), size);
         return new BaseResponse<>(userService.getBlacklist(pageable));
     }
+
+    @Operation(summary = "차단 취소", description = "차단을 취소하는 API")
+    @ResponseStatus(HttpStatus.OK)
+    @DeleteMapping("/blacklist")
+    public BaseResponse<String> blacklist(@RequestBody BlacklistRequest request) {
+        userService.blockCancel(request.getUserId());
+        return new BaseResponse<>(null);
+    }
 }

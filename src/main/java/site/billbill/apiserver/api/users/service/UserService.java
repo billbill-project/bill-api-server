@@ -14,4 +14,6 @@ public interface UserService {
     void blockUser(String userId);
 
     List<BlacklistResponse> getBlacklist(Pageable pageable);
+
+    void blockCancel(String userId);
 }
