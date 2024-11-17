@@ -3,7 +3,7 @@ package site.billbill.apiserver.repository.user;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import site.billbill.apiserver.api.users.dto.response.BlacklistResponse;
@@ -13,7 +13,7 @@ import site.billbill.apiserver.model.user.QUserJpaEntity;
 import java.util.List;
 
 @Repository
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserBlacklistDslRepositoryImpl implements UserBlacklistDslRepository {
     private final JPAQueryFactory query;
 

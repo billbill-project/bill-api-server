@@ -16,4 +16,6 @@ public interface UserService {
     List<BlacklistResponse> getBlacklist(Pageable pageable);
 
     void blockCancel(String userId);
+
+    void withdraw();
 }

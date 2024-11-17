@@ -6,6 +6,7 @@ import org.slf4j.MDC;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import site.billbill.apiserver.api.users.dto.response.BlacklistResponse;
 import site.billbill.apiserver.api.users.dto.response.ProfileResponse;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
@@ -84,5 +85,17 @@ public class UserServiceImpl implements UserService {
         if (blacklist.isEmpty()) throw new CustomException(ErrorCode.NotFound, "차단한 회원이 아닙니다.", HttpStatus.NOT_FOUND);
 
         userBlacklistRepository.deleteById(blacklist.get().getBlacklistSeq());
+    }
+
+    @Override
+    @Transactional
+    public void withdraw() {
+        String userId = MDC.get(JWTUtil.MDC_USER_ID);
+
+        Optional<UserJpaEntity> user = userRepository.findById(userId);
+
+        if(user.isEmpty()) throw new CustomException(ErrorCode.NotFound, "존재하지 않는 회원입니다.", HttpStatus.NOT_FOUND);
+
+        userRepository.withdrawUserById(userId);
     }
 }

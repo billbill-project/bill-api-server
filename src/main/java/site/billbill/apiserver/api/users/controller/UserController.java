@@ -73,4 +73,12 @@ public class UserController {
         userService.blockCancel(request.getUserId());
         return new BaseResponse<>(null);
     }
+
+    @Operation(summary = "회원 탈퇴", description = "회원 탈퇴 API")
+    @ResponseStatus(HttpStatus.OK)
+    @DeleteMapping("/withdraw")
+    public BaseResponse<String> withdraw() {
+        userService.withdraw();
+        return new BaseResponse<>(null);
+    }
 }
