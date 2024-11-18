@@ -22,5 +22,6 @@ public class UserDslRepositoryImpl implements UserDslRepository {
                 .set(qUser.withdrawAt, OffsetDateTime.now())
                 .set(qUser.updatedAt, OffsetDateTime.now())
                 .execute();
+        
     }
 }
