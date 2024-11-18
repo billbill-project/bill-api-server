@@ -7,6 +7,7 @@ import site.billbill.apiserver.model.user.UserJpaEntity;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<UserJpaEntity, String> {
+public interface UserRepository extends JpaRepository<UserJpaEntity, String>, UserDslRepository {
     Optional<UserJpaEntity> findByUserIdAndWithdrawStatus(String userId, boolean withdrawStatus);
+    Optional<UserJpaEntity> findByProviderId(String providerId);
 }

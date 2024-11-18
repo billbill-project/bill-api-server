@@ -3,12 +3,13 @@ package site.billbill.apiserver.common.response;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.OffsetDateTime;
 
-@Data
+@Data @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class BaseResponse<T> {
@@ -22,7 +23,7 @@ public class BaseResponse<T> {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private OffsetDateTime responseAt = OffsetDateTime.now();
     @Schema(description = "응답 데이터")
-    private T data;
+    private T data = null;
 
     public BaseResponse(T data) {
         this.data = data;
