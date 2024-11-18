@@ -89,6 +89,12 @@ jobs:
               -e CLOUD_AWS_STACK_AUTO=false \
               -e SPRING_SERVLET_MULTIPART_MAXFILESIZE=${{secrets.SPRING_SERVLET_MULTIPART_MAXFILESIZE}} \
               -e SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE=${{secrets.SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE}} \
+              -e KAKAO_CLIENT_ID=${{secrets.KAKAO_CLIENT_ID}} \
+              -e KAKAO_REDIRECT_URI=${{secrets.KAKAO_REDIRECT_URI}} \
+              -e KAKAO_PROVIDER_AUTHORIZATION_URI=${{secrets.KAKAO_PROVIDER_AUTHORIZATION_URI}} \
+              -e KAKAO_PROVIDER_TOKEN_URI=${{secrets.KAKAO_PROVIDER_TOKEN_URI}} \
+              -e KAKAO_PROVIDER_USER_INFO_URI=${{secrets.KAKAO_PROVIDER_USER_INFO_URI}} \
+              -e PORTONE_API_SECRET=${{secrets.PORTONE_API_SECRET}}
               ${{ secrets.DOCKERHUB_USERNAME }}/bill-api:latest
   
             sudo docker rm $(sudo docker ps --filter 'status=exited' -a -q)
