@@ -35,7 +35,7 @@ public class S3Controller {
 
         }
         return switch (option) {
-            case "post" -> new BaseResponse<>(s3Service.uploadPostsFiles(images, userId,id));
+            case "post" -> new BaseResponse<>(s3Service.uploadPostsFiles(images, userId));
             case "chat" -> new BaseResponse<>(s3Service.uploadChatFiles(images, userId,id));
             case "user" -> new BaseResponse<>(s3Service.uploadUserFiles(images));
             default -> null;
