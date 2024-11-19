@@ -26,11 +26,9 @@ public class PostsRequest {
         private int itemStatus;
         @Schema(description = "게시물 내용", example = "게시물 입니다.")
         private String content;
-        @Schema(description = "이미지링크들", example = "{ //대여 불가능 날짜, \n" +
-                "\t\t\"startDate\": 2024-11-19,\n" +
-                "\t\t\"endDate\": 2024-11-23}")
+        @Schema(description = "이미지", example = "[\"이미지링크\",\"이미지링크\"]")
         private List<String> images;
-        @Schema(description = "대여불가기간", example = "[\"이미지링크\",\"이미지링크\"]")
+        
         private List<NoRentalPeriod> noRental;
 
     }
