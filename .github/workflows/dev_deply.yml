@@ -94,7 +94,7 @@ jobs:
               -e KAKAO_PROVIDER_AUTHORIZATION_URI=${{secrets.KAKAO_PROVIDER_AUTHORIZATION_URI}} \
               -e KAKAO_PROVIDER_TOKEN_URI=${{secrets.KAKAO_PROVIDER_TOKEN_URI}} \
               -e KAKAO_PROVIDER_USER_INFO_URI=${{secrets.KAKAO_PROVIDER_USER_INFO_URI}} \
-              -e PORTONE_API_SECRET=${{secrets.PORTONE_API_SECRET}}
+              -e PORTONE_API_SECRET=${{secrets.PORTONE_API_SECRET}} \
               ${{ secrets.DOCKERHUB_USERNAME }}/bill-api:latest
   
             sudo docker rm $(sudo docker ps --filter 'status=exited' -a -q)
