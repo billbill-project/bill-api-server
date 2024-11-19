@@ -21,7 +21,8 @@ public class ItemsExchangeJpaEntity extends BaseTime {
 
     @ManyToOne
     @MapsId
-    private ItemsJpaEntity items;
+    @JoinColumn(name="item_id")
+    private ItemsJpaEntity item;
     @Convert(converter = StringListConverter.class)
     @JoinColumn(name="wisiList",nullable = false)
     String wishList;

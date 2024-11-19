@@ -34,14 +34,14 @@ public class S3ServiceImpl implements S3Service {
     private String CHATS_IMG_DIR="chats/";
     private String USERS_IMG_DIR="users/";
     @Override
-    public S3Response.uploadResponse uploadPostsFiles(List<MultipartFile> files, String userId, long id){
+    public S3Response.uploadResponse uploadPostsFiles(List<MultipartFile> files, String userId){
 
         StringBuilder imgDir= new StringBuilder();
         imgDir.append(Posts_IMG_DIR)
                 .append(File.separator) // 운영 체제에 맞는 구분자를 추가
                 .append(userId)
                 .append(File.separator)
-                .append(id);
+                .append("posts");
         List<String>list= files.stream()
                 .map(file->{
                     try {

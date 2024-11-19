@@ -20,9 +20,10 @@ public class ItemsLocationJpaEntity extends BaseTime {
     @Column(name="item_id")
     private String id;
 
-    @MapsId
     @ManyToOne
-    private ItemsJpaEntity items;
+    @MapsId
+    @JoinColumn(name="item_id")
+    private ItemsJpaEntity item;
 
     @Column(name="address",nullable = false)
     private String address;

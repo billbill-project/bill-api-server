@@ -27,7 +27,8 @@ public class ItemsBorrowJpaEntity extends BaseTime {
     private String id;
     @OneToOne
     @MapsId
-    private ItemsJpaEntity items;
+    @JoinColumn(name="item_id")
+    private ItemsJpaEntity item;
     @Enumerated(EnumType.STRING)
     @Column(name = "price_standard")
     private PriceStandard priceStandard;
@@ -35,10 +36,5 @@ public class ItemsBorrowJpaEntity extends BaseTime {
     private int price;
     @Column(name="deposit",nullable = false)
     private int deposit;
-    @Column(name="start_date",nullable = false)
-    private LocalDate startDate;
-    @Column(name = "end_date", nullable = false)
-    private LocalDate endDate;
-    @Column(name ="borrow_satus_code")
-    private String borrowStatusCode;
+
 }

@@ -2,10 +2,7 @@ package site.billbill.apiserver.model.post;
 
 import io.micrometer.core.annotation.Counted;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import site.billbill.apiserver.common.converter.BooleanConverter;
 import site.billbill.apiserver.common.converter.StringListConverter;
 import site.billbill.apiserver.model.BaseTime;
@@ -20,6 +17,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ItemsJpaEntity extends BaseTime {
     @Id
     @Column(name = "item_id", nullable = false)
@@ -39,5 +37,7 @@ public class ItemsJpaEntity extends BaseTime {
     @Column(name = "del_yn", nullable = false)
     @Convert(converter = BooleanConverter.class)
     private boolean delYn;
+    @Column(name="item_status",nullable = false)
+    private int itemStatus;
 
 }
