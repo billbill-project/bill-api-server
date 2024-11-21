@@ -46,31 +46,31 @@ public class ItemDslRepositoryImpl implements ItemDslRepository{
         }
 
         // 정렬 조건
-        if (sortField != null && !"price".equals(sortField)) { // price 테스트 제외
+        if (sortField != null) {
             OrderSpecifier<?> orderSpecifier = getOrderSpecifier(sortField, pageable.getSort().getOrderFor(sortField));
             if (orderSpecifier != null) {
                 query.orderBy(orderSpecifier);
             } else {
                 log.warn("Invalid sort field: {}, no sorting applied.", sortField);
             }
-        }
+}
 
         // 페이징 처리
         List<ItemsJpaEntity> content = query.offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        log.info("Fetched Content Size: {}", content.size());
+        log.info("얻은 콘텐츠 사이즈: {}", content.size());
 
         long total = queryFactory.selectFrom(items)
                 .where(items.delYn.isFalse())
                 .fetchCount();
 
-        log.info("Total Items Count: {}", total);
+        log.info("아이템의 사이즈: {}", total);
 
         // 페이징 초과 방지
         if (pageable.getOffset() >= total) {
-            log.warn("Requested page exceeds total items. Returning empty result.");
+            log.warn("전체 아이템보다 요구 페이지가 많습빈다.");
             return new PageImpl<>(List.of(), pageable, total);
         }
 
