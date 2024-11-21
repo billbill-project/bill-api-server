@@ -1,8 +1,13 @@
 package site.billbill.apiserver.api.borrowPosts.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import site.billbill.apiserver.api.borrowPosts.controller.PostsController;
 import site.billbill.apiserver.api.borrowPosts.converter.PostsConverter;
 import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
@@ -14,9 +19,11 @@ import site.billbill.apiserver.model.post.ItemsJpaEntity;
 import site.billbill.apiserver.model.user.UserJpaEntity;
 import site.billbill.apiserver.repository.borrowPosts.ItemsBorrowRepository;
 import site.billbill.apiserver.repository.borrowPosts.ItemsBorrowStatusRepository;
+import site.billbill.apiserver.repository.borrowPosts.ItemsCategoryRepository;
 import site.billbill.apiserver.repository.borrowPosts.ItemsRepository;
 import site.billbill.apiserver.repository.user.UserRepository;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -32,6 +39,7 @@ public class PostsServiceImpl implements PostsService {
     private final ItemsRepository itemsRepository;
     private final ItemsBorrowRepository itemsBorrowRepository;
     private final ItemsBorrowStatusRepository itemsBorrowStatusRepository;
+    private  final ItemsCategoryRepository itemsCategoryRepository;
     public PostsResponse.UploadResponse uploadPostService(PostsRequest.UploadRequest request,String userId){
         //먼저 item 생성,
         Optional<UserJpaEntity> isUser=userRepository.findById(userId);
@@ -61,8 +69,45 @@ public class PostsServiceImpl implements PostsService {
         return PostsConverter.toUploadResponse(postsId);
 
 
+    }
+    public PostsResponse.ViewAllResultResponse ViewAllPostService(
+            String category, int page, Sort.Direction direction, String orderType) {
 
+        // 기본 정렬 필드와 방향 설정
+        String sortField = switch (orderType) {
+            case "price" -> "price";
+            case "createdAt" -> "createdAt";
+            case "likeCount" -> "likeCount";
+            default -> "createdAt"; // 기본 정렬
+        };
 
+        direction = (direction == null) ? Sort.Direction.DESC : direction;
 
+        Pageable pageable = PageRequest.of(
+                Math.max(0, page - 1), // 페이지 번호 조정 (0부터 시작)
+                20,
+                Sort.by(direction, sortField)
+        );
+
+        // Repository 호출
+        Page<ItemsJpaEntity> itemsPage = itemsRepository.findItemsWithConditions(category, pageable, sortField);
+
+        // 빈 결과 체크
+        if (itemsPage.isEmpty()) {
+            log.warn("No items found for category: {}, page: {}, sortField: {}", category, page, sortField);
+            return PostsConverter.toViewAllList(List.of());
+        }
+
+        // 데이터 변환
+        List<PostsResponse.Post> borrowItems = itemsPage.getContent().stream()
+                .map(item -> {
+                    ItemsBorrowJpaEntity borrowItem = itemsBorrowRepository.findById(item.getId()).orElse(null);
+                    if (borrowItem == null) {
+                        log.warn("No borrow item found for item ID: {}", item.getId());
+                    }
+                    return PostsConverter.toPost(item, borrowItem);
+                }).toList();
+
+        return PostsConverter.toViewAllList(borrowItems);
     }
 }

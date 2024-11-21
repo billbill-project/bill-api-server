@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jboss.logging.MDC;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
 import site.billbill.apiserver.api.borrowPosts.dto.response.PostsResponse;
@@ -29,6 +30,14 @@ public class PostsController {
 
         return new BaseResponse<>(postsService.uploadPostService(request,userId));
 
+    }
+    @GetMapping("")
+    public BaseResponse<PostsResponse.ViewAllResultResponse> getPostsController(@RequestParam(value ="category",required = false,defaultValue = "entire") String category,
+                                                                                @RequestParam(value ="page",required = false,defaultValue = "1") int page, @RequestParam(value ="order",required = false,defaultValue = "desc") String order,@RequestParam(value="sortBy",required = true,defaultValue = "accuracy") String sortBy){
+
+
+        Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        return new BaseResponse<>(postsService.ViewAllPostService(category,page,direction,sortBy));
     }
 
 }

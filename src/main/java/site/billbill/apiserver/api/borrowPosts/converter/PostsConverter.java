@@ -9,8 +9,12 @@ import site.billbill.apiserver.model.post.ItemsJpaEntity;
 import site.billbill.apiserver.model.user.UserJpaEntity;
 import site.billbill.apiserver.repository.borrowPosts.ItemsBorrowStatusRepository;
 
-public class PostsConverter {
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
 
+public class PostsConverter {
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     public static PostsResponse.UploadResponse toUploadResponse(String id){
         return PostsResponse.UploadResponse.builder().
                 postId(id).
@@ -41,6 +45,24 @@ public class PostsConverter {
                 .borrowStatusCode(status)
                 .item(item)
                 .build();
+    }
+
+    public static PostsResponse.Post toPost(ItemsJpaEntity item,ItemsBorrowJpaEntity borrowItem){
+        return PostsResponse.Post.builder()
+                .postId(item.getId())
+                .image(Optional.ofNullable(item.getImages())
+                        .filter(images -> !images.isEmpty())
+                        .map(images -> images.get(0))
+                        .orElse(null))
+                .price(borrowItem.getPrice())
+                .userId(item.getOwner().getUserId())
+                .userName(item.getOwner().getNickname())
+                .createdAt(item.getCreatedAt().format(DATE_TIME_FORMATTER))
+                .likeCount(item.getLikeCount())
+                .build();
+    }
+    public static PostsResponse.ViewAllResultResponse toViewAllList(List<PostsResponse.Post> posts){
+        return PostsResponse.ViewAllResultResponse.builder().result(posts).build();
     }
 
 }

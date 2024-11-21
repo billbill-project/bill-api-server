@@ -33,11 +33,16 @@ public class ItemsJpaEntity extends BaseTime {
     @Column(name="content",nullable = false)
     private String content;
     @Column(name="like_count",nullable = false)
+    private int likeCount;
+    @Column(name="view_count",nullable = false)
     private int viewCount;
     @Column(name = "del_yn", nullable = false)
     @Convert(converter = BooleanConverter.class)
     private boolean delYn;
     @Column(name="item_status",nullable = false)
     private int itemStatus;
+    @ManyToOne
+    @JoinColumn(name="category_id")
+    private ItemsCategoryJpaEntity category;
 
 }
