@@ -8,11 +8,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import site.billbill.apiserver.api.borrowPosts.controller.PostsController;
 import site.billbill.apiserver.api.borrowPosts.converter.PostsConverter;
 import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
 import site.billbill.apiserver.api.borrowPosts.dto.response.PostsResponse;
+import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.ULID.ULIDUtil;
+import site.billbill.apiserver.exception.CustomException;
 import site.billbill.apiserver.model.post.ItemsBorrowJpaEntity;
 import site.billbill.apiserver.model.post.ItemsBorrowStatusJpaEntity;
 import site.billbill.apiserver.model.post.ItemsJpaEntity;
@@ -116,6 +119,9 @@ public class PostsServiceImpl implements PostsService {
         ItemsBorrowJpaEntity borrowItem=itemsBorrowRepository.findById(postId).orElse(null);
         List<ItemsBorrowStatusJpaEntity> borrowStatus=itemsBorrowStatusRepository.findAllByItemIdAndBorrowStatusCode(postId,"RENTAL_NOT_POSSIBLE");
         List<PostsResponse.NoRentalPeriodResponse> noRentalPeriods=borrowStatus.stream().map(PostsConverter::toNoRentalPeriod).toList();
+        if(item==null){
+            throw new CustomException(ErrorCode.BadRequest, "올바른 게시물 아이디가 아닙니다.", HttpStatus.BAD_REQUEST);
+        }
         String status="";
         switch(item.getItemStatus()){
             case 1:
