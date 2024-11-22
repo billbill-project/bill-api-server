@@ -52,5 +52,11 @@ public class PostsController {
         Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
         return new BaseResponse<>(postsService.ViewAllPostService(category,page,direction,sortBy));
     }
+    @GetMapping("/{postId}")
+    public BaseResponse<PostsResponse.ViewPostResponse> getPostController(@PathVariable(value = "postId",required = true)String postId){
+
+        return new BaseResponse<>(postsService.ViewPostService(postId));
+    }
+
 
 }

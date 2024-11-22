@@ -8,4 +8,6 @@ public interface PostsService {
     PostsResponse.UploadResponse uploadPostService(PostsRequest.UploadRequest request,String userId);
 
     PostsResponse.ViewAllResultResponse ViewAllPostService(String category, int page, Sort.Direction direction, String orderType);
+
+    PostsResponse.ViewPostResponse ViewPostService(String postId);
 }

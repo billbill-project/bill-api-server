@@ -2,16 +2,16 @@ package site.billbill.apiserver.api.borrowPosts.converter;
 
 import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
 import site.billbill.apiserver.api.borrowPosts.dto.response.PostsResponse;
-import site.billbill.apiserver.common.enums.items.PriceStandard;
 import site.billbill.apiserver.model.post.ItemsBorrowJpaEntity;
 import site.billbill.apiserver.model.post.ItemsBorrowStatusJpaEntity;
 import site.billbill.apiserver.model.post.ItemsJpaEntity;
 import site.billbill.apiserver.model.user.UserJpaEntity;
-import site.billbill.apiserver.repository.borrowPosts.ItemsBorrowStatusRepository;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+
+import static com.mysql.cj.util.TimeUtil.DATE_FORMATTER;
 
 public class PostsConverter {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -63,6 +63,27 @@ public class PostsConverter {
     }
     public static PostsResponse.ViewAllResultResponse toViewAllList(List<PostsResponse.Post> posts){
         return PostsResponse.ViewAllResultResponse.builder().result(posts).build();
+    }
+    public static PostsResponse.ViewPostResponse toViewPost(ItemsJpaEntity item, ItemsBorrowJpaEntity borrowItem, List<PostsResponse.NoRentalPeriodResponse> noRental, String status){
+        return PostsResponse.ViewPostResponse.builder()
+                .postId(item.getId())
+                .title(item.getTitle())
+                .content(item.getContent())
+                .images(item.getImages())
+                .price(borrowItem.getPrice())
+                .priceStandard(borrowItem.getPriceStandard())
+                .deposit(borrowItem.getDeposit())
+                .noRentalPeriod(noRental)
+                .itemStatus(status)
+                .categoryId(item.getCategory().getId())
+                .categoryName(item.getCategory().getName())
+                .build();
+    }
+    public static PostsResponse.NoRentalPeriodResponse toNoRentalPeriod(ItemsBorrowStatusJpaEntity borrowStatus){
+        return PostsResponse.NoRentalPeriodResponse.builder()
+                .startDate(borrowStatus.getStartDate().format(DATE_FORMATTER))
+                .endDate(borrowStatus.getEndDate().format(DATE_FORMATTER))
+                .build();
     }
 
 }
