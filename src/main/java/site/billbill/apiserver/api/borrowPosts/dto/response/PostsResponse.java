@@ -44,7 +44,16 @@ public class PostsResponse {
         private int price;
         private PriceStandard priceStandard;
         private int deposit;
-        private List<PostsRequest.NoRentalPeriod> noRentalPeriod;
+        private List<NoRentalPeriodResponse> noRentalPeriod;
+        private String categoryId;
+        private String categoryName;
 
+    }
+    @Getter
+    @Setter
+    @Builder
+    public static class NoRentalPeriodResponse{
+        private String startDate;
+        private String endDate;
     }
 }

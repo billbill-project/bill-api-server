@@ -115,7 +115,7 @@ public class PostsServiceImpl implements PostsService {
         ItemsJpaEntity item=itemsRepository.findById(postId).orElse(null);
         ItemsBorrowJpaEntity borrowItem=itemsBorrowRepository.findById(postId).orElse(null);
         List<ItemsBorrowStatusJpaEntity> borrowStatus=itemsBorrowStatusRepository.findAllByItemIdAndBorrowStatusCode(postId,"RENTAL_NOT_POSSIBLE");
-        List<PostsRequest.NoRentalPeriod> noRentalPeriods=borrowStatus.stream().map(PostsConverter::toNoRentalPeriod).toList();
+        List<PostsResponse.NoRentalPeriodResponse> noRentalPeriods=borrowStatus.stream().map(PostsConverter::toNoRentalPeriod).toList();
         String status="";
         switch(item.getItemStatus()){
             case 1:
