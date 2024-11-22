@@ -10,4 +10,6 @@ public interface PostsService {
     PostsResponse.ViewAllResultResponse ViewAllPostService(String category, int page, Sort.Direction direction, String orderType);
 
     PostsResponse.ViewPostResponse ViewPostService(String postId);
+
+    String deletePostService(String postId,String userId);
 }

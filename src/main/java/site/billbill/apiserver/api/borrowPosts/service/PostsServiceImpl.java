@@ -143,7 +143,19 @@ public class PostsServiceImpl implements PostsService {
         }
         return PostsConverter.toViewPost(item,borrowItem,noRentalPeriods,status);
 
+    }
 
+    public String deletePostService(String postId,String userId){
+        ItemsJpaEntity item= itemsRepository.findById(postId).orElse(null);
+        UserJpaEntity user=userRepository.findById(userId).orElse(null);
+        if(item==null){
+            throw new CustomException(ErrorCode.BadRequest, "올바른 게시물 아이디가 아닙니다.", HttpStatus.BAD_REQUEST);
+        }else if(!item.getOwner().equals(user)){
+            throw new CustomException(ErrorCode.BadRequest, "해당 게시물 작성자가 아닙니다.", HttpStatus.BAD_REQUEST);
+        }
 
+        
+
+        return "Succes";
     }
 }
