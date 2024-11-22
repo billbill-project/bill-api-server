@@ -110,4 +110,34 @@ public class PostsServiceImpl implements PostsService {
 
         return PostsConverter.toViewAllList(borrowItems);
     }
+
+    public PostsResponse.ViewPostResponse ViewPostService(String postId){
+        ItemsJpaEntity item=itemsRepository.findById(postId).orElse(null);
+        ItemsBorrowJpaEntity borrowItem=itemsBorrowRepository.findById(postId).orElse(null);
+        List<ItemsBorrowStatusJpaEntity> borrowStatus=itemsBorrowStatusRepository.findAllByItemIdAndBorrowStatusCode(postId,"RENTAL_NOT_POSSIBLE");
+        List<PostsRequest.NoRentalPeriod> noRentalPeriods=borrowStatus.stream().map(PostsConverter::toNoRentalPeriod).toList();
+        String status="";
+        switch(item.getItemStatus()){
+            case 1:
+                status="상";
+                break;
+            case 2:
+                status="중상";
+                break;
+            case 3:
+                status="중";
+                break;
+            case 4:
+                status="중하";
+                break;
+            case 5:
+                status="하";
+                break;
+
+        }
+        return PostsConverter.toViewPost(item,borrowItem,noRentalPeriods,status);
+
+
+
+    }
 }

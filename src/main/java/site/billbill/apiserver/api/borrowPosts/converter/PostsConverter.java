@@ -64,5 +64,24 @@ public class PostsConverter {
     public static PostsResponse.ViewAllResultResponse toViewAllList(List<PostsResponse.Post> posts){
         return PostsResponse.ViewAllResultResponse.builder().result(posts).build();
     }
+    public static PostsResponse.ViewPostResponse toViewPost(ItemsJpaEntity item, ItemsBorrowJpaEntity borrowItem,List<PostsRequest.NoRentalPeriod> noRental,String status){
+        return PostsResponse.ViewPostResponse.builder()
+                .postId(item.getId())
+                .title(item.getTitle())
+                .content(item.getContent())
+                .images(item.getImages())
+                .price(borrowItem.getPrice())
+                .priceStandard(borrowItem.getPriceStandard())
+                .deposit(borrowItem.getDeposit())
+                .noRentalPeriod(noRental)
+                .itemStatus(status)
+                .build();
+    }
+    public static PostsRequest.NoRentalPeriod toNoRentalPeriod(ItemsBorrowStatusJpaEntity borrowStatus){
+        return PostsRequest.NoRentalPeriod.builder()
+                .startDate(borrowStatus.getStartDate())
+                .endDate(borrowStatus.getEndDate())
+                .build();
+    }
 
 }
