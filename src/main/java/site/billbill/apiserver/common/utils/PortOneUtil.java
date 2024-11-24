@@ -13,8 +13,8 @@ import site.billbill.apiserver.api.auth.dto.request.IdentityVerificationRequest;
 @RequiredArgsConstructor
 @AllArgsConstructor
 public class PortOneUtil {
-    @Value("${portone.api-secret}")
-    private String apiSecret;
+//    @Value("${portone.api-secret}")
+//    private String apiSecret;
     private WebClient webClient = WebClient.builder().baseUrl("https://api.portone.io").build();
 
     public boolean getIdentityVerification(IdentityVerificationRequest request) {

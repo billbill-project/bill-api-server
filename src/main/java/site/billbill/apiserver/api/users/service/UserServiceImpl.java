@@ -8,13 +8,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import site.billbill.apiserver.api.users.dto.response.BlacklistResponse;
+import site.billbill.apiserver.api.users.dto.response.BorrowHistoryResponse;
+import site.billbill.apiserver.api.users.dto.response.PostHistoryResponse;
 import site.billbill.apiserver.api.users.dto.response.ProfileResponse;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.jwt.JWTUtil;
+import site.billbill.apiserver.common.utils.posts.ItemHistoryType;
 import site.billbill.apiserver.exception.CustomException;
 import site.billbill.apiserver.model.user.UserBlacklistJpaEntity;
 import site.billbill.apiserver.model.user.UserIdentityJpaEntity;
 import site.billbill.apiserver.model.user.UserJpaEntity;
+import site.billbill.apiserver.repository.borrowPosts.ItemsRepository;
 import site.billbill.apiserver.repository.user.UserBlacklistRepository;
 import site.billbill.apiserver.repository.user.UserIdentityRepository;
 import site.billbill.apiserver.repository.user.UserRepository;
@@ -29,6 +33,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserIdentityRepository userIdentityRepository;
     private final UserBlacklistRepository userBlacklistRepository;
+    private final ItemsRepository itemsRepository;
     private final JWTUtil jWTUtil;
 
     @Override
@@ -94,8 +99,34 @@ public class UserServiceImpl implements UserService {
 
         Optional<UserJpaEntity> user = userRepository.findById(userId);
 
-        if(user.isEmpty()) throw new CustomException(ErrorCode.NotFound, "존재하지 않는 회원입니다.", HttpStatus.NOT_FOUND);
+        if (user.isEmpty()) throw new CustomException(ErrorCode.NotFound, "존재하지 않는 회원입니다.", HttpStatus.NOT_FOUND);
 
         userRepository.withdrawUserById(userId);
+    }
+
+    @Override
+    public List<PostHistoryResponse> getPostHistory(Pageable pageable) {
+        String userId = MDC.get(JWTUtil.MDC_USER_ID);
+
+        return itemsRepository.getPostHistory(userId, pageable);
+    }
+
+    @Override
+    public List<BorrowHistoryResponse> getPostHistory(Pageable pageable, ItemHistoryType type) {
+        String userId = MDC.get(JWTUtil.MDC_USER_ID);
+
+        List<BorrowHistoryResponse> borrowHistoryList;
+
+//        switch (type) {
+//            case BORROWED:
+//                borrowHistoryList =
+//                break;
+//            case BORROWING:
+//                break;
+//            case EXCHANGE:
+//                break;
+//        }
+
+        return itemsRepository.getBorrowHistory(userId,pageable,type);
     }
 }
