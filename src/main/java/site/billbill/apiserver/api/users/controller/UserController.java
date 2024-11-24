@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import site.billbill.apiserver.api.users.dto.request.BlacklistRequest;
 import site.billbill.apiserver.api.users.dto.response.BlacklistResponse;
+import site.billbill.apiserver.api.users.dto.response.PostHistoryResponse;
 import site.billbill.apiserver.api.users.dto.response.ProfileResponse;
 import site.billbill.apiserver.api.users.service.UserService;
 import site.billbill.apiserver.common.response.BaseResponse;
@@ -80,5 +81,16 @@ public class UserController {
     public BaseResponse<String> withdraw() {
         userService.withdraw();
         return new BaseResponse<>(null);
+    }
+
+    @Operation(summary = "대여중인 글 조회", description = "대여중인 글 조회 API")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/posts/borrowPosts")
+    public BaseResponse<List<PostHistoryResponse>> postsHistory(
+            @RequestParam(name = "size", defaultValue = "20") int size,
+            @RequestParam(name = "page", defaultValue = "1") int page
+    ) {
+        Pageable pageable = PageRequest.of((page < 1 ? 0 : page - 1), size);
+        return new BaseResponse<>(userService.getPostHistory(pageable));
     }
 }

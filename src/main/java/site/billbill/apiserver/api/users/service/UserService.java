@@ -2,6 +2,7 @@ package site.billbill.apiserver.api.users.service;
 
 import org.springframework.data.domain.Pageable;
 import site.billbill.apiserver.api.users.dto.response.BlacklistResponse;
+import site.billbill.apiserver.api.users.dto.response.PostHistoryResponse;
 import site.billbill.apiserver.api.users.dto.response.ProfileResponse;
 
 import java.util.List;
@@ -18,4 +19,6 @@ public interface UserService {
     void blockCancel(String userId);
 
     void withdraw();
+
+    List<PostHistoryResponse>  getPostHistory(Pageable pageable);
 }

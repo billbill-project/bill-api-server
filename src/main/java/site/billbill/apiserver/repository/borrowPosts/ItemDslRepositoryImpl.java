@@ -1,6 +1,9 @@
 package site.billbill.apiserver.repository.borrowPosts;
 
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -9,15 +12,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import site.billbill.apiserver.model.post.ItemsJpaEntity;
-import site.billbill.apiserver.model.post.QItemsBorrowJpaEntity;
-import site.billbill.apiserver.model.post.QItemsCategoryJpaEntity;
-import site.billbill.apiserver.model.post.QItemsJpaEntity;
+import site.billbill.apiserver.api.users.dto.response.PostHistoryResponse;
+import site.billbill.apiserver.model.chat.QChatChannelJpaEntity;
+import site.billbill.apiserver.model.post.*;
 
 import java.util.List;
+
 @Slf4j
 @RequiredArgsConstructor
-public class ItemDslRepositoryImpl implements ItemDslRepository{
+public class ItemDslRepositoryImpl implements ItemDslRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
@@ -53,7 +56,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository{
             } else {
                 log.warn("Invalid sort field: {}, no sorting applied.", sortField);
             }
-}
+        }
 
         // 페이징 처리
         List<ItemsJpaEntity> content = query.offset(pageable.getOffset())
@@ -95,5 +98,35 @@ public class ItemDslRepositoryImpl implements ItemDslRepository{
         }
     }
 
+    @Override
+    public List<PostHistoryResponse> getPostHistory(String userId, Pageable pageable) {
+        QItemsJpaEntity qItems = QItemsJpaEntity.itemsJpaEntity;
+        QitemsLikeJpaEntity qLike = QitemsLikeJpaEntity.itemsLikeJpaEntity;
+        QChatChannelJpaEntity qChatChannel = QChatChannelJpaEntity.chatChannelJpaEntity;
 
+        JPAQuery<PostHistoryResponse> qb = queryFactory.select(
+                        Projections.constructor(
+                                PostHistoryResponse.class,
+                                qItems.id,
+                                qItems.images,
+                                qItems.title,
+                                qItems.itemStatus,
+                                qLike.countDistinct().as("likeCount"),  // 좋아요 수
+                                qChatChannel.countDistinct().as("chatCount"),  // 채팅 수
+                                qItems.viewCount,
+                                qItems.createdAt,
+                                qItems.updatedAt
+                        )
+                )
+                .from(qItems)
+                .leftJoin(qLike).on(qItems.id.eq(qLike.items.id).and(qLike.delYn.isFalse()))
+                .leftJoin(qChatChannel).on(qItems.id.eq(qChatChannel.item.id).and(qChatChannel.delYn.isFalse()))
+                .where(qItems.owner.userId.eq(userId)
+                        .and(qItems.delYn.isFalse()))
+                .groupBy(qItems.id)  // 그룹핑 필요
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize());
+
+        return qb.fetch();
+    }
 }
