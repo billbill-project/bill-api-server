@@ -13,10 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import site.billbill.apiserver.api.users.dto.request.BlacklistRequest;
-import site.billbill.apiserver.api.users.dto.response.BlacklistResponse;
-import site.billbill.apiserver.api.users.dto.response.BorrowHistoryResponse;
-import site.billbill.apiserver.api.users.dto.response.PostHistoryResponse;
-import site.billbill.apiserver.api.users.dto.response.ProfileResponse;
+import site.billbill.apiserver.api.users.dto.response.*;
 import site.billbill.apiserver.api.users.service.UserService;
 import site.billbill.apiserver.common.response.BaseResponse;
 import site.billbill.apiserver.common.utils.posts.ItemHistoryType;
@@ -97,7 +94,7 @@ public class UserController {
         return new BaseResponse<>(userService.getPostHistory(pageable));
     }
 
-    @Operation(summary = "내 대여 기록 보기", description = "내 대여기록 보기 API")
+    @Operation(summary = "내 대여기록 조회", description = "내 대여기록 조회 API")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/history/{type}")
     public BaseResponse<List<BorrowHistoryResponse>> postsHistory(
@@ -107,5 +104,16 @@ public class UserController {
     ) {
         Pageable pageable = PageRequest.of((page < 1 ? 0 : page - 1), size);
         return new BaseResponse<>(userService.getPostHistory(pageable, type));
+    }
+
+    @Operation(summary = "내 위시리스트 조회", description = "내 위시리스트 조회 API")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/wishlists")
+    public BaseResponse<List<WishlistResponse>> getWishlists(
+            @RequestParam(name = "size", defaultValue = "20") int size,
+            @RequestParam(name = "page", defaultValue = "1") int page
+    ) {
+        Pageable pageable = PageRequest.of((page < 1 ? 0 : page - 1), size);
+        return new BaseResponse<>(userService.getWishlists(pageable));
     }
 }
