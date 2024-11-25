@@ -7,10 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import site.billbill.apiserver.api.users.dto.response.BlacklistResponse;
-import site.billbill.apiserver.api.users.dto.response.BorrowHistoryResponse;
-import site.billbill.apiserver.api.users.dto.response.PostHistoryResponse;
-import site.billbill.apiserver.api.users.dto.response.ProfileResponse;
+import site.billbill.apiserver.api.users.dto.response.*;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.jwt.JWTUtil;
 import site.billbill.apiserver.common.utils.posts.ItemHistoryType;
@@ -57,6 +54,7 @@ public class UserServiceImpl implements UserService {
                 .profileImage(user.get().getProfile())
                 .nickname(user.get().getNickname())
                 .phoneNumber(userIdentity.get().getPhoneNumber())
+                .provider(user.get().getProvider())
                 .build();
     }
 
@@ -115,18 +113,13 @@ public class UserServiceImpl implements UserService {
     public List<BorrowHistoryResponse> getPostHistory(Pageable pageable, ItemHistoryType type) {
         String userId = MDC.get(JWTUtil.MDC_USER_ID);
 
-        List<BorrowHistoryResponse> borrowHistoryList;
+        return itemsRepository.getBorrowHistory(userId, pageable, type);
+    }
 
-//        switch (type) {
-//            case BORROWED:
-//                borrowHistoryList =
-//                break;
-//            case BORROWING:
-//                break;
-//            case EXCHANGE:
-//                break;
-//        }
+    @Override
+    public List<WishlistResponse> getWishlists(Pageable pageable) {
+        String userId = MDC.get(JWTUtil.MDC_USER_ID);
 
-        return itemsRepository.getBorrowHistory(userId,pageable,type);
+        return itemsRepository.getWishlists(userId, pageable);
     }
 }

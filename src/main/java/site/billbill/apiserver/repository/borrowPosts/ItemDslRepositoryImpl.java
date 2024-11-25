@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import site.billbill.apiserver.api.users.dto.response.BorrowHistoryResponse;
 import site.billbill.apiserver.api.users.dto.response.PostHistoryResponse;
+import site.billbill.apiserver.api.users.dto.response.WishlistResponse;
 import site.billbill.apiserver.common.utils.posts.ItemHistoryType;
 import site.billbill.apiserver.model.chat.QChatChannelJpaEntity;
 import site.billbill.apiserver.model.post.*;
@@ -171,6 +172,39 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
         }
 
         qb.groupBy(qItems.id)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize());
+
+        return qb.fetch();
+    }
+
+    @Override
+    public List<WishlistResponse> getWishlists(String userId, Pageable pageable) {
+        QItemsJpaEntity qItems = QItemsJpaEntity.itemsJpaEntity;
+        QitemsLikeJpaEntity qLike = QitemsLikeJpaEntity.itemsLikeJpaEntity;
+        QChatChannelJpaEntity qChatChannel = QChatChannelJpaEntity.chatChannelJpaEntity;
+
+        JPAQuery<WishlistResponse> qb = queryFactory.select(
+                        Projections.constructor(
+                                WishlistResponse.class,
+                                qItems.id,
+                                qItems.owner.userId,
+                                qItems.images,
+                                qItems.title,
+                                qItems.itemStatus,
+                                qLike.countDistinct().as("likeCount"),
+                                qChatChannel.countDistinct().as("chatCount"),
+                                qItems.viewCount,
+                                qItems.createdAt,
+                                qItems.updatedAt
+                        )
+                )
+                .from(qItems)
+                .leftJoin(qLike).on(qItems.id.eq(qLike.items.id).and(qLike.delYn.isFalse()))
+                .leftJoin(qChatChannel).on(qItems.id.eq(qChatChannel.item.id).and(qChatChannel.delYn.isFalse()))
+                .where(qLike.user.userId.eq(userId)
+                        .and(qItems.delYn.isFalse()))
+                .groupBy(qItems.id)  // 그룹핑 필요
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize());
 
