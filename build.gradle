@@ -52,8 +52,12 @@ dependencies {
     runtimeOnly 'com.mysql:mysql-connector-j'
     implementation 'com.mysql:mysql-connector-j'
 
+    // Firebase
+    implementation 'com.google.firebase:firebase-admin:9.2.0'           // Google Firebase Admin
+
     // Jackson
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.16.1'     // Jackson Data Bind
 
     // QueryDsl
     implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
