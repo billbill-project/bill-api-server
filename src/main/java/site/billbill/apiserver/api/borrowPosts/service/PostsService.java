@@ -12,4 +12,5 @@ public interface PostsService {
     PostsResponse.ViewPostResponse ViewPostService(String postId);
 
     String deletePostService(String postId,String userId);
+    String UpdatePostService(String postId,String userId,PostsRequest.UploadRequest request);
 }

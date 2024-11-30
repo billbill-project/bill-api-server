@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
 import site.billbill.apiserver.api.borrowPosts.controller.PostsController;
 import site.billbill.apiserver.api.borrowPosts.converter.PostsConverter;
 import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
@@ -18,6 +19,7 @@ import site.billbill.apiserver.common.utils.ULID.ULIDUtil;
 import site.billbill.apiserver.exception.CustomException;
 import site.billbill.apiserver.model.post.ItemsBorrowJpaEntity;
 import site.billbill.apiserver.model.post.ItemsBorrowStatusJpaEntity;
+import site.billbill.apiserver.model.post.ItemsCategoryJpaEntity;
 import site.billbill.apiserver.model.post.ItemsJpaEntity;
 import site.billbill.apiserver.model.user.UserJpaEntity;
 import site.billbill.apiserver.repository.borrowPosts.ItemsBorrowRepository;
@@ -35,7 +37,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 
 @Slf4j
-
 public class PostsServiceImpl implements PostsService {
 
     private final UserRepository userRepository;
@@ -47,13 +48,13 @@ public class PostsServiceImpl implements PostsService {
         //먼저 item 생성,
         Optional<UserJpaEntity> isUser=userRepository.findById(userId);
         String postsId = ULIDUtil.generatorULID("BORROW");
-
+        ItemsCategoryJpaEntity category = itemsCategoryRepository.findByName(request.getCategory());
         UserJpaEntity user=new UserJpaEntity();
         if(isUser.isPresent()){
             user=isUser.get();
         }
         //Item 생성
-        ItemsJpaEntity newItem= PostsConverter.toItem(postsId,request,user);
+        ItemsJpaEntity newItem= PostsConverter.toItem(postsId,request,user,category);
         itemsRepository.save(newItem);
         ItemsJpaEntity item=itemsRepository.findById(postsId).orElse(newItem);
         //BorrowItem 생성
@@ -144,7 +145,7 @@ public class PostsServiceImpl implements PostsService {
         return PostsConverter.toViewPost(item,borrowItem,noRentalPeriods,status);
 
     }
-
+    @Transactional
     public String deletePostService(String postId,String userId){
         ItemsJpaEntity item= itemsRepository.findById(postId).orElse(null);
         UserJpaEntity user=userRepository.findById(userId).orElse(null);
@@ -154,8 +155,42 @@ public class PostsServiceImpl implements PostsService {
             throw new CustomException(ErrorCode.BadRequest, "해당 게시물 작성자가 아닙니다.", HttpStatus.BAD_REQUEST);
         }
 
-        
+        item.setDelYn(true);
+
 
         return "Succes";
+    }
+    @Transactional
+    public String UpdatePostService(String postId,String userId,PostsRequest.UploadRequest request) {
+        ItemsJpaEntity item = itemsRepository.findById(postId).orElse(null);
+        UserJpaEntity user = userRepository.findById(userId).orElse(null);
+        ItemsCategoryJpaEntity category = itemsCategoryRepository.findByName(request.getCategory());
+        ItemsBorrowJpaEntity borrowItem = itemsBorrowRepository.findById(postId).orElse(null);
+
+        if (item == null) {
+            throw new CustomException(ErrorCode.BadRequest, "올바른 게시물 아이디가 아닙니다.", HttpStatus.BAD_REQUEST);
+        } else if (!item.getOwner().equals(user)) {
+            throw new CustomException(ErrorCode.BadRequest, "해당 게시물 작성자가 아닙니다.", HttpStatus.BAD_REQUEST);
+        }
+
+        item.setTitle(request.getTitle());
+        item.setImages(request.getImages());
+        item.setItemStatus(request.getItemStatus());
+        item.setCategory(category);
+        item.setContent(request.getContent());
+        borrowItem.setDeposit(request.getDeposit());
+        borrowItem.setPrice(request.getPrice());
+
+        List<ItemsBorrowStatusJpaEntity> existingStatuses = itemsBorrowStatusRepository.findAllByItemIdAndBorrowStatusCode(postId, "RENTAL_NOT_POSSIBLE");
+        itemsBorrowStatusRepository.deleteAll(existingStatuses);
+        //대여 불가 날짜 새로 배정, 똑같아도 새로 배정되는 느낌
+        if (request.getNoRental() != null && !request.getNoRental().isEmpty()) {
+            List<ItemsBorrowStatusJpaEntity> newStatuses = request.getNoRental().stream()
+                    .map(status -> PostsConverter.toItemBorrowStatus(item, "RENTAL_NOT_POSSIBLE", status))
+                    .toList();
+            itemsBorrowStatusRepository.saveAll(newStatuses);
+
+        }
+        return "success";
     }
 }

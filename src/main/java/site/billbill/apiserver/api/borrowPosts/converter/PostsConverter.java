@@ -4,6 +4,7 @@ import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
 import site.billbill.apiserver.api.borrowPosts.dto.response.PostsResponse;
 import site.billbill.apiserver.model.post.ItemsBorrowJpaEntity;
 import site.billbill.apiserver.model.post.ItemsBorrowStatusJpaEntity;
+import site.billbill.apiserver.model.post.ItemsCategoryJpaEntity;
 import site.billbill.apiserver.model.post.ItemsJpaEntity;
 import site.billbill.apiserver.model.user.UserJpaEntity;
 
@@ -20,7 +21,7 @@ public class PostsConverter {
                 postId(id).
                 build();
     }
-    public static ItemsJpaEntity toItem(String postId,PostsRequest.UploadRequest request, UserJpaEntity user){
+    public static ItemsJpaEntity toItem(String postId, PostsRequest.UploadRequest request, UserJpaEntity user, ItemsCategoryJpaEntity category){
         return ItemsJpaEntity.builder()
                 .id(postId)
                 .title(request.getTitle())
@@ -29,6 +30,7 @@ public class PostsConverter {
                 .owner(user)
                 .viewCount(0)
                 .images(request.getImages())
+                .category(category)
                 .itemStatus(request.getItemStatus()).build();
     }
     public static ItemsBorrowJpaEntity toItemBorrow(ItemsJpaEntity item, PostsRequest.UploadRequest request){
