@@ -26,7 +26,37 @@ public class ChatChannelJpaEntity extends BaseTime {
     @ManyToOne
     @JoinColumn(name="contact_id")
     private UserJpaEntity contact;
+    @Column(name = "owner_left", nullable = false)
+    @Convert(converter = BooleanConverter.class)
+    private boolean ownerLeft = false;
+    @Column(name = "contact_left", nullable = false)
+    @Convert(converter = BooleanConverter.class)
+    private boolean contactLeft = false;
     @Column(name = "del_yn", nullable = false)
     @Convert(converter = BooleanConverter.class)
     private boolean delYn = false;
+    @Column(name = "clo_yn", nullable = false)
+    @Convert(converter = BooleanConverter.class)
+    private boolean cloYn = false;
+
+    public void processLeftUser(String userId) {
+        cloYn = true;
+        if (owner.getUserId().equals(userId)) {
+            ownerLeft = true;
+            return;
+        }
+        contactLeft = true;
+    }
+
+    public void checkAndUpdateDelete() {
+        boolean allLeft = true;
+
+        if (!ownerLeft || !contactLeft) {
+            allLeft = false;
+        }
+
+        if (allLeft) {
+            delYn = true;
+        }
+    }
 }
