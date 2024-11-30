@@ -29,7 +29,8 @@ public class PostsRequest {
         private String content;
         @Schema(description = "이미지", example = "[\"이미지링크\",\"이미지링크\"]")
         private List<String> images;
-        
+        @Schema(description = "카테고리", example = "camp, sports, tools")
+        private String category;
         private List<NoRentalPeriod> noRental;
 
     }

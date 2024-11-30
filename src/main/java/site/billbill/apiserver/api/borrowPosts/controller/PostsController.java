@@ -57,6 +57,24 @@ public class PostsController {
 
         return new BaseResponse<>(postsService.ViewPostService(postId));
     }
+    @DeleteMapping("/{postId}")
+    public BaseResponse<String> deletePostController(@PathVariable(value = "postId",required = true)String postId){
+
+        String userId = "";
+        if(MDC.get(JWTUtil.MDC_USER_ID) != null) {
+            userId=  MDC.get(JWTUtil.MDC_USER_ID).toString();
+        }
+        return new BaseResponse<>(postsService.deletePostService(postId,userId));
+    }
+    @PatchMapping("/{postId}")
+    public BaseResponse<String> updatePostController(@PathVariable(value="postId",required = true)String postId,
+                                                     @RequestBody @Valid PostsRequest.UploadRequest request){
+        String userId = "";
+        if(MDC.get(JWTUtil.MDC_USER_ID) != null) {
+            userId=  MDC.get(JWTUtil.MDC_USER_ID).toString();
+        }
+        return new BaseResponse<>(postsService.UpdatePostService(postId,userId,request));
+    }
 
 
 }
