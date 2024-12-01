@@ -5,10 +5,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jboss.logging.MDC;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import site.billbill.apiserver.api.chat.dto.request.ChatRequest;
+import site.billbill.apiserver.api.chat.dto.response.ChatResponse;
 import site.billbill.apiserver.api.chat.service.ChatService;
 import site.billbill.apiserver.common.response.BaseResponse;
 import site.billbill.apiserver.common.utils.jwt.JWTUtil;
@@ -22,9 +27,23 @@ public class ChatController {
     private final ChatService chatService;
 
     @Operation(summary = "채팅방 나가기", description = "채팅방 나가기 API")
-    @PostMapping("/leave")
-    public BaseResponse<String> chatRoomLeave(@RequestParam String channelId) {
+    @PatchMapping("/{channelId}")
+    public BaseResponse<String> leaveChatChannel(@RequestParam String channelId) {
         String userId = MDC.get(JWTUtil.MDC_USER_ID).toString();
         return new BaseResponse<>(chatService.leaveChatChannel(channelId,userId));
+    }
+
+    @Operation(summary = "채팅방 생성 및 id 조회", description = "빌리기 버튼 누를 때 api")
+    @PostMapping("")
+    public BaseResponse<String> startChannel(@RequestBody ChatRequest.borrowInfo request) {
+        String userId = MDC.get(JWTUtil.MDC_USER_ID).toString();
+        return new BaseResponse<>(chatService.startChannel(request, userId));
+    }
+
+    @Operation(summary = "채팅방 info 조회", description = "채팅방 info 조회 API")
+    @GetMapping("/{channelId}")
+    public BaseResponse<ChatResponse.ViewChannelInfoResponse> getInfoChannel(@RequestParam String channelId) {
+        String userId = MDC.get(JWTUtil.MDC_USER_ID).toString();
+        return new BaseResponse<>(chatService.getInfoChannel(channelId,userId));
     }
 }

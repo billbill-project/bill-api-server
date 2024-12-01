@@ -2,8 +2,10 @@ package site.billbill.apiserver.model.chat;
 
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import lombok.*;
 import site.billbill.apiserver.common.converter.BooleanConverter;
+import site.billbill.apiserver.common.enums.chat.ChannelState;
 import site.billbill.apiserver.model.BaseTime;
 import site.billbill.apiserver.model.post.ItemsJpaEntity;
 import site.billbill.apiserver.model.user.UserJpaEntity;
@@ -32,12 +34,19 @@ public class ChatChannelJpaEntity extends BaseTime {
     @Column(name = "contact_left", nullable = false)
     @Convert(converter = BooleanConverter.class)
     private boolean contactLeft = false;
+    @Column(name = "started_at", nullable = false)
+    private LocalDate startedAt;
+    @Column(name = "ended_at", nullable = false)
+    private LocalDate endedAt;
     @Column(name = "del_yn", nullable = false)
     @Convert(converter = BooleanConverter.class)
     private boolean delYn = false;
     @Column(name = "clo_yn", nullable = false)
     @Convert(converter = BooleanConverter.class)
     private boolean cloYn = false;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "channel_state")
+    private ChannelState channelState = ChannelState.PRE;
 
     public void processLeftUser(String userId) {
         cloYn = true;
@@ -58,5 +67,12 @@ public class ChatChannelJpaEntity extends BaseTime {
         if (allLeft) {
             delYn = true;
         }
+    }
+
+    public UserJpaEntity getOpponent(String userId) {
+        if (!owner.getUserId().equals(userId)) {
+            return owner;
+        }
+        return contact;
     }
 }
