@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -12,9 +13,12 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class WebhookServiceImpl {
     private final WebClient webClient;
 
+    @Value("${webhook.url}")
+    private String webhookUrl;
+
     @Autowired
     public WebhookServiceImpl(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("http://localhost:8081/webhook").build();
+        this.webClient = webClientBuilder.baseUrl(webhookUrl).build();
     }
 
     public void sendWebhookForChatRoomCreate(String channelId, String contact, String owner) {
