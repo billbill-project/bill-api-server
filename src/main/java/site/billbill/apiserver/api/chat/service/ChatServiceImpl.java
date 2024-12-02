@@ -49,14 +49,11 @@ public class ChatServiceImpl implements ChatService {
 
     @Transactional
     public String startChannel(ChatRequest.borrowInfo request, String userId) {
-        log.info("post찾기");
         ItemsJpaEntity item = itemsRepository.findById(request.getPostId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NotFound, "게시물을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
-        log.info("회원찾기");
         UserJpaEntity contact = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NotFound, "회원을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
-        log.info("찾기완료");
-        List<ChatChannelJpaEntity> chatChannel = chatRepository.findByItemAndCloYnFalseAndDelYnFalse(item);
+        List<ChatChannelJpaEntity> chatChannel = chatRepository.findByItemAndStartAndEndDate(item, request.getStartedAt(), request.getEndedAt());
         String newChannelId = ULIDUtil.generatorULID("CHANNEL");
 
         if (chatChannel.isEmpty()) {
@@ -77,7 +74,7 @@ public class ChatServiceImpl implements ChatService {
         ItemsJpaEntity item = chatChannel.getItem();
         ItemsBorrowJpaEntity itemBorrow = itemsBorrowRepository.findByItem(item);
 
-        long daysBetween = ChronoUnit.DAYS.between(chatChannel.getStartedAt(), chatChannel.getEndedAt());
+        long daysBetween = ChronoUnit.DAYS.between(chatChannel.getStartedAt(), chatChannel.getEndedAt()) + 1;
         int totalPrice = (int) (daysBetween * itemBorrow.getPrice());
         UserJpaEntity opponent = chatChannel.getOpponent(userId);
 
@@ -90,6 +87,6 @@ public class ChatServiceImpl implements ChatService {
             default -> "";
         };
 
-        return ChatConverter.toViewChannelInfo(chatChannel, opponent, item, totalPrice, status);
+        return ChatConverter.toViewChannelInfo(chatChannel, opponent, item, totalPrice, status, userId);
     }
 }

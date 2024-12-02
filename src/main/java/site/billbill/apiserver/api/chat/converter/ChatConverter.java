@@ -20,7 +20,8 @@ public class ChatConverter {
     }
 
     public static ChatResponse.ViewChannelInfoResponse toViewChannelInfo(ChatChannelJpaEntity channel, UserJpaEntity opponent, ItemsJpaEntity item, int totalPrice,
-                                                                         String status) {
+                                                                         String status, String userId) {
+
         return ChatResponse.ViewChannelInfoResponse.builder()
                 .opponentId(opponent.getUserId())
                 .opponentNickname(opponent.getNickname())
@@ -32,6 +33,7 @@ public class ChatConverter {
                 .itemState(status)
                 .startedAt(channel.getStartedAt())
                 .endedAt(channel.getEndedAt())
+                .myId(userId)
                 .build();
     }
 }

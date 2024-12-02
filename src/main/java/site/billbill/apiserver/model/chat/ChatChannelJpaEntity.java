@@ -47,6 +47,7 @@ public class ChatChannelJpaEntity extends BaseTime {
     @Column(name = "clo_yn", nullable = false)
     @Convert(converter = BooleanConverter.class)
     private boolean cloYn = false;
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "channel_state")
     private ChannelState channelState = ChannelState.PRE;
