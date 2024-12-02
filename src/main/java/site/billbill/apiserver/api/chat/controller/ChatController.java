@@ -7,10 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.jboss.logging.MDC;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import site.billbill.apiserver.api.chat.dto.request.ChatRequest;
 import site.billbill.apiserver.api.chat.dto.response.ChatResponse;
@@ -28,7 +28,7 @@ public class ChatController {
 
     @Operation(summary = "채팅방 나가기", description = "채팅방 나가기 API")
     @PatchMapping("/{channelId}")
-    public BaseResponse<String> leaveChatChannel(@RequestParam String channelId) {
+    public BaseResponse<String> leaveChatChannel(@PathVariable(value = "channelId") String channelId) {
         log.info("api 호출 정상적~");
         String userId = MDC.get(JWTUtil.MDC_USER_ID).toString();
         return new BaseResponse<>(chatService.leaveChatChannel(channelId,userId));
@@ -44,7 +44,7 @@ public class ChatController {
 
     @Operation(summary = "채팅방 info 조회", description = "채팅방 info 조회 API")
     @GetMapping("/{channelId}")
-    public BaseResponse<ChatResponse.ViewChannelInfoResponse> getInfoChannel(@RequestParam String channelId) {
+    public BaseResponse<ChatResponse.ViewChannelInfoResponse> getInfoChannel(@PathVariable(value = "channelId") String channelId) {
         log.info("api 호출 정상적~");
         String userId = MDC.get(JWTUtil.MDC_USER_ID).toString();
         return new BaseResponse<>(chatService.getInfoChannel(channelId,userId));

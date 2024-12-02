@@ -8,6 +8,5 @@ public interface ChatService {
 
     ViewChannelInfoResponse getInfoChannel(String channelId, String userId);
 
-
     String startChannel(ChatRequest.borrowInfo request, String userId);
 }
