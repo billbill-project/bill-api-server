@@ -4,6 +4,7 @@ package site.billbill.apiserver.model.chat;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 import site.billbill.apiserver.common.converter.BooleanConverter;
 import site.billbill.apiserver.common.enums.chat.ChannelState;
 import site.billbill.apiserver.model.BaseTime;
@@ -34,8 +35,10 @@ public class ChatChannelJpaEntity extends BaseTime {
     @Column(name = "contact_left", nullable = false)
     @Convert(converter = BooleanConverter.class)
     private boolean contactLeft = false;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column(name = "started_at", nullable = false)
     private LocalDate startedAt;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column(name = "ended_at", nullable = false)
     private LocalDate endedAt;
     @Column(name = "del_yn", nullable = false)

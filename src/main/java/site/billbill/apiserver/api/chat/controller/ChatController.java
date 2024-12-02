@@ -29,6 +29,7 @@ public class ChatController {
     @Operation(summary = "채팅방 나가기", description = "채팅방 나가기 API")
     @PatchMapping("/{channelId}")
     public BaseResponse<String> leaveChatChannel(@RequestParam String channelId) {
+        log.info("api 호출 정상적~");
         String userId = MDC.get(JWTUtil.MDC_USER_ID).toString();
         return new BaseResponse<>(chatService.leaveChatChannel(channelId,userId));
     }
@@ -36,6 +37,7 @@ public class ChatController {
     @Operation(summary = "채팅방 생성 및 id 조회", description = "빌리기 버튼 누를 때 api")
     @PostMapping("")
     public BaseResponse<String> startChannel(@RequestBody ChatRequest.borrowInfo request) {
+        log.info("api 호출 정상적~");
         String userId = MDC.get(JWTUtil.MDC_USER_ID).toString();
         return new BaseResponse<>(chatService.startChannel(request, userId));
     }
@@ -43,6 +45,7 @@ public class ChatController {
     @Operation(summary = "채팅방 info 조회", description = "채팅방 info 조회 API")
     @GetMapping("/{channelId}")
     public BaseResponse<ChatResponse.ViewChannelInfoResponse> getInfoChannel(@RequestParam String channelId) {
+        log.info("api 호출 정상적~");
         String userId = MDC.get(JWTUtil.MDC_USER_ID).toString();
         return new BaseResponse<>(chatService.getInfoChannel(channelId,userId));
     }
