@@ -2,7 +2,7 @@ package site.billbill.apiserver.repository.user;
 
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import site.billbill.apiserver.model.user.QUserIdentityJpaEntity;
 import site.billbill.apiserver.model.user.QUserJpaEntity;
@@ -11,7 +11,7 @@ import site.billbill.apiserver.model.user.UserIdentityJpaEntity;
 import java.util.Optional;
 
 @Repository
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserIdentityDslRepositoryImpl implements UserIdentityDslRepository {
     private final JPAQueryFactory query;
 

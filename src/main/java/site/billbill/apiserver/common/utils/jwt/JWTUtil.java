@@ -42,8 +42,8 @@ public class JWTUtil {
 
     public JwtDto generateJwtDto(String userId, UserRole role) {
         Date now = new Date();
-        Date accessTokenExpiresIn = new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME*1000);
-        Date refreshTokenExpiresIn = new Date(now.getTime() + REFRESH_TOKEN_EXPIRE_TIME*1000);
+        Date accessTokenExpiresIn = new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME * 1000);
+        Date refreshTokenExpiresIn = new Date(now.getTime() + REFRESH_TOKEN_EXPIRE_TIME * 1000);
 
         String issuer = "BillBillServer";
 
@@ -69,12 +69,18 @@ public class JWTUtil {
                 .claim("type", "RT")
                 .compact();
 
-        return new JwtDto(accessToken, refreshToken, "Bearer", accessTokenExpiresIn.getTime() / 1000, role.name());
+        return JwtDto.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .grantType("Bearer")
+                .expiresIn(accessTokenExpiresIn.getTime() / 1000)
+                .role(role.name())
+                .build();
     }
 
     public boolean isValidAccessToken(String token) {
         try {
-            if(getClaims(token).get("type").equals("AT")) return true;
+            if (getClaims(token).get("type").equals("AT")) return true;
         } catch (ExpiredJwtException e) {
             log.error("Bill Access 토큰 시간이 만료 되었습니다. {}", e.getMessage());
             return false;
@@ -95,7 +101,7 @@ public class JWTUtil {
     }
 
     public String putUserMDC(Claims claims) {
-        String userId= claims.getSubject();
+        String userId = claims.getSubject();
         String role = claims.get("role", String.class);
 
         MDC.put(MDC_USER_ID, userId);
@@ -119,13 +125,13 @@ public class JWTUtil {
 
     public UserRole getUserRole(String token) {
         Claims claims = getClaims(token);
-         String role = claims.get("role", String.class);
-         return UserRole.valueOf(role);
+        String role = claims.get("role", String.class);
+        return UserRole.valueOf(role);
     }
 
     public boolean isValidRefreshToken(String token) {
         try {
-            if(getClaims(token).get("type").equals("RT")) return true;
+            if (getClaims(token).get("type").equals("RT")) return true;
         } catch (ExpiredJwtException e) {
             log.error("Bill Refresh 토큰 시간이 만료 되었습니다. {}", e.getMessage());
             throw new CustomException(ErrorCode.BadRequest, "Bill Refresh 토큰 시간이 만료되었습니다. ", HttpStatus.BAD_REQUEST);
