@@ -4,6 +4,8 @@ import org.springframework.data.domain.Sort;
 import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
 import site.billbill.apiserver.api.borrowPosts.dto.response.PostsResponse;
 
+import java.util.List;
+
 public interface PostsService {
     PostsResponse.UploadResponse uploadPostService(PostsRequest.UploadRequest request,String userId);
 
@@ -12,7 +14,13 @@ public interface PostsService {
     PostsResponse.ViewPostResponse ViewPostService(String postId);
 
     String deletePostService(String postId,String userId);
+
     String UpdatePostService(String postId,String userId,PostsRequest.UploadRequest request);
 
     PostsResponse.ViewAllResultResponse ViewSearchPostService(String userId,String category, int page, Sort.Direction direction, String orderType,String keyword,boolean state);
+
+    List<String> findSearchService(String userId);
+
+    List<String> findRecommandService();
+
 }

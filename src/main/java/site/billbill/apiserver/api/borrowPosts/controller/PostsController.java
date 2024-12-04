@@ -18,6 +18,8 @@ import site.billbill.apiserver.api.borrowPosts.service.PostsService;
 import site.billbill.apiserver.common.response.BaseResponse;
 import site.billbill.apiserver.common.utils.jwt.JWTUtil;
 
+import java.util.List;
+
 @Slf4j
 @RestController
 @Tag(name = "borrowPosts", description = "대여 게시물 관련")
@@ -25,6 +27,7 @@ import site.billbill.apiserver.common.utils.jwt.JWTUtil;
 @RequiredArgsConstructor
 public class PostsController {
     private final PostsService postsService;
+    @Operation(summary = "게시물 생성", description = "게시물 생성 API")
     @PostMapping("")
     public BaseResponse<PostsResponse.UploadResponse> uploadPostsController(@RequestBody @Valid PostsRequest.UploadRequest request){
 
@@ -54,6 +57,7 @@ public class PostsController {
         Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
         return new BaseResponse<>(postsService.ViewAllPostService(category,page,direction,sortBy));
     }
+    @Operation(summary = "게시물 검색", description = "게시물 검색 API")
     @GetMapping("/search")
     public BaseResponse<PostsResponse.ViewAllResultResponse> getSearchPostsController(
             @Parameter(name = "category", description = "카테고리 필터 (예: entire, camp, sports,tools )", example = "entire", in = ParameterIn.QUERY, required = false)
@@ -76,11 +80,13 @@ public class PostsController {
         Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
         return new BaseResponse<>(postsService.ViewSearchPostService(userId,category, page, direction, sortBy,keyword,state));
     }
+    @Operation(summary = "게시물 조회", description = "게시물 상세 조회")
     @GetMapping("/{postId}")
     public BaseResponse<PostsResponse.ViewPostResponse> getPostController(@PathVariable(value = "postId",required = true)String postId){
 
         return new BaseResponse<>(postsService.ViewPostService(postId));
     }
+    @Operation(summary = "게시물 삭제", description = "게시물 삭제")
     @DeleteMapping("/{postId}")
     public BaseResponse<String> deletePostController(@PathVariable(value = "postId",required = true)String postId){
 
@@ -90,6 +96,21 @@ public class PostsController {
         }
         return new BaseResponse<>(postsService.deletePostService(postId,userId));
     }
+    @Operation(summary = "저장한 검색어 불러오기", description = "저장한 검색어 불러오기")
+    @GetMapping("/searchHist")
+    public BaseResponse<List<String>> getSearchHistController(){
+        String userId = "";
+        if(MDC.get(JWTUtil.MDC_USER_ID) != null) {
+            userId=  MDC.get(JWTUtil.MDC_USER_ID).toString();
+        }
+        return new BaseResponse<>(postsService.findSearchService(userId));
+    }
+    @Operation(summary = "추천 검색어 불러오기", description = "추천 검색어 주기")
+    @GetMapping("/recommend")
+    public BaseResponse<List<String>> getRecommendController(){
+        return new BaseResponse<>(postsService.findRecommandService());
+    }
+    @Operation(summary = "게시물 수정", description = "게시물 수정")
     @PatchMapping("/{postId}")
     public BaseResponse<String> updatePostController(@PathVariable(value="postId",required = true)String postId,
                                                      @RequestBody @Valid PostsRequest.UploadRequest request){

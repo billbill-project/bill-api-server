@@ -5,6 +5,7 @@ import site.billbill.apiserver.api.borrowPosts.dto.response.PostsResponse;
 import site.billbill.apiserver.model.post.*;
 import site.billbill.apiserver.model.user.UserJpaEntity;
 import site.billbill.apiserver.model.user.UserSearchHistJpaEntity;
+import site.billbill.apiserver.repository.borrowPosts.SearchKeywordStatRepository;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -96,5 +97,12 @@ public class PostsConverter {
                 .keyword(keyword)
                 .searchCount(1).build();
     }
+    public static String toUserSearchHist(UserSearchHistJpaEntity userSearchHist){
+        return userSearchHist.getKeyword();
+    }
+    public static String toRecommandSearch(SearchKeywordStatsJpaEntity searchKeywordStats){
+        return searchKeywordStats.getKeyword();
+    }
+
 
 }

@@ -179,8 +179,19 @@ public class PostsServiceImpl implements PostsService {
         return PostsConverter.toViewAllList(items);
     }
 
+    public List<String> findSearchService(String userId){
+        UserJpaEntity user = userRepository.findById(userId).orElse(null);
+        List<UserSearchHistJpaEntity> searchHists=userSearchHistRepository.findByUserAndDelYnOrderByCreatedAtDesc(user,false);
+        List<String> result= searchHists.stream().map(searchHist-> PostsConverter.toUserSearchHist(searchHist)).toList();
+        return result;
 
+    }
 
+    public List<String> findRecommandService(){
+        List<SearchKeywordStatsJpaEntity> searchKeywordStats=searchKeywordStatRepository.findAllByOrderBySearchCountDesc();
+        List<String> result =searchKeywordStats.stream().map(searchKeywordStat-> PostsConverter.toRecommandSearch(searchKeywordStat)).toList();
+        return result;
+    }
     //모듈화 코드
 
     private Pageable createPageable(int page, Sort.Direction direction, String orderType) {
