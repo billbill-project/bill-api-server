@@ -2,11 +2,9 @@ package site.billbill.apiserver.api.borrowPosts.converter;
 
 import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
 import site.billbill.apiserver.api.borrowPosts.dto.response.PostsResponse;
-import site.billbill.apiserver.model.post.ItemsBorrowJpaEntity;
-import site.billbill.apiserver.model.post.ItemsBorrowStatusJpaEntity;
-import site.billbill.apiserver.model.post.ItemsCategoryJpaEntity;
-import site.billbill.apiserver.model.post.ItemsJpaEntity;
+import site.billbill.apiserver.model.post.*;
 import site.billbill.apiserver.model.user.UserJpaEntity;
+import site.billbill.apiserver.model.user.UserSearchHistJpaEntity;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -87,6 +85,16 @@ public class PostsConverter {
                 .startDate(borrowStatus.getStartDate().format(DATE_FORMATTER))
                 .endDate(borrowStatus.getEndDate().format(DATE_FORMATTER))
                 .build();
+    }
+    public static UserSearchHistJpaEntity toUserSearch(UserJpaEntity user,String keyword){
+        return UserSearchHistJpaEntity.builder()
+                .keyword(keyword)
+                .user(user).build();
+    }
+    public static SearchKeywordStatsJpaEntity toSearchKeywordStats(String keyword){
+        return SearchKeywordStatsJpaEntity.builder()
+                .keyword(keyword)
+                .searchCount(1).build();
     }
 
 }

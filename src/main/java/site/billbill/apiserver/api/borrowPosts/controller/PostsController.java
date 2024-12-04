@@ -47,7 +47,8 @@ public class PostsController {
             @Parameter(name = "order", description = "정렬 방향 (asc: 오름차순, desc: 내림차순)", example = "desc", in = ParameterIn.QUERY, required = false)
             @RequestParam(value ="order",required = false,defaultValue = "desc") String order,
             @Parameter(name = "sortBy", description = "정렬 기준 (예: price, createdAt, likeCount)", example = "createdAt", in = ParameterIn.QUERY, required = true)
-            @RequestParam(value="sortBy",required = true,defaultValue = "accuracy") String sortBy){
+            @RequestParam(value="sortBy",required = true,defaultValue = "accuracy") String sortBy
+    ){
 
 
         Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
@@ -64,11 +65,16 @@ public class PostsController {
             @Parameter(name = "sortBy", description = "정렬 기준 (예: price, createdAt, likeCount)", example = "createdAt", in = ParameterIn.QUERY, required = true)
             @RequestParam(value="sortBy",required = true,defaultValue = "accuracy") String sortBy,
             @Parameter(name="keyword",description = "검색 키워드(예: 6인용+텐트)",in = ParameterIn.QUERY, required = true)
-            @RequestParam(value = "keyword",required = true) String keyword) {
+            @RequestParam(value = "keyword",required = true) String keyword,
+            @Parameter(name = "state",description = "검색어 저장 여부", in = ParameterIn.QUERY, required = true)
+            @RequestParam(value = "state",required = true,defaultValue = "true") boolean state) {
 
-
+        String userId = "";
+        if(MDC.get(JWTUtil.MDC_USER_ID) != null) {
+            userId=  MDC.get(JWTUtil.MDC_USER_ID).toString();
+        }
         Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
-        return new BaseResponse<>(postsService.ViewSearchPostService(category, page, direction, sortBy,keyword));
+        return new BaseResponse<>(postsService.ViewSearchPostService(userId,category, page, direction, sortBy,keyword,state));
     }
     @GetMapping("/{postId}")
     public BaseResponse<PostsResponse.ViewPostResponse> getPostController(@PathVariable(value = "postId",required = true)String postId){
