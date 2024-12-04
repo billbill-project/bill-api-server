@@ -5,5 +5,5 @@ import org.springframework.data.domain.Pageable;
 import site.billbill.apiserver.model.post.ItemsJpaEntity;
 
 public interface ItemDslRepository {
-    Page<ItemsJpaEntity> findItemsWithConditions(String category, Pageable pageable, String sortField);
+    Page<ItemsJpaEntity> findItemsWithConditions(String category, Pageable pageable, String sortField,String keyword);
 }

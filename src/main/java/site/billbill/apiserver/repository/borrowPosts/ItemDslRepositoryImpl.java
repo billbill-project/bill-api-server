@@ -1,6 +1,7 @@
 package site.billbill.apiserver.repository.borrowPosts;
 
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -21,12 +22,12 @@ public class ItemDslRepositoryImpl implements ItemDslRepository{
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<ItemsJpaEntity> findItemsWithConditions(String category, Pageable pageable, String sortField) {
+    public Page<ItemsJpaEntity> findItemsWithConditions(String category, Pageable pageable, String sortField,String keyword) {
         QItemsJpaEntity items = QItemsJpaEntity.itemsJpaEntity;
         QItemsBorrowJpaEntity borrow = QItemsBorrowJpaEntity.itemsBorrowJpaEntity;
         QItemsCategoryJpaEntity categoryEntity = QItemsCategoryJpaEntity.itemsCategoryJpaEntity;
 
-        log.info("Category: {}, Sort Field: {}, Pageable: {}", category, sortField, pageable);
+
 
         JPAQuery<ItemsJpaEntity> query = queryFactory.selectFrom(items)
                 .leftJoin(borrow).on(items.id.eq(borrow.item.id)) // 식별 관계 조인
@@ -39,21 +40,31 @@ public class ItemDslRepositoryImpl implements ItemDslRepository{
                     .fetchOne();
 
             if (fetchedCategory == null) {
-                log.warn("Category '{}' not found. Returning empty result.", category);
+                log.warn("카테고리를 찾을 수 없음.", category);
                 return new PageImpl<>(List.of(), pageable, 0);
             }
             query.where(items.category.eq(fetchedCategory));
         }
 
-        // 정렬 조건
-        if (sortField != null) {
-            OrderSpecifier<?> orderSpecifier = getOrderSpecifier(sortField, pageable.getSort().getOrderFor(sortField));
-            if (orderSpecifier != null) {
-                query.orderBy(orderSpecifier);
-            } else {
-                log.warn("Invalid sort field: {}, no sorting applied.", sortField);
+        //키워드 필터링
+        if(keyword !=null && !keyword.isEmpty()){
+            query.where(applyKeywordFilter(items,keyword));
+        }
+
+        // 정렬 조건 처리
+    pageable.getSort().forEach(order -> {
+        OrderSpecifier<?> orderSpecifier;
+        switch (order.getProperty()) {
+            case "price" -> orderSpecifier = order.isAscending() ? borrow.price.asc() : borrow.price.desc();
+            case "createdAt" -> orderSpecifier = order.isAscending() ? items.createdAt.asc() : items.createdAt.desc();
+            case "likeCount" -> orderSpecifier = order.isAscending() ? items.likeCount.asc() : items.likeCount.desc();
+            default -> {
+                log.warn("Invalid sort field: {}", order.getProperty());
+                return;
             }
-}
+        }
+        query.orderBy(orderSpecifier);
+    });
 
         // 페이징 처리
         List<ItemsJpaEntity> content = query.offset(pageable.getOffset())
@@ -93,6 +104,29 @@ public class ItemDslRepositoryImpl implements ItemDslRepository{
             default:
                 return null; // 기본 정렬 없음
         }
+    }
+    private BooleanExpression applyKeywordFilter(QItemsJpaEntity items, String keyword) {
+        if (keyword == null || keyword.isEmpty()) {
+            return null;
+        }
+
+        // '+'를 기준으로 키워드 분리
+        String[] keywords = keyword.split("\\+");
+
+        // 키워드 조건 생성
+        BooleanExpression keywordCondition = null;
+        for (String key : keywords) {
+            BooleanExpression condition = items.title.containsIgnoreCase(key)
+                    .or(items.content.containsIgnoreCase(key));
+
+            if (keywordCondition == null) {
+                keywordCondition = condition;
+            } else {
+                keywordCondition = keywordCondition.or(condition); // AND 대신 OR 사용
+            }
+        }
+
+        return keywordCondition;
     }
 
 

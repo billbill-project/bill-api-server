@@ -13,4 +13,6 @@ public interface PostsService {
 
     String deletePostService(String postId,String userId);
     String UpdatePostService(String postId,String userId,PostsRequest.UploadRequest request);
+
+    PostsResponse.ViewAllResultResponse ViewSearchPostService(String category, int page, Sort.Direction direction, String orderType,String keyword);
 }

@@ -27,6 +27,7 @@ public class PostsResponse {
     public static class Post{
         private String postId;
         private String image;
+        private String title;
         private int price;
         private String userId;
         private String userName;

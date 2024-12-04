@@ -52,6 +52,7 @@ public class PostsConverter {
     public static PostsResponse.Post toPost(ItemsJpaEntity item,ItemsBorrowJpaEntity borrowItem){
         return PostsResponse.Post.builder()
                 .postId(item.getId())
+                .title(item.getTitle())
                 .image(Optional.ofNullable(item.getImages())
                         .filter(images -> !images.isEmpty())
                         .map(images -> images.get(0))
