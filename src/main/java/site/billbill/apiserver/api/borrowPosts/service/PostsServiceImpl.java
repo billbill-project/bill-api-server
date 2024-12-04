@@ -1,37 +1,28 @@
 package site.billbill.apiserver.api.borrowPosts.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
-import site.billbill.apiserver.api.borrowPosts.controller.PostsController;
 import site.billbill.apiserver.api.borrowPosts.converter.PostsConverter;
 import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
 import site.billbill.apiserver.api.borrowPosts.dto.response.PostsResponse;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.ULID.ULIDUtil;
 import site.billbill.apiserver.exception.CustomException;
-import site.billbill.apiserver.model.post.ItemsBorrowJpaEntity;
-import site.billbill.apiserver.model.post.ItemsBorrowStatusJpaEntity;
-import site.billbill.apiserver.model.post.ItemsCategoryJpaEntity;
-import site.billbill.apiserver.model.post.ItemsJpaEntity;
+import site.billbill.apiserver.model.post.*;
 import site.billbill.apiserver.model.user.UserJpaEntity;
-import site.billbill.apiserver.repository.borrowPosts.ItemsBorrowRepository;
-import site.billbill.apiserver.repository.borrowPosts.ItemsBorrowStatusRepository;
-import site.billbill.apiserver.repository.borrowPosts.ItemsCategoryRepository;
-import site.billbill.apiserver.repository.borrowPosts.ItemsRepository;
+import site.billbill.apiserver.model.user.UserSearchHistJpaEntity;
+import site.billbill.apiserver.repository.borrowPosts.*;
 import site.billbill.apiserver.repository.user.UserRepository;
+import site.billbill.apiserver.repository.user.UserSearchHistRepository;
 
-import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @org.springframework.stereotype.Service
 @RequiredArgsConstructor
@@ -44,6 +35,8 @@ public class PostsServiceImpl implements PostsService {
     private final ItemsBorrowRepository itemsBorrowRepository;
     private final ItemsBorrowStatusRepository itemsBorrowStatusRepository;
     private  final ItemsCategoryRepository itemsCategoryRepository;
+    private final UserSearchHistRepository userSearchHistRepository;
+    private final SearchKeywordStatRepository searchKeywordStatRepository;
     public PostsResponse.UploadResponse uploadPostService(PostsRequest.UploadRequest request,String userId){
         //먼저 item 생성,
         Optional<UserJpaEntity> isUser=userRepository.findById(userId);
@@ -160,14 +153,45 @@ public class PostsServiceImpl implements PostsService {
         }
         return "success";
     }
-    public PostsResponse.ViewAllResultResponse ViewSearchPostService(String category, int page, Sort.Direction direction, String orderType,String keyword){
+    @Transactional
+    public PostsResponse.ViewAllResultResponse ViewSearchPostService(String userId, String category, int page, Sort.Direction direction, String orderType,String keyword,boolean state){
+        UserJpaEntity user = userRepository.findById(userId).orElse(null);
+
         Pageable pageable = createPageable(page, direction, orderType);
         List<PostsResponse.Post> items = findAndConvertItems(category, pageable, keyword);
+        //사용자가 검색어 저장을 허용했을 경우
+        String tempKeyword = keyword.replaceAll("\\+", " ");
+        if(state){
+
+            UserSearchHistJpaEntity userSearchHist= PostsConverter.toUserSearch(user,tempKeyword);
+            userSearchHistRepository.save(userSearchHist);
+        }
+        //추천 검색어를 위해 검색어 를 저장
+        SearchKeywordStatsJpaEntity searchKeywordStats = searchKeywordStatRepository.findByKeyword(tempKeyword);
+        if(searchKeywordStats!=null){
+            int count=searchKeywordStats.getSearchCount()+1;
+            searchKeywordStats.setSearchCount(count);
+        }else{
+            searchKeywordStats = PostsConverter.toSearchKeywordStats(tempKeyword);
+            searchKeywordStatRepository.save(searchKeywordStats);
+        }
+
         return PostsConverter.toViewAllList(items);
     }
 
+    public List<String> findSearchService(String userId){
+        UserJpaEntity user = userRepository.findById(userId).orElse(null);
+        List<UserSearchHistJpaEntity> searchHists=userSearchHistRepository.findByUserAndDelYnOrderByCreatedAtDesc(user,false);
+        List<String> result= searchHists.stream().map(searchHist-> PostsConverter.toUserSearchHist(searchHist)).toList();
+        return result;
 
+    }
 
+    public List<String> findRecommandService(){
+        List<SearchKeywordStatsJpaEntity> searchKeywordStats=searchKeywordStatRepository.findAllByOrderBySearchCountDesc();
+        List<String> result =searchKeywordStats.stream().map(searchKeywordStat-> PostsConverter.toRecommandSearch(searchKeywordStat)).toList();
+        return result;
+    }
     //모듈화 코드
 
     private Pageable createPageable(int page, Sort.Direction direction, String orderType) {
