@@ -1,0 +1,20 @@
+package site.billbill.apiserver.repository.chat;
+
+import java.time.LocalDate;
+import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import site.billbill.apiserver.model.chat.ChatChannelJpaEntity;
+import site.billbill.apiserver.model.post.ItemsJpaEntity;
+
+public interface ChatRepository extends JpaRepository<ChatChannelJpaEntity,String> {
+//    List<ChatChannelJpaEntity> findByItemAndCloYnFalseAndDelYnFalse(ItemsJpaEntity item);
+
+    @Query("SELECT c FROM ChatChannelJpaEntity c " +
+            "WHERE c.item = :item " +
+            "AND c.cloYn = false " +
+            "AND c.delYn = false " +
+            "AND c.startedAt = :startDate " +
+            "AND c.endedAt = :endDate")
+    List<ChatChannelJpaEntity> findByItemAndStartAndEndDate(ItemsJpaEntity item, LocalDate startDate, LocalDate endDate);
+}

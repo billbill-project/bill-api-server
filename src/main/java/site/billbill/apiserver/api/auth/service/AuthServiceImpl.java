@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import site.billbill.apiserver.api.auth.domain.UserBaseInfo;
+import site.billbill.apiserver.api.auth.dto.request.IdentityRequest;
 import site.billbill.apiserver.api.auth.dto.request.LocationRequest;
 import site.billbill.apiserver.api.auth.dto.request.LoginRequest;
 import site.billbill.apiserver.api.auth.dto.request.SignupRequest;
@@ -108,6 +109,13 @@ public class AuthServiceImpl implements AuthService {
         } else {
             throw new CustomException(ErrorCode.BadRequest, "올바른 Refresh 토큰이 아닙니다.", HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @Override
+    public boolean identifyUser(IdentityRequest request) {
+
+
+        return false;
     }
 
     /**

@@ -1,7 +1,12 @@
 package site.billbill.apiserver.repository.borrowPosts;
 
 import com.querydsl.core.types.OrderSpecifier;
+
 import com.querydsl.core.types.dsl.BooleanExpression;
+
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
+
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -10,15 +15,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import site.billbill.apiserver.model.post.ItemsJpaEntity;
-import site.billbill.apiserver.model.post.QItemsBorrowJpaEntity;
-import site.billbill.apiserver.model.post.QItemsCategoryJpaEntity;
-import site.billbill.apiserver.model.post.QItemsJpaEntity;
+import site.billbill.apiserver.api.users.dto.response.BorrowHistoryResponse;
+import site.billbill.apiserver.api.users.dto.response.PostHistoryResponse;
+import site.billbill.apiserver.api.users.dto.response.WishlistResponse;
+import site.billbill.apiserver.common.utils.posts.ItemHistoryType;
+import site.billbill.apiserver.model.chat.QChatChannelJpaEntity;
+import site.billbill.apiserver.model.post.*;
 
 import java.util.List;
+
 @Slf4j
 @RequiredArgsConstructor
-public class ItemDslRepositoryImpl implements ItemDslRepository{
+public class ItemDslRepositoryImpl implements ItemDslRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
@@ -63,8 +71,10 @@ public class ItemDslRepositoryImpl implements ItemDslRepository{
                 return;
             }
         }
+
         query.orderBy(orderSpecifier);
     });
+
 
         // 페이징 처리
         List<ItemsJpaEntity> content = query.offset(pageable.getOffset())
@@ -129,5 +139,114 @@ public class ItemDslRepositoryImpl implements ItemDslRepository{
         return keywordCondition;
     }
 
+    @Override
+    public List<PostHistoryResponse> getPostHistory(String userId, Pageable pageable) {
+        QItemsJpaEntity qItems = QItemsJpaEntity.itemsJpaEntity;
+        QitemsLikeJpaEntity qLike = QitemsLikeJpaEntity.itemsLikeJpaEntity;
+        QChatChannelJpaEntity qChatChannel = QChatChannelJpaEntity.chatChannelJpaEntity;
 
+        JPAQuery<PostHistoryResponse> qb = queryFactory.select(
+                        Projections.constructor(
+                                PostHistoryResponse.class,
+                                qItems.id,
+                                qItems.images,
+                                qItems.title,
+                                qItems.itemStatus,
+                                qLike.countDistinct().as("likeCount"),
+                                qChatChannel.countDistinct().as("chatCount"),
+                                qItems.viewCount,
+                                qItems.createdAt,
+                                qItems.updatedAt
+                        )
+                )
+                .from(qItems)
+                .leftJoin(qLike).on(qItems.id.eq(qLike.items.id).and(qLike.delYn.isFalse()))
+                .leftJoin(qChatChannel).on(qItems.id.eq(qChatChannel.item.id).and(qChatChannel.delYn.isFalse()))
+                .where(qItems.owner.userId.eq(userId)
+                        .and(qItems.delYn.isFalse()))
+                .groupBy(qItems.id)  // 그룹핑 필요
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize());
+
+        return qb.fetch();
+    }
+
+    @Override
+    public List<BorrowHistoryResponse> getBorrowHistory(String userId, Pageable pageable, ItemHistoryType type) {
+        QItemsJpaEntity qItems = QItemsJpaEntity.itemsJpaEntity;
+        QitemsLikeJpaEntity qLike = QitemsLikeJpaEntity.itemsLikeJpaEntity;
+        QChatChannelJpaEntity qChatChannel = QChatChannelJpaEntity.chatChannelJpaEntity;
+        QBorrowHistJapEntity qBorrowHist = QBorrowHistJapEntity.borrowHistJapEntity;
+
+        JPAQuery<BorrowHistoryResponse> qb = queryFactory.select(
+                        Projections.constructor(
+                                BorrowHistoryResponse.class,
+                                qBorrowHist.borrowSeq,
+                                qItems.id,
+                                qItems.owner.userId.as("borrowerId"),
+                                Expressions.constant(type),
+                                qItems.images,
+                                qItems.title,
+                                qBorrowHist.startedAt.as("startedAt"),
+                                qBorrowHist.endedAt.as("endedAt"),
+                                qItems.itemStatus,
+                                qLike.countDistinct().as("likeCount"),
+                                qChatChannel.countDistinct().as("chatCount"),
+                                qItems.viewCount,
+                                qItems.createdAt,
+                                qItems.updatedAt
+                        )
+                )
+                .from(qItems)
+                .leftJoin(qLike).on(qItems.id.eq(qLike.items.id).and(qLike.delYn.isFalse()))
+                .leftJoin(qChatChannel).on(qItems.id.eq(qChatChannel.item.id).and(qChatChannel.delYn.isFalse()))
+                .rightJoin(qBorrowHist).on(qItems.id.eq(qBorrowHist.item.id).and(qBorrowHist.delYn.isFalse()))
+                .where(qItems.delYn.isFalse());
+
+        switch (type) {
+            case BORROWED -> qb.where(qItems.owner.userId.eq(userId));
+            case BORROWING -> qb.where(qBorrowHist.borrower.userId.eq(userId));
+            case EXCHANGE -> {
+            }
+        }
+
+        qb.groupBy(qItems.id)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize());
+
+        return qb.fetch();
+    }
+
+    @Override
+    public List<WishlistResponse> getWishlists(String userId, Pageable pageable) {
+        QItemsJpaEntity qItems = QItemsJpaEntity.itemsJpaEntity;
+        QitemsLikeJpaEntity qLike = QitemsLikeJpaEntity.itemsLikeJpaEntity;
+        QChatChannelJpaEntity qChatChannel = QChatChannelJpaEntity.chatChannelJpaEntity;
+
+        JPAQuery<WishlistResponse> qb = queryFactory.select(
+                        Projections.constructor(
+                                WishlistResponse.class,
+                                qItems.id,
+                                qItems.owner.userId,
+                                qItems.images,
+                                qItems.title,
+                                qItems.itemStatus,
+                                qLike.countDistinct().as("likeCount"),
+                                qChatChannel.countDistinct().as("chatCount"),
+                                qItems.viewCount,
+                                qItems.createdAt,
+                                qItems.updatedAt
+                        )
+                )
+                .from(qItems)
+                .leftJoin(qLike).on(qItems.id.eq(qLike.items.id).and(qLike.delYn.isFalse()))
+                .leftJoin(qChatChannel).on(qItems.id.eq(qChatChannel.item.id).and(qChatChannel.delYn.isFalse()))
+                .where(qLike.user.userId.eq(userId)
+                        .and(qItems.delYn.isFalse()))
+                .groupBy(qItems.id)  // 그룹핑 필요
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize());
+
+        return qb.fetch();
+    }
 }
