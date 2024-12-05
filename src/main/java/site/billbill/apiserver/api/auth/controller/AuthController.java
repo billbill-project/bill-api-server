@@ -24,7 +24,6 @@ import site.billbill.apiserver.common.utils.jwt.dto.JwtDto;
 @ApiResponses(value = {
         @ApiResponse(responseCode = "400", description = "Server Error", content = @Content),
         @ApiResponse(responseCode = "404", description = "Server Error", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Server Error", content = @Content),
         @ApiResponse(responseCode = "500", description = "Server Error", content = @Content)
 })
 public class AuthController {
