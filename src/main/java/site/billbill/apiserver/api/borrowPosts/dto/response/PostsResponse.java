@@ -48,6 +48,8 @@ public class PostsResponse {
         private List<NoRentalPeriodResponse> noRentalPeriod;
         private String categoryId;
         private String categoryName;
+        private String userId;
+        private String userName;
 
     }
     @Getter

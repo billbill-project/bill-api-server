@@ -75,9 +75,11 @@ public class PostsServiceImpl implements PostsService {
         return PostsConverter.toViewAllList(items);
     }
 
-    public PostsResponse.ViewPostResponse ViewPostService(String postId){
+    public PostsResponse.ViewPostResponse ViewPostService(String postId,String userId){
         ItemsJpaEntity item=itemsRepository.findById(postId).orElse(null);
         ItemsBorrowJpaEntity borrowItem=itemsBorrowRepository.findById(postId).orElse(null);
+        UserJpaEntity user = userRepository.findById(userId).orElse(null);
+
         List<ItemsBorrowStatusJpaEntity> borrowStatus=itemsBorrowStatusRepository.findAllByItemIdAndBorrowStatusCode(postId,"RENTAL_NOT_POSSIBLE");
         List<PostsResponse.NoRentalPeriodResponse> noRentalPeriods=borrowStatus.stream().map(PostsConverter::toNoRentalPeriod).toList();
         if(item==null){
@@ -102,7 +104,7 @@ public class PostsServiceImpl implements PostsService {
                 break;
 
         }
-        return PostsConverter.toViewPost(item,borrowItem,noRentalPeriods,status);
+        return PostsConverter.toViewPost(item,borrowItem,noRentalPeriods,status,user);
 
     }
     @Transactional
