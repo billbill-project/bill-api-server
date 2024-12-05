@@ -70,6 +70,7 @@ public class JWTUtil {
                 .compact();
 
         return JwtDto.builder()
+                .userId(userId)
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .grantType("Bearer")

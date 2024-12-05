@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class JwtDto {
+    @Schema(description = "유저 ID", example = "USER-XXXXX...")
+    private String userId;
     @Schema(description = "엑세스 토큰", example = "accessToken(20min)")
     private String accessToken;
     @Schema(description = "리프레쉬 토큰", example = "refreshToken(4weeks)")
