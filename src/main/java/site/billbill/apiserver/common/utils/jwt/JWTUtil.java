@@ -69,7 +69,7 @@ public class JWTUtil {
                 .claim("type", "RT")
                 .compact();
 
-        return new JwtDto(accessToken, refreshToken, "Bearer", accessTokenExpiresIn.getTime() / 1000, role.name());
+        return new JwtDto(userId, accessToken, refreshToken, "Bearer", accessTokenExpiresIn.getTime() / 1000, role.name());
     }
 
     public boolean isValidAccessToken(String token) {
