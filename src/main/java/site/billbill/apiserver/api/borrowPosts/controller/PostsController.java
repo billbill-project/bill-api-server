@@ -83,8 +83,11 @@ public class PostsController {
     @Operation(summary = "게시물 조회", description = "게시물 상세 조회")
     @GetMapping("/{postId}")
     public BaseResponse<PostsResponse.ViewPostResponse> getPostController(@PathVariable(value = "postId",required = true)String postId){
-
-        return new BaseResponse<>(postsService.ViewPostService(postId));
+        String userId = "";
+        if(MDC.get(JWTUtil.MDC_USER_ID) != null) {
+            userId=  MDC.get(JWTUtil.MDC_USER_ID).toString();
+        }
+        return new BaseResponse<>(postsService.ViewPostService(postId,userId));
     }
     @Operation(summary = "게시물 삭제", description = "게시물 삭제")
     @DeleteMapping("/{postId}")

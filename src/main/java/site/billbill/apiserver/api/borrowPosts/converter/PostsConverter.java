@@ -66,7 +66,7 @@ public class PostsConverter {
     public static PostsResponse.ViewAllResultResponse toViewAllList(List<PostsResponse.Post> posts){
         return PostsResponse.ViewAllResultResponse.builder().result(posts).build();
     }
-    public static PostsResponse.ViewPostResponse toViewPost(ItemsJpaEntity item, ItemsBorrowJpaEntity borrowItem, List<PostsResponse.NoRentalPeriodResponse> noRental, String status){
+    public static PostsResponse.ViewPostResponse toViewPost(ItemsJpaEntity item, ItemsBorrowJpaEntity borrowItem, List<PostsResponse.NoRentalPeriodResponse> noRental, String status,UserJpaEntity user){
         return PostsResponse.ViewPostResponse.builder()
                 .postId(item.getId())
                 .title(item.getTitle())
@@ -79,6 +79,8 @@ public class PostsConverter {
                 .itemStatus(status)
                 .categoryId(item.getCategory().getId())
                 .categoryName(item.getCategory().getName())
+                .userId(user.getUserId())
+                .userName(user.getNickname())
                 .build();
     }
     public static PostsResponse.NoRentalPeriodResponse toNoRentalPeriod(ItemsBorrowStatusJpaEntity borrowStatus){
