@@ -19,7 +19,7 @@ public interface PostsService {
 
     PostsResponse.ViewAllResultResponse ViewSearchPostService(String userId,String category, int page, Sort.Direction direction, String orderType,String keyword,boolean state);
 
-    List<String> findSearchService(String userId);
+    PostsResponse.saveSearchListResponse findSearchService(String userId);
 
     List<String> findRecommandService();
 

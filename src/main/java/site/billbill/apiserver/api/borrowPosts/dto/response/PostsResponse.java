@@ -55,6 +55,20 @@ public class PostsResponse {
     @Getter
     @Setter
     @Builder
+    public static class saveSearchListResponse{
+        private List<saveSearch> results;
+    }
+    @Getter
+    @Setter
+    @Builder
+    public static class saveSearch{
+        private Long id;
+        private String keyword;
+    }
+
+    @Getter
+    @Setter
+    @Builder
     public static class NoRentalPeriodResponse{
         private String startDate;
         private String endDate;

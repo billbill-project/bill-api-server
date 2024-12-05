@@ -181,11 +181,11 @@ public class PostsServiceImpl implements PostsService {
         return PostsConverter.toViewAllList(items);
     }
 
-    public List<String> findSearchService(String userId){
+    public PostsResponse.saveSearchListResponse findSearchService(String userId){
         UserJpaEntity user = userRepository.findById(userId).orElse(null);
         List<UserSearchHistJpaEntity> searchHists=userSearchHistRepository.findByUserAndDelYnOrderByCreatedAtDesc(user,false);
-        List<String> result= searchHists.stream().map(searchHist-> PostsConverter.toUserSearchHist(searchHist)).toList();
-        return result;
+        List<PostsResponse.saveSearch> result= searchHists.stream().map(searchHist-> PostsConverter.toUserSearchHist(searchHist)).toList();
+        return PostsConverter.toUserSearhList(result);
 
     }
 

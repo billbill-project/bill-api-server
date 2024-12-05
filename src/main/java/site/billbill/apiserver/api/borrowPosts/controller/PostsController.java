@@ -101,13 +101,14 @@ public class PostsController {
     }
     @Operation(summary = "저장한 검색어 불러오기", description = "저장한 검색어 불러오기")
     @GetMapping("/searchHist")
-    public BaseResponse<List<String>> getSearchHistController(){
+    public BaseResponse<PostsResponse.saveSearchListResponse> getSearchHistController(){
         String userId = "";
         if(MDC.get(JWTUtil.MDC_USER_ID) != null) {
             userId=  MDC.get(JWTUtil.MDC_USER_ID).toString();
         }
         return new BaseResponse<>(postsService.findSearchService(userId));
     }
+
     @Operation(summary = "추천 검색어 불러오기", description = "추천 검색어 주기")
     @GetMapping("/recommend")
     public BaseResponse<List<String>> getRecommendController(){

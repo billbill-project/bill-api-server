@@ -99,8 +99,12 @@ public class PostsConverter {
                 .keyword(keyword)
                 .searchCount(1).build();
     }
-    public static String toUserSearchHist(UserSearchHistJpaEntity userSearchHist){
-        return userSearchHist.getKeyword();
+    public static PostsResponse.saveSearch toUserSearchHist(UserSearchHistJpaEntity userSeachHistory){
+        return PostsResponse.saveSearch.builder().id(userSeachHistory.getSearchId())
+                .keyword(userSeachHistory.getKeyword()).build();
+    }
+    public static PostsResponse.saveSearchListResponse toUserSearhList(List<PostsResponse.saveSearch> savedSearches){
+        return PostsResponse.saveSearchListResponse.builder().results(savedSearches).build();
     }
     public static String toRecommandSearch(SearchKeywordStatsJpaEntity searchKeywordStats){
         return searchKeywordStats.getKeyword();
