@@ -17,7 +17,7 @@ public class UserSearchHistJpaEntity extends BaseTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "search_seq", nullable = false)
-    private String searchId;
+    private Long searchId;
     @Column(name = "keyword", nullable = true)
     private String keyword;
     @Column(name = "del_yn", nullable = false)
