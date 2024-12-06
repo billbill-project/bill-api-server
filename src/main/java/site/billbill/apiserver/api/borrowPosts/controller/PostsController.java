@@ -69,16 +69,14 @@ public class PostsController {
             @Parameter(name = "sortBy", description = "정렬 기준 (예: price, createdAt, likeCount)", example = "createdAt", in = ParameterIn.QUERY, required = true)
             @RequestParam(value="sortBy",required = true,defaultValue = "accuracy") String sortBy,
             @Parameter(name="keyword",description = "검색 키워드(예: 6인용+텐트)",in = ParameterIn.QUERY, required = true)
-            @RequestParam(value = "keyword",required = true) String keyword,
-            @Parameter(name = "state",description = "검색어 저장 여부", in = ParameterIn.QUERY, required = true)
-            @RequestParam(value = "state",required = true,defaultValue = "true") boolean state) {
+            @RequestParam(value = "keyword",required = true) String keyword){
 
         String userId = "";
         if(MDC.get(JWTUtil.MDC_USER_ID) != null) {
             userId=  MDC.get(JWTUtil.MDC_USER_ID).toString();
         }
         Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
-        return new BaseResponse<>(postsService.ViewSearchPostService(userId,category, page, direction, sortBy,keyword,state));
+        return new BaseResponse<>(postsService.ViewSearchPostService(userId,category, page, direction, sortBy,keyword,false));
     }
     @Operation(summary = "게시물 조회", description = "게시물 상세 조회")
     @GetMapping("/{postId}")
@@ -99,15 +97,15 @@ public class PostsController {
         }
         return new BaseResponse<>(postsService.deletePostService(postId,userId));
     }
-    @Operation(summary = "저장한 검색어 불러오기", description = "저장한 검색어 불러오기")
-    @GetMapping("/searchHist")
-    public BaseResponse<PostsResponse.saveSearchListResponse> getSearchHistController(){
-        String userId = "";
-        if(MDC.get(JWTUtil.MDC_USER_ID) != null) {
-            userId=  MDC.get(JWTUtil.MDC_USER_ID).toString();
-        }
-        return new BaseResponse<>(postsService.findSearchService(userId));
-    }
+//    @Operation(summary = "저장한 검색어 불러오기", description = "저장한 검색어 불러오기")
+//    @GetMapping("/searchHist")
+//    public BaseResponse<PostsResponse.saveSearchListResponse> getSearchHistController(){
+//        String userId = "";
+//        if(MDC.get(JWTUtil.MDC_USER_ID) != null) {
+//            userId=  MDC.get(JWTUtil.MDC_USER_ID).toString();
+//        }
+//        return new BaseResponse<>(postsService.findSearchService(userId));
+//    }
 
     @Operation(summary = "추천 검색어 불러오기", description = "추천 검색어 주기")
     @GetMapping("/recommend")
