@@ -163,11 +163,11 @@ public class PostsServiceImpl implements PostsService {
         List<PostsResponse.Post> items = findAndConvertItems(category, pageable, keyword);
         //사용자가 검색어 저장을 허용했을 경우
         String tempKeyword = keyword.replaceAll("\\+", " ");
-        if(state){
-
-            UserSearchHistJpaEntity userSearchHist= PostsConverter.toUserSearch(user,tempKeyword);
-            userSearchHistRepository.save(userSearchHist);
-        }
+//        if(state){
+//
+//            UserSearchHistJpaEntity userSearchHist= PostsConverter.toUserSearch(user,tempKeyword);
+//            userSearchHistRepository.save(userSearchHist);
+//        }
         //추천 검색어를 위해 검색어 를 저장
         SearchKeywordStatsJpaEntity searchKeywordStats = searchKeywordStatRepository.findByKeyword(tempKeyword);
         if(searchKeywordStats!=null){
