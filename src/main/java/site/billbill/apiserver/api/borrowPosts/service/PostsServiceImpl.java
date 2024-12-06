@@ -37,6 +37,7 @@ public class PostsServiceImpl implements PostsService {
     private  final ItemsCategoryRepository itemsCategoryRepository;
     private final UserSearchHistRepository userSearchHistRepository;
     private final SearchKeywordStatRepository searchKeywordStatRepository;
+    private final ItemsReivewRepository itemsReivewRepository;
     public PostsResponse.UploadResponse uploadPostService(PostsRequest.UploadRequest request,String userId){
         //먼저 item 생성,
         Optional<UserJpaEntity> isUser=userRepository.findById(userId);
@@ -194,6 +195,25 @@ public class PostsServiceImpl implements PostsService {
         List<String> result =searchKeywordStats.stream().map(searchKeywordStat-> PostsConverter.toRecommandSearch(searchKeywordStat)).toList();
         return result;
     }
+
+    public PostsResponse.ReviewIdResponse DoReviewPostService(String postId,String userId,PostsRequest.ReviewRequest request){
+        UserJpaEntity user = userRepository.findById(userId).orElse(null);
+        ItemsJpaEntity item=itemsRepository.findById(postId).orElse(null);
+        String postsId = ULIDUtil.generatorULID("REVIEW");
+        if (item == null) {
+            throw new CustomException(ErrorCode.BadRequest, "올바른 게시물 아이디가 아닙니다.", HttpStatus.BAD_REQUEST);
+        }else if(request.getRating()>=6||request.getRating()<=0){
+            throw new CustomException(ErrorCode.BadRequest, "평점이 올바르지 않습니다. 1~5 사이로 입력해주셔야합니다.", HttpStatus.BAD_REQUEST);
+        }
+        ItemsReviewJpaEntity review=PostsConverter.toItemsReview(user,item,request,postsId);
+        itemsReivewRepository.save(review);
+
+        return PostsConverter.toReviewIdResponse(item,review);
+    }
+
+
+
+
     //모듈화 코드
 
     private Pageable createPageable(int page, Sort.Direction direction, String orderType) {

@@ -123,6 +123,17 @@ public class PostsController {
         return new BaseResponse<>(postsService.UpdatePostService(postId,userId,request));
     }
 
+    @Operation(summary="리뷰작성",description = "리뷰 작성")
+    @PostMapping("/reviews/{postId}")
+    public BaseResponse<PostsResponse.ReviewIdResponse> reviewPostController(@PathVariable(value="postId",required = true)String postId,
+                                                     @RequestBody @Valid PostsRequest.ReviewRequest request){
+
+        String userId = "";
+        if(MDC.get(JWTUtil.MDC_USER_ID) != null) {
+            userId=  MDC.get(JWTUtil.MDC_USER_ID).toString();
+        }
+        return new BaseResponse<>(postsService.DoReviewPostService(postId,userId,request));
+    }
 
 
 }

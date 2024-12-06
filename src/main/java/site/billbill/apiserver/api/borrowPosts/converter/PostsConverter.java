@@ -109,6 +109,22 @@ public class PostsConverter {
     public static String toRecommandSearch(SearchKeywordStatsJpaEntity searchKeywordStats){
         return searchKeywordStats.getKeyword();
     }
+    public static ItemsReviewJpaEntity toItemsReview(UserJpaEntity user,ItemsJpaEntity item,PostsRequest.ReviewRequest request ,String reviewId){
+        return ItemsReviewJpaEntity.builder()
+                .id(reviewId)
+                .items(item)
+                .user(user)
+                .rating(request.getRating())
+                .content(request.getContent())
+                .build();
+
+    }
+    public static PostsResponse.ReviewIdResponse toReviewIdResponse(ItemsJpaEntity item, ItemsReviewJpaEntity review){
+        return PostsResponse.ReviewIdResponse.builder()
+                .itemId(item.getId())
+                .reviewId(review.getId())
+                .build();
+    }
 
 
 }

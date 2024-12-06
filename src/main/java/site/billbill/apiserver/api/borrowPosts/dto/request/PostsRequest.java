@@ -41,4 +41,13 @@ public class PostsRequest {
         private LocalDate startDate;
         private LocalDate endDate;
     }
+
+    @Getter
+    @Setter
+    @Builder
+    public static class ReviewRequest{
+        @Schema(description = "평점", example = "1~5 사이로 입력해주셔야합니다. 그 외엔 오류 처리")
+        private int rating;
+        private String content;
+    }
 }

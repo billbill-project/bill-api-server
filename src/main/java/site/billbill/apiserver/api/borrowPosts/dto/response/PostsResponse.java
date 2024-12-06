@@ -73,4 +73,11 @@ public class PostsResponse {
         private String startDate;
         private String endDate;
     }
+    @Getter
+    @Setter
+    @Builder
+    public static class ReviewIdResponse{
+        private String itemId;
+        private String reviewId;
+    }
 }
