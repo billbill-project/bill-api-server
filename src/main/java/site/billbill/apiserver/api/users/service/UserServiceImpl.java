@@ -7,16 +7,19 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import site.billbill.apiserver.api.auth.dto.request.DeviceRequest;
 import site.billbill.apiserver.api.users.dto.response.*;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.jwt.JWTUtil;
 import site.billbill.apiserver.common.utils.posts.ItemHistoryType;
 import site.billbill.apiserver.exception.CustomException;
 import site.billbill.apiserver.model.user.UserBlacklistJpaEntity;
+import site.billbill.apiserver.model.user.UserDeviceJpaEntity;
 import site.billbill.apiserver.model.user.UserIdentityJpaEntity;
 import site.billbill.apiserver.model.user.UserJpaEntity;
 import site.billbill.apiserver.repository.borrowPosts.ItemsRepository;
 import site.billbill.apiserver.repository.user.UserBlacklistRepository;
+import site.billbill.apiserver.repository.user.UserDeviceRepository;
 import site.billbill.apiserver.repository.user.UserIdentityRepository;
 import site.billbill.apiserver.repository.user.UserRepository;
 
@@ -32,6 +35,7 @@ public class UserServiceImpl implements UserService {
     private final UserBlacklistRepository userBlacklistRepository;
     private final ItemsRepository itemsRepository;
     private final JWTUtil jWTUtil;
+    private final UserDeviceRepository userDeviceRepository;
 
     @Override
     public ProfileResponse getProfileInfo() {
@@ -121,5 +125,20 @@ public class UserServiceImpl implements UserService {
         String userId = MDC.get(JWTUtil.MDC_USER_ID);
 
         return itemsRepository.getWishlists(userId, pageable);
+    }
+
+    @Override
+    public void updateDevice(DeviceRequest request) {
+        String userId = MDC.get(JWTUtil.MDC_USER_ID);
+        Optional<UserDeviceJpaEntity> userDeviceOptional = userDeviceRepository.findById(userId);
+
+        if(userDeviceOptional.isEmpty()) throw new CustomException(ErrorCode.NotFound, "디바이스 정보가 존재하지 않습니다.", HttpStatus.NOT_FOUND);
+
+        UserDeviceJpaEntity userDevice = userDeviceOptional.get();
+
+        userDevice.setDeviceToken(request.getDeviceToken());
+        userDevice.setDeviceType(request.getDeviceType());
+        userDevice.setAppVersion(request.getAppVersion());
+        userDeviceRepository.save(userDevice);
     }
 }
