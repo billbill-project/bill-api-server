@@ -1,18 +1,14 @@
 package site.billbill.apiserver.api.s3.Service;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.S3Resource;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.multipart.MultipartFile;
 import site.billbill.apiserver.api.s3.converter.S3Converter;
-import site.billbill.apiserver.api.s3.dto.request.S3Request;
 import site.billbill.apiserver.api.s3.dto.response.S3Response;
 
 import java.io.File;
@@ -34,7 +30,7 @@ public class S3ServiceImpl implements S3Service {
     private String CHATS_IMG_DIR="chats/";
     private String USERS_IMG_DIR="users/";
     @Override
-    public S3Response.uploadResponse uploadPostsFiles(List<MultipartFile> files, String userId){
+    public S3Response.uploadS3Response uploadPostsFiles(List<MultipartFile> files, String userId){
 
         StringBuilder imgDir= new StringBuilder();
         imgDir.append(Posts_IMG_DIR)
@@ -55,7 +51,7 @@ public class S3ServiceImpl implements S3Service {
     }
 
     @Override
-    public S3Response.uploadResponse uploadChatFiles(List<MultipartFile> files,String userId,long id){
+    public S3Response.uploadS3Response uploadChatFiles(List<MultipartFile> files, String userId, String id){
         StringBuilder imgDir= new StringBuilder();
         imgDir.append(CHATS_IMG_DIR)
                 .append(File.separator) // 운영 체제에 맞는 구분자를 추가
@@ -73,7 +69,7 @@ public class S3ServiceImpl implements S3Service {
         return S3Converter.toS3UploadResponse(list);
     }
     @Override
-    public S3Response.uploadResponse uploadUserFiles(List<MultipartFile> files){
+    public S3Response.uploadS3Response uploadUserFiles(List<MultipartFile> files){
 
         List<String>list=files.stream()
                 .map(file->{
