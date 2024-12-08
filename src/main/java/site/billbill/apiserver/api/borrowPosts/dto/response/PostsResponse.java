@@ -27,6 +27,7 @@ public class PostsResponse {
     public static class Post{
         private String postId;
         private String image;
+        private String title;
         private int price;
         private String userId;
         private String userName;
@@ -47,8 +48,24 @@ public class PostsResponse {
         private List<NoRentalPeriodResponse> noRentalPeriod;
         private String categoryId;
         private String categoryName;
+        private String userId;
+        private String userName;
 
     }
+    @Getter
+    @Setter
+    @Builder
+    public static class saveSearchListResponse{
+        private List<saveSearch> results;
+    }
+    @Getter
+    @Setter
+    @Builder
+    public static class saveSearch{
+        private Long id;
+        private String keyword;
+    }
+
     @Getter
     @Setter
     @Builder

@@ -11,11 +11,13 @@ import site.billbill.apiserver.model.post.ItemsJpaEntity;
 import java.util.List;
 
 public interface ItemDslRepository {
-    Page<ItemsJpaEntity> findItemsWithConditions(String category, Pageable pageable, String sortField);
+
+    Page<ItemsJpaEntity> findItemsWithConditions(String category, Pageable pageable, String sortField,String keyword);
 
     List<PostHistoryResponse> getPostHistory(String userId, Pageable pageable);
 
     List<BorrowHistoryResponse> getBorrowHistory(String userId, Pageable pageable, ItemHistoryType type);
 
     List<WishlistResponse> getWishlists(String userId, Pageable pageable);
+
 }

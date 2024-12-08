@@ -11,8 +11,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import site.billbill.apiserver.api.auth.dto.request.*;
+import site.billbill.apiserver.api.auth.dto.response.NicknameResponse;
 import site.billbill.apiserver.api.auth.service.AuthService;
 import site.billbill.apiserver.api.auth.service.OAuthService;
+import site.billbill.apiserver.api.users.service.UserService;
 import site.billbill.apiserver.common.response.BaseResponse;
 import site.billbill.apiserver.common.utils.jwt.dto.JwtDto;
 
@@ -30,6 +32,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final OAuthService oAuthService;
+    private final UserService userService;
 
     @Operation(summary = "회원 가입(일반)", description = "일반 회원 가입 API")
     @ResponseStatus(HttpStatus.CREATED)
@@ -64,4 +67,14 @@ public class AuthController {
     public BaseResponse<JwtDto> identity(@RequestBody IdentityVerificationRequest request) {
         return null;
     }
+
+    @Operation(summary = "닉네임 중복검사", description = "닉네임 중복검사")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/nickname")
+    public BaseResponse<NicknameResponse> getNicknameValidity(@RequestParam String nickname) {
+        return new BaseResponse<>(NicknameResponse.builder()
+                .valid(authService.getNicknameValidity(nickname))
+                .build());
+    }
+
 }

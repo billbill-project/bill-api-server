@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import site.billbill.apiserver.api.auth.dto.request.DeviceRequest;
 import site.billbill.apiserver.api.users.dto.request.BlacklistRequest;
 import site.billbill.apiserver.api.users.dto.response.*;
 import site.billbill.apiserver.api.users.service.UserService;
@@ -115,5 +116,13 @@ public class UserController {
     ) {
         Pageable pageable = PageRequest.of((page < 1 ? 0 : page - 1), size);
         return new BaseResponse<>(userService.getWishlists(pageable));
+    }
+
+    @Operation(summary = "내 디바이스 업데이트", description = "내 디바이스 정보를 업데이트하는 API")
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/device")
+    public BaseResponse<String> updateDevice(@RequestBody DeviceRequest request) {
+        userService.updateDevice(request);
+        return new BaseResponse<>(null);
     }
 }

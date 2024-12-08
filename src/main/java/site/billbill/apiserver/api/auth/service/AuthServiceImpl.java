@@ -118,6 +118,11 @@ public class AuthServiceImpl implements AuthService {
         return false;
     }
 
+    @Override
+    public boolean getNicknameValidity(String nickname) {
+        return !userRepository.existsByNickname(nickname);
+    }
+
     /**
      * Method that if user is withdrawn
      *

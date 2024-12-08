@@ -19,7 +19,7 @@ public class ItemsCategoryJpaEntity {
     private String id;
 
     @ManyToOne
-    @JoinColumn(name="uppder_cat_id",nullable = false)
+    @JoinColumn(name="upper_cat_id",nullable = false)
     private ItemsCategoryJpaEntity upperCategory;
 
     @Column(name="name")

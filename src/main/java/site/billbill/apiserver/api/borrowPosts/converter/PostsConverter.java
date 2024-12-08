@@ -2,10 +2,10 @@ package site.billbill.apiserver.api.borrowPosts.converter;
 
 import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
 import site.billbill.apiserver.api.borrowPosts.dto.response.PostsResponse;
-import site.billbill.apiserver.model.post.ItemsBorrowJpaEntity;
-import site.billbill.apiserver.model.post.ItemsBorrowStatusJpaEntity;
-import site.billbill.apiserver.model.post.ItemsJpaEntity;
+import site.billbill.apiserver.model.post.*;
 import site.billbill.apiserver.model.user.UserJpaEntity;
+import site.billbill.apiserver.model.user.UserSearchHistJpaEntity;
+import site.billbill.apiserver.repository.borrowPosts.SearchKeywordStatRepository;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -20,7 +20,7 @@ public class PostsConverter {
                 postId(id).
                 build();
     }
-    public static ItemsJpaEntity toItem(String postId,PostsRequest.UploadRequest request, UserJpaEntity user){
+    public static ItemsJpaEntity toItem(String postId, PostsRequest.UploadRequest request, UserJpaEntity user, ItemsCategoryJpaEntity category){
         return ItemsJpaEntity.builder()
                 .id(postId)
                 .title(request.getTitle())
@@ -29,6 +29,7 @@ public class PostsConverter {
                 .owner(user)
                 .viewCount(0)
                 .images(request.getImages())
+                .category(category)
                 .itemStatus(request.getItemStatus()).build();
     }
     public static ItemsBorrowJpaEntity toItemBorrow(ItemsJpaEntity item, PostsRequest.UploadRequest request){
@@ -50,6 +51,7 @@ public class PostsConverter {
     public static PostsResponse.Post toPost(ItemsJpaEntity item,ItemsBorrowJpaEntity borrowItem){
         return PostsResponse.Post.builder()
                 .postId(item.getId())
+                .title(item.getTitle())
                 .image(Optional.ofNullable(item.getImages())
                         .filter(images -> !images.isEmpty())
                         .map(images -> images.get(0))
@@ -64,7 +66,7 @@ public class PostsConverter {
     public static PostsResponse.ViewAllResultResponse toViewAllList(List<PostsResponse.Post> posts){
         return PostsResponse.ViewAllResultResponse.builder().result(posts).build();
     }
-    public static PostsResponse.ViewPostResponse toViewPost(ItemsJpaEntity item, ItemsBorrowJpaEntity borrowItem, List<PostsResponse.NoRentalPeriodResponse> noRental, String status){
+    public static PostsResponse.ViewPostResponse toViewPost(ItemsJpaEntity item, ItemsBorrowJpaEntity borrowItem, List<PostsResponse.NoRentalPeriodResponse> noRental, String status,UserJpaEntity user){
         return PostsResponse.ViewPostResponse.builder()
                 .postId(item.getId())
                 .title(item.getTitle())
@@ -77,6 +79,8 @@ public class PostsConverter {
                 .itemStatus(status)
                 .categoryId(item.getCategory().getId())
                 .categoryName(item.getCategory().getName())
+                .userId(user.getUserId())
+                .userName(user.getNickname())
                 .build();
     }
     public static PostsResponse.NoRentalPeriodResponse toNoRentalPeriod(ItemsBorrowStatusJpaEntity borrowStatus){
@@ -85,5 +89,26 @@ public class PostsConverter {
                 .endDate(borrowStatus.getEndDate().format(DATE_FORMATTER))
                 .build();
     }
+    public static UserSearchHistJpaEntity toUserSearch(UserJpaEntity user,String keyword){
+        return UserSearchHistJpaEntity.builder()
+                .keyword(keyword)
+                .user(user).build();
+    }
+    public static SearchKeywordStatsJpaEntity toSearchKeywordStats(String keyword){
+        return SearchKeywordStatsJpaEntity.builder()
+                .keyword(keyword)
+                .searchCount(1).build();
+    }
+    public static PostsResponse.saveSearch toUserSearchHist(UserSearchHistJpaEntity userSeachHistory){
+        return PostsResponse.saveSearch.builder().id(userSeachHistory.getSearchId())
+                .keyword(userSeachHistory.getKeyword()).build();
+    }
+    public static PostsResponse.saveSearchListResponse toUserSearhList(List<PostsResponse.saveSearch> savedSearches){
+        return PostsResponse.saveSearchListResponse.builder().results(savedSearches).build();
+    }
+    public static String toRecommandSearch(SearchKeywordStatsJpaEntity searchKeywordStats){
+        return searchKeywordStats.getKeyword();
+    }
+
 
 }
