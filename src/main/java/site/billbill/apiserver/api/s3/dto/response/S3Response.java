@@ -1,5 +1,6 @@
 package site.billbill.apiserver.api.s3.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import java.util.List;
@@ -10,7 +11,8 @@ import java.util.List;
 public class S3Response {
     @Builder
     @Getter
-    public static class uploadResponse{
+    @Schema(description = "S3 업로드 응답")
+    public static class uploadS3Response {
         private List<String> urls;
     }
 
