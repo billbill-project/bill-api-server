@@ -17,10 +17,12 @@ import site.billbill.apiserver.model.user.UserBlacklistJpaEntity;
 import site.billbill.apiserver.model.user.UserDeviceJpaEntity;
 import site.billbill.apiserver.model.user.UserIdentityJpaEntity;
 import site.billbill.apiserver.model.user.UserJpaEntity;
+import site.billbill.apiserver.model.user.UserLocationJpaEntity;
 import site.billbill.apiserver.repository.borrowPosts.ItemsRepository;
 import site.billbill.apiserver.repository.user.UserBlacklistRepository;
 import site.billbill.apiserver.repository.user.UserDeviceRepository;
 import site.billbill.apiserver.repository.user.UserIdentityRepository;
+import site.billbill.apiserver.repository.user.UserLocationReposity;
 import site.billbill.apiserver.repository.user.UserRepository;
 
 import java.util.List;
@@ -35,6 +37,7 @@ public class UserServiceImpl implements UserService {
     private final UserBlacklistRepository userBlacklistRepository;
     private final ItemsRepository itemsRepository;
     private final JWTUtil jWTUtil;
+    private final UserLocationReposity userLocationReposity;
     private final UserDeviceRepository userDeviceRepository;
 
     @Override
@@ -48,8 +51,9 @@ public class UserServiceImpl implements UserService {
     public ProfileResponse getProfileInfo(String userId) {
         Optional<UserJpaEntity> user = userRepository.findById(userId);
         Optional<UserIdentityJpaEntity> userIdentity = userIdentityRepository.findById(userId);
+        Optional<UserLocationJpaEntity> userLocation = userLocationReposity.findById(userId);
 
-        if (user.isEmpty() || userIdentity.isEmpty()) {
+        if (user.isEmpty() || userIdentity.isEmpty() || userLocation.isEmpty()) {
             throw new CustomException(ErrorCode.NotFound, "회원을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
         }
 
@@ -59,6 +63,11 @@ public class UserServiceImpl implements UserService {
                 .nickname(user.get().getNickname())
                 .phoneNumber(userIdentity.get().getPhoneNumber())
                 .provider(user.get().getProvider())
+                .location(LocationResponse.builder()
+                        .address(userLocation.get().getAddress())
+                        .longitude(userLocation.get().getLongitude())
+                        .latitude(userLocation.get().getLatitude())
+                        .build())
                 .build();
     }
 
