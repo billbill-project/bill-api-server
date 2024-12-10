@@ -2,6 +2,7 @@ package site.billbill.apiserver.api.users.service;
 
 import org.springframework.data.domain.Pageable;
 import site.billbill.apiserver.api.auth.dto.request.DeviceRequest;
+import site.billbill.apiserver.api.auth.dto.request.LocationRequest;
 import site.billbill.apiserver.api.users.dto.response.*;
 import site.billbill.apiserver.common.utils.posts.ItemHistoryType;
 
@@ -27,4 +28,6 @@ public interface UserService {
     List<WishlistResponse> getWishlists(Pageable pageable);
 
     void updateDevice(DeviceRequest request);
+
+    void saveLocation(String userId, LocationRequest location);
 }

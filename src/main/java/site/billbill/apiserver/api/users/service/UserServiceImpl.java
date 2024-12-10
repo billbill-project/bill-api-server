@@ -2,12 +2,17 @@ package site.billbill.apiserver.api.users.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.slf4j.MDC;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import site.billbill.apiserver.api.auth.dto.request.DeviceRequest;
+import site.billbill.apiserver.api.auth.dto.request.LocationRequest;
 import site.billbill.apiserver.api.users.dto.response.*;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.jwt.JWTUtil;
@@ -26,6 +31,7 @@ import site.billbill.apiserver.repository.user.UserLocationReposity;
 import site.billbill.apiserver.repository.user.UserRepository;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -37,8 +43,10 @@ public class UserServiceImpl implements UserService {
     private final UserBlacklistRepository userBlacklistRepository;
     private final ItemsRepository itemsRepository;
     private final JWTUtil jWTUtil;
-    private final UserLocationReposity userLocationReposity;
+    private final UserLocationReposity userLocationRepository;
     private final UserDeviceRepository userDeviceRepository;
+
+    private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
     @Override
     public ProfileResponse getProfileInfo() {
@@ -51,7 +59,7 @@ public class UserServiceImpl implements UserService {
     public ProfileResponse getProfileInfo(String userId) {
         Optional<UserJpaEntity> user = userRepository.findById(userId);
         Optional<UserIdentityJpaEntity> userIdentity = userIdentityRepository.findById(userId);
-        Optional<UserLocationJpaEntity> userLocation = userLocationReposity.findById(userId);
+        Optional<UserLocationJpaEntity> userLocation = userLocationRepository.findById(userId);
 
         if (user.isEmpty() || userIdentity.isEmpty()) {
             throw new CustomException(ErrorCode.NotFound, "회원을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
@@ -152,5 +160,34 @@ public class UserServiceImpl implements UserService {
         userDevice.setDeviceType(request.getDeviceType());
         userDevice.setAppVersion(request.getAppVersion());
         userDeviceRepository.save(userDevice);
+    }
+
+    /**
+     * Method that save location
+     *
+     * @param location address, longitude, latitude
+     */
+    @Override
+    @Transactional
+    public void saveLocation(
+            String userId,
+            LocationRequest location
+    ) {
+        userId = Objects.requireNonNullElse(userId, MDC.get(JWTUtil.MDC_USER_ID));
+
+        // check if location already exists
+        Optional<UserLocationJpaEntity> locationJpaEntity = userLocationRepository.findByUserId(userId);
+        UserLocationJpaEntity userLocation = locationJpaEntity.orElseGet(UserLocationJpaEntity::new); // if not exists, use new
+
+        // 좌표 계산
+        Point coordinates = geometryFactory.createPoint(new Coordinate(location.getLongitude(), location.getLatitude()));
+
+        userLocation.setUserId(userId);
+        userLocation.setLatitude(location.getLatitude());
+        userLocation.setLongitude(location.getLongitude());
+        userLocation.setAddress(location.getAddress());
+        userLocation.setCoordinates(coordinates);
+
+        userLocationRepository.save(userLocation);
     }
 }
