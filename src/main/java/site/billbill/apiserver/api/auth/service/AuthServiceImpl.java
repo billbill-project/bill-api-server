@@ -163,6 +163,8 @@ public class AuthServiceImpl implements AuthService {
         Point coordinates = geometryFactory.createPoint(new Coordinate(location.getLongitude(), location.getLatitude()));
 
         userLocation.setUserId(userId);
+        userLocation.setLatitude(location.getLatitude());
+        userLocation.setLongitude(location.getLongitude());
         userLocation.setAddress(location.getAddress());
         userLocation.setCoordinates(coordinates);
 

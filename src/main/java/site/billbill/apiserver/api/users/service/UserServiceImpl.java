@@ -53,9 +53,15 @@ public class UserServiceImpl implements UserService {
         Optional<UserIdentityJpaEntity> userIdentity = userIdentityRepository.findById(userId);
         Optional<UserLocationJpaEntity> userLocation = userLocationReposity.findById(userId);
 
-        if (user.isEmpty() || userIdentity.isEmpty() || userLocation.isEmpty()) {
+        if (user.isEmpty() || userIdentity.isEmpty()) {
             throw new CustomException(ErrorCode.NotFound, "회원을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
         }
+
+        LocationResponse location = userLocation.map(userLocationJpaEntity -> LocationResponse.builder()
+                .address(userLocationJpaEntity.getAddress())
+                .longitude(userLocationJpaEntity.getLongitude())
+                .latitude(userLocationJpaEntity.getLatitude())
+                .build()).orElse(null);
 
         return ProfileResponse.builder()
                 .userId(userId)
@@ -63,11 +69,7 @@ public class UserServiceImpl implements UserService {
                 .nickname(user.get().getNickname())
                 .phoneNumber(userIdentity.get().getPhoneNumber())
                 .provider(user.get().getProvider())
-                .location(LocationResponse.builder()
-                        .address(userLocation.get().getAddress())
-                        .longitude(userLocation.get().getLongitude())
-                        .latitude(userLocation.get().getLatitude())
-                        .build())
+                .location(location)
                 .build();
     }
 
@@ -141,7 +143,8 @@ public class UserServiceImpl implements UserService {
         String userId = MDC.get(JWTUtil.MDC_USER_ID);
         Optional<UserDeviceJpaEntity> userDeviceOptional = userDeviceRepository.findById(userId);
 
-        if(userDeviceOptional.isEmpty()) throw new CustomException(ErrorCode.NotFound, "디바이스 정보가 존재하지 않습니다.", HttpStatus.NOT_FOUND);
+        if (userDeviceOptional.isEmpty())
+            throw new CustomException(ErrorCode.NotFound, "디바이스 정보가 존재하지 않습니다.", HttpStatus.NOT_FOUND);
 
         UserDeviceJpaEntity userDevice = userDeviceOptional.get();
 
