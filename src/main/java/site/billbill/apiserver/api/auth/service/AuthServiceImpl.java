@@ -17,6 +17,7 @@ import site.billbill.apiserver.api.auth.dto.request.IdentityRequest;
 import site.billbill.apiserver.api.auth.dto.request.LocationRequest;
 import site.billbill.apiserver.api.auth.dto.request.LoginRequest;
 import site.billbill.apiserver.api.auth.dto.request.SignupRequest;
+import site.billbill.apiserver.api.users.service.UserService;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.enums.user.UserRole;
 import site.billbill.apiserver.common.utils.ULID.ULIDUtil;
@@ -38,9 +39,8 @@ public class AuthServiceImpl implements AuthService {
     private final UserDeviceRepository userDeviceRepository;
     private final UserAgreeHistRepository userAgreeHistRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final UserService userService;
     private final JWTUtil jwtUtil;
-
-    private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
     @Override
     @Transactional
@@ -69,7 +69,7 @@ public class AuthServiceImpl implements AuthService {
         userAgreeHistRepository.save(userAgree);
 
         // save location
-        saveLocation(userId, request.getLocation());
+        userService.saveLocation(userId, request.getLocation());
 
         return jwtUtil.generateJwtDto(userId, UserRole.USER);
     }
@@ -142,30 +142,5 @@ public class AuthServiceImpl implements AuthService {
      */
     private boolean checkPassword(String password, String encryptedPassword) {
         return bCryptPasswordEncoder.matches(password, encryptedPassword);
-    }
-
-    /**
-     * Method that save location
-     *
-     * @param location address, longitude, latitude
-     */
-    @Transactional
-    protected void saveLocation(
-            String userId,
-            LocationRequest location
-    ) {
-        // TODO location.service 패키지로 이동 예정
-        // check if location already exists
-        Optional<UserLocationJpaEntity> locationJpaEntity = userLocationRepository.findByUserId(userId);
-        UserLocationJpaEntity userLocation = locationJpaEntity.orElseGet(UserLocationJpaEntity::new); // if not exists, use new
-
-        // 좌표 계산
-        Point coordinates = geometryFactory.createPoint(new Coordinate(location.getLongitude(), location.getLatitude()));
-
-        userLocation.setUserId(userId);
-        userLocation.setAddress(location.getAddress());
-        userLocation.setCoordinates(coordinates);
-
-        userLocationRepository.save(userLocation);
     }
 }
