@@ -13,6 +13,8 @@ import site.billbill.apiserver.api.push.dto.request.PushRequest;
 import site.billbill.apiserver.api.push.service.PushService;
 import site.billbill.apiserver.common.response.BaseResponse;
 
+import java.io.IOException;
+
 @Slf4j
 @RestController
 @Tag(name = "Push", description = "Push API")
@@ -29,7 +31,7 @@ public class PushController {
     @Operation(summary = "채팅 push 발송 API", description = "상대에게 채팅 push를 발송하는 API")
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/chat")
-    public BaseResponse<Boolean> sendChatFcm(@RequestBody PushRequest request) {
+    public BaseResponse<Boolean> sendChatFcm(@RequestBody PushRequest request) throws IOException {
         return new BaseResponse<>(pushService.sendPush(request));
     }
 }

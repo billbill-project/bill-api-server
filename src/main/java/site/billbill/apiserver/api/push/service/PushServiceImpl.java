@@ -26,7 +26,6 @@ public class PushServiceImpl implements PushService {
     @Override
     public boolean sendPush(PushRequest request) throws IOException {
         String userId = MDC.get(JWTUtil.MDC_USER_ID);
-
         Optional<UserDeviceJpaEntity> userDevice = userDeviceRepository.findById(userId);
 
         if(userDevice.isEmpty()) throw new CustomException(ErrorCode.NotFound, "User Device 정보가 존재하지 않습니다", HttpStatus.NOT_FOUND);

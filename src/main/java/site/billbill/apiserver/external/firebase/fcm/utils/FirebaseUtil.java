@@ -34,7 +34,7 @@ public class FirebaseUtil {
 
         HttpEntity entity = new HttpEntity<>(message, headers);
 
-        String API_URL = "<https://fcm.googleapis.com/v1/projects/adjh54-a0189/messages:send>";
+        String API_URL = "<https://fcm.googleapis.com/v1/projects/billbill-50fe2/messages:send>";
         ResponseEntity response = restTemplate.exchange(API_URL, HttpMethod.POST, entity, String.class);
 
         log.info("FCM Push send status : {}", response.getStatusCode());
