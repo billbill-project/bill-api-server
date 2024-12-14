@@ -14,10 +14,12 @@ import site.billbill.apiserver.api.borrowPosts.dto.response.PostsResponse;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.ULID.ULIDUtil;
 import site.billbill.apiserver.exception.CustomException;
+import site.billbill.apiserver.model.chat.ChatChannelJpaEntity;
 import site.billbill.apiserver.model.post.*;
 import site.billbill.apiserver.model.user.UserJpaEntity;
 import site.billbill.apiserver.model.user.UserSearchHistJpaEntity;
 import site.billbill.apiserver.repository.borrowPosts.*;
+import site.billbill.apiserver.repository.chat.ChatRepository;
 import site.billbill.apiserver.repository.user.UserRepository;
 import site.billbill.apiserver.repository.user.UserSearchHistRepository;
 
@@ -37,6 +39,9 @@ public class PostsServiceImpl implements PostsService {
     private  final ItemsCategoryRepository itemsCategoryRepository;
     private final UserSearchHistRepository userSearchHistRepository;
     private final SearchKeywordStatRepository searchKeywordStatRepository;
+    private final ItemsReivewRepository itemsReivewRepository;
+    private final ChatRepository chatRepository;
+    private final BorrowHistRepository borrowHistRepository;
     public PostsResponse.UploadResponse uploadPostService(PostsRequest.UploadRequest request,String userId){
         //먼저 item 생성,
         Optional<UserJpaEntity> isUser=userRepository.findById(userId);
@@ -80,8 +85,8 @@ public class PostsServiceImpl implements PostsService {
         ItemsBorrowJpaEntity borrowItem=itemsBorrowRepository.findById(postId).orElse(null);
         UserJpaEntity user = userRepository.findById(userId).orElse(null);
 
-        List<ItemsBorrowStatusJpaEntity> borrowStatus=itemsBorrowStatusRepository.findAllByItemIdAndBorrowStatusCode(postId,"RENTAL_NOT_POSSIBLE");
-        List<PostsResponse.NoRentalPeriodResponse> noRentalPeriods=borrowStatus.stream().map(PostsConverter::toNoRentalPeriod).toList();
+
+
         if(item==null){
             throw new CustomException(ErrorCode.BadRequest, "올바른 게시물 아이디가 아닙니다.", HttpStatus.BAD_REQUEST);
         }
@@ -104,7 +109,7 @@ public class PostsServiceImpl implements PostsService {
                 break;
 
         }
-        return PostsConverter.toViewPost(item,borrowItem,noRentalPeriods,status,user);
+        return PostsConverter.toViewPost(item,borrowItem,status,user);
 
     }
     @Transactional
@@ -194,6 +199,60 @@ public class PostsServiceImpl implements PostsService {
         List<String> result =searchKeywordStats.stream().map(searchKeywordStat-> PostsConverter.toRecommandSearch(searchKeywordStat)).toList();
         return result;
     }
+
+    public PostsResponse.ReviewIdResponse DoReviewPostService(String postId,String userId,PostsRequest.ReviewRequest request){
+        UserJpaEntity user = userRepository.findById(userId).orElse(null);
+        ItemsJpaEntity item=itemsRepository.findById(postId).orElse(null);
+        BorrowHistJapEntity borrwHist = borrowHistRepository.findBorrowHistByBorrower(user);
+        String postsId = ULIDUtil.generatorULID("REVIEW");
+        if (item == null) {
+            throw new CustomException(ErrorCode.BadRequest, "올바른 게시물 아이디가 아닙니다.", HttpStatus.BAD_REQUEST);
+        }
+        if(request.getRating()>=6||request.getRating()<=0){
+            throw new CustomException(ErrorCode.BadRequest, "평점이 올바르지 않습니다. 1~5 사이로 입력해주셔야합니다.", HttpStatus.BAD_REQUEST);
+        }
+        if(user == item.getOwner()){
+            throw new CustomException(ErrorCode.BadRequest, "자기 자신의 게시물에는 리뷰작성이 안됩니다.", HttpStatus.BAD_REQUEST);
+        }
+        if(borrwHist==null){
+            throw new CustomException(ErrorCode.BadRequest,"해당 게시물에 대한 대여 기록이 없습니다.", HttpStatus.BAD_REQUEST);
+        }
+        ItemsReviewJpaEntity review=PostsConverter.toItemsReview(user,item,request,postsId);
+        itemsReivewRepository.save(review);
+
+        return PostsConverter.toReviewIdResponse(item,review);
+    }
+
+
+    public PostsResponse.NoRentalPeriodsResponse ViewNoRentalPeriodsService(String userId,String postId){
+        UserJpaEntity user = userRepository.findById(userId).orElse(null);
+        ItemsJpaEntity item=itemsRepository.findById(postId).orElse(null);
+        List<ItemsBorrowStatusJpaEntity> itemsBorrowStatus = itemsBorrowStatusRepository.findAllByItemIdAndBorrowStatusCode(postId, "RENTAL_NOT_POSSIBLE");
+
+        List<PostsResponse.NoRentalPeriodResponse> ownerNoRentalPeriod=itemsBorrowStatus.stream().map(itemStatus->{
+            return PostsConverter.toOwnerNoRentalPeriod(itemStatus);
+        }).toList();
+
+        List<ChatChannelJpaEntity> chatChannel = chatRepository.findAllByItemAndContactUser(item,user);
+        List<PostsResponse.NoRentalPeriodResponse> contactNoRentalPeriod=chatChannel.stream().map(chat->{
+                return PostsConverter.toContactNoRentalPeriod(chat);
+        }).toList();
+
+        return PostsConverter.toNoRentalPeriods(ownerNoRentalPeriod,contactNoRentalPeriod);
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
     //모듈화 코드
 
     private Pageable createPageable(int page, Sort.Direction direction, String orderType) {

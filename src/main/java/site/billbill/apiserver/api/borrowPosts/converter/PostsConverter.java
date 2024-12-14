@@ -2,10 +2,10 @@ package site.billbill.apiserver.api.borrowPosts.converter;
 
 import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
 import site.billbill.apiserver.api.borrowPosts.dto.response.PostsResponse;
+import site.billbill.apiserver.model.chat.ChatChannelJpaEntity;
 import site.billbill.apiserver.model.post.*;
 import site.billbill.apiserver.model.user.UserJpaEntity;
 import site.billbill.apiserver.model.user.UserSearchHistJpaEntity;
-import site.billbill.apiserver.repository.borrowPosts.SearchKeywordStatRepository;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -66,7 +66,7 @@ public class PostsConverter {
     public static PostsResponse.ViewAllResultResponse toViewAllList(List<PostsResponse.Post> posts){
         return PostsResponse.ViewAllResultResponse.builder().result(posts).build();
     }
-    public static PostsResponse.ViewPostResponse toViewPost(ItemsJpaEntity item, ItemsBorrowJpaEntity borrowItem, List<PostsResponse.NoRentalPeriodResponse> noRental, String status,UserJpaEntity user){
+    public static PostsResponse.ViewPostResponse toViewPost(ItemsJpaEntity item, ItemsBorrowJpaEntity borrowItem, String status,UserJpaEntity user){
         return PostsResponse.ViewPostResponse.builder()
                 .postId(item.getId())
                 .title(item.getTitle())
@@ -75,7 +75,6 @@ public class PostsConverter {
                 .price(borrowItem.getPrice())
                 .priceStandard(borrowItem.getPriceStandard())
                 .deposit(borrowItem.getDeposit())
-                .noRentalPeriod(noRental)
                 .itemStatus(status)
                 .categoryId(item.getCategory().getId())
                 .categoryName(item.getCategory().getName())
@@ -83,10 +82,22 @@ public class PostsConverter {
                 .userName(user.getNickname())
                 .build();
     }
-    public static PostsResponse.NoRentalPeriodResponse toNoRentalPeriod(ItemsBorrowStatusJpaEntity borrowStatus){
+    public static PostsResponse.NoRentalPeriodResponse toOwnerNoRentalPeriod(ItemsBorrowStatusJpaEntity borrowStatus){
         return PostsResponse.NoRentalPeriodResponse.builder()
                 .startDate(borrowStatus.getStartDate().format(DATE_FORMATTER))
                 .endDate(borrowStatus.getEndDate().format(DATE_FORMATTER))
+                .build();
+    }
+    public static PostsResponse.NoRentalPeriodResponse toContactNoRentalPeriod(ChatChannelJpaEntity chat){
+        return PostsResponse.NoRentalPeriodResponse.builder()
+                .startDate(chat.getStartedAt().format(DATE_FORMATTER))
+                .endDate(chat.getEndedAt().format(DATE_FORMATTER))
+                .build();
+    }
+    public static PostsResponse.NoRentalPeriodsResponse toNoRentalPeriods(List<PostsResponse.NoRentalPeriodResponse> owner, List<PostsResponse.NoRentalPeriodResponse> user){
+        return PostsResponse.NoRentalPeriodsResponse.builder()
+                .owner(owner)
+                .user(user)
                 .build();
     }
     public static UserSearchHistJpaEntity toUserSearch(UserJpaEntity user,String keyword){
@@ -108,6 +119,22 @@ public class PostsConverter {
     }
     public static String toRecommandSearch(SearchKeywordStatsJpaEntity searchKeywordStats){
         return searchKeywordStats.getKeyword();
+    }
+    public static ItemsReviewJpaEntity toItemsReview(UserJpaEntity user,ItemsJpaEntity item,PostsRequest.ReviewRequest request ,String reviewId){
+        return ItemsReviewJpaEntity.builder()
+                .id(reviewId)
+                .items(item)
+                .user(user)
+                .rating(request.getRating())
+                .content(request.getContent())
+                .build();
+
+    }
+    public static PostsResponse.ReviewIdResponse toReviewIdResponse(ItemsJpaEntity item, ItemsReviewJpaEntity review){
+        return PostsResponse.ReviewIdResponse.builder()
+                .itemId(item.getId())
+                .reviewId(review.getId())
+                .build();
     }
 
 

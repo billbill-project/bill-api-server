@@ -21,6 +21,9 @@ public interface PostsService {
 
     PostsResponse.saveSearchListResponse findSearchService(String userId);
 
+    PostsResponse.ReviewIdResponse DoReviewPostService(String postId,String userId,PostsRequest.ReviewRequest request);
     List<String> findRecommandService();
+
+    PostsResponse.NoRentalPeriodsResponse ViewNoRentalPeriodsService(String userId, String postId);
 
 }
