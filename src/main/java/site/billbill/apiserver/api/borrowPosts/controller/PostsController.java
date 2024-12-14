@@ -53,7 +53,6 @@ public class PostsController {
             @RequestParam(value="sortBy",required = true,defaultValue = "accuracy") String sortBy
     ){
 
-
         Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
         return new BaseResponse<>(postsService.ViewAllPostService(category,page,direction,sortBy));
     }
@@ -127,12 +126,21 @@ public class PostsController {
     @PostMapping("/reviews/{postId}")
     public BaseResponse<PostsResponse.ReviewIdResponse> reviewPostController(@PathVariable(value="postId",required = true)String postId,
                                                      @RequestBody @Valid PostsRequest.ReviewRequest request){
-
         String userId = "";
         if(MDC.get(JWTUtil.MDC_USER_ID) != null) {
             userId=  MDC.get(JWTUtil.MDC_USER_ID).toString();
         }
         return new BaseResponse<>(postsService.DoReviewPostService(postId,userId,request));
+    }
+    @Operation(summary="해당 게시물 불가능한 날짜 조회",description = "해당 게시물의 불가능한 날짜 조회를 합니다. owner : 게시물을 등록할 때 작성한 게시물 대여 불가 기간입니다. user : 해당 채팅방에서, 논의중인 대여기간입니다. ")
+    @GetMapping("/{postId}/blocked")
+    public BaseResponse<PostsResponse.NoRentalPeriodsResponse> blockPostController(@PathVariable(value = "postId",required = true)String postId){
+        String userId = "";
+        if(MDC.get(JWTUtil.MDC_USER_ID) != null) {
+            userId=  MDC.get(JWTUtil.MDC_USER_ID).toString();
+        }
+        return new BaseResponse<>(postsService.ViewNoRentalPeriodsService(userId,postId));
+
     }
 
 

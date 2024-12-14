@@ -45,7 +45,6 @@ public class PostsResponse {
         private int price;
         private PriceStandard priceStandard;
         private int deposit;
-        private List<NoRentalPeriodResponse> noRentalPeriod;
         private String categoryId;
         private String categoryName;
         private String userId;
@@ -72,6 +71,14 @@ public class PostsResponse {
     public static class NoRentalPeriodResponse{
         private String startDate;
         private String endDate;
+    }
+    @Getter
+    @Setter
+    @Builder
+    public static class NoRentalPeriodsResponse{
+
+        private List<PostsResponse.NoRentalPeriodResponse> owner;
+        private List<PostsResponse.NoRentalPeriodResponse> user;
     }
     @Getter
     @Setter

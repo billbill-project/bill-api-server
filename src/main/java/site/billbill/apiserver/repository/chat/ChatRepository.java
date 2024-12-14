@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import site.billbill.apiserver.model.chat.ChatChannelJpaEntity;
 import site.billbill.apiserver.model.post.ItemsJpaEntity;
+import site.billbill.apiserver.model.user.UserJpaEntity;
 
 public interface ChatRepository extends JpaRepository<ChatChannelJpaEntity,String> {
 //    List<ChatChannelJpaEntity> findByItemAndCloYnFalseAndDelYnFalse(ItemsJpaEntity item);
@@ -17,4 +18,11 @@ public interface ChatRepository extends JpaRepository<ChatChannelJpaEntity,Strin
             "AND c.startedAt = :startDate " +
             "AND c.endedAt = :endDate")
     List<ChatChannelJpaEntity> findByItemAndStartAndEndDate(ItemsJpaEntity item, LocalDate startDate, LocalDate endDate);
+
+    @Query("SELECT c FROM ChatChannelJpaEntity c "+
+            "WHERE c.item = :item " +
+            "AND c.delYn = false " +
+            "And c.contact = :user "
+    )
+    List<ChatChannelJpaEntity> findAllByItemAndContactUser(ItemsJpaEntity item, UserJpaEntity user);
 }
