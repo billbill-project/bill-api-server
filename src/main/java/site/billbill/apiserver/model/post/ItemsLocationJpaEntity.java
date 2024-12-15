@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicUpdate;
 import site.billbill.apiserver.model.BaseTime;
-
+import org.locationtech.jts.geom.Point;
 import java.awt.*;
 
 @DynamicUpdate

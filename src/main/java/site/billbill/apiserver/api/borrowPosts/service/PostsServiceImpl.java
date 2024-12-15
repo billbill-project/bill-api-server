@@ -17,9 +17,11 @@ import site.billbill.apiserver.exception.CustomException;
 import site.billbill.apiserver.model.chat.ChatChannelJpaEntity;
 import site.billbill.apiserver.model.post.*;
 import site.billbill.apiserver.model.user.UserJpaEntity;
+import site.billbill.apiserver.model.user.UserLocationJpaEntity;
 import site.billbill.apiserver.model.user.UserSearchHistJpaEntity;
 import site.billbill.apiserver.repository.borrowPosts.*;
 import site.billbill.apiserver.repository.chat.ChatRepository;
+import site.billbill.apiserver.repository.user.UserLocationReposity;
 import site.billbill.apiserver.repository.user.UserRepository;
 import site.billbill.apiserver.repository.user.UserSearchHistRepository;
 
@@ -42,15 +44,19 @@ public class PostsServiceImpl implements PostsService {
     private final ItemsReivewRepository itemsReivewRepository;
     private final ChatRepository chatRepository;
     private final BorrowHistRepository borrowHistRepository;
+    private final ItemsLocationRepository itemsLocationRepository;
+    private final UserLocationReposity userLocationReposity;
     public PostsResponse.UploadResponse uploadPostService(PostsRequest.UploadRequest request,String userId){
         //먼저 item 생성,
         Optional<UserJpaEntity> isUser=userRepository.findById(userId);
         String postsId = ULIDUtil.generatorULID("BORROW");
         ItemsCategoryJpaEntity category = itemsCategoryRepository.findByName(request.getCategory());
         UserJpaEntity user=new UserJpaEntity();
+        UserLocationJpaEntity location=userLocationReposity.findByUserId(userId).orElse(null);
         if(isUser.isPresent()){
             user=isUser.get();
         }
+
         //Item 생성
         ItemsJpaEntity newItem= PostsConverter.toItem(postsId,request,user,category);
         itemsRepository.save(newItem);
@@ -65,9 +71,9 @@ public class PostsServiceImpl implements PostsService {
                 .toList();
         itemsBorrowStatusRepository.saveAll(itemsBorrowStatusList);
         }
-
-
-
+        //좌표 저장
+        ItemsLocationJpaEntity itemsLocation=PostsConverter.toItemsLocation(location,item);
+        itemsLocationRepository.save(itemsLocation);
         return PostsConverter.toUploadResponse(postsId);
 
 
@@ -76,6 +82,7 @@ public class PostsServiceImpl implements PostsService {
             String category, int page, Sort.Direction direction, String orderType) {
 
         Pageable pageable = createPageable(page, direction, orderType);
+        log.info(category);
         List<PostsResponse.Post> items = findAndConvertItems(category, pageable, null);
         return PostsConverter.toViewAllList(items);
     }
@@ -312,10 +319,11 @@ public class PostsServiceImpl implements PostsService {
         return itemsPage.getContent().stream()
                 .map(item -> {
                     ItemsBorrowJpaEntity borrowItem = itemsBorrowRepository.findById(item.getId()).orElse(null);
+                    ItemsLocationJpaEntity location =  itemsLocationRepository.findById(item.getId()).orElse(null);
                     if (borrowItem == null) {
                         log.warn("No borrow item found for item ID: {}", item.getId());
                     }
-                    return PostsConverter.toPost(item, borrowItem);
+                    return PostsConverter.toPost(item, borrowItem,location);
                 })
                 .toList();
     }

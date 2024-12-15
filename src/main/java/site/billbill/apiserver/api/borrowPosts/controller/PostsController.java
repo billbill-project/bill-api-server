@@ -44,7 +44,7 @@ public class PostsController {
     @GetMapping("")
     public BaseResponse<PostsResponse.ViewAllResultResponse> getPostsController(
             @Parameter(name = "category", description = "카테고리 필터 (예: entire, camp, sports,tools )", example = "entire", in = ParameterIn.QUERY, required = false)
-            @RequestParam(value ="category",required = false,defaultValue = "entire") String category,
+            @RequestParam(value ="category",required = false) String category,
             @Parameter(name = "page", description = "페이지 번호 (1부터 시작)", example = "1", in = ParameterIn.QUERY, required = false)
             @RequestParam(value ="page",required = false,defaultValue = "1") int page,
             @Parameter(name = "order", description = "정렬 방향 (asc: 오름차순, desc: 내림차순)", example = "desc", in = ParameterIn.QUERY, required = false)
@@ -60,7 +60,7 @@ public class PostsController {
     @GetMapping("/search")
     public BaseResponse<PostsResponse.ViewAllResultResponse> getSearchPostsController(
             @Parameter(name = "category", description = "카테고리 필터 (예: entire, camp, sports,tools )", example = "entire", in = ParameterIn.QUERY, required = false)
-            @RequestParam(value ="category",required = false,defaultValue = "entire") String category,
+            @RequestParam(value ="category",required = false) String category,
             @Parameter(name = "page", description = "페이지 번호 (1부터 시작)", example = "1", in = ParameterIn.QUERY, required = false)
             @RequestParam(value ="page",required = false,defaultValue = "1") int page,
             @Parameter(name = "order", description = "정렬 방향 (asc: 오름차순, desc: 내림차순)", example = "desc", in = ParameterIn.QUERY, required = false)

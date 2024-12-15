@@ -5,6 +5,7 @@ import site.billbill.apiserver.api.borrowPosts.dto.response.PostsResponse;
 import site.billbill.apiserver.model.chat.ChatChannelJpaEntity;
 import site.billbill.apiserver.model.post.*;
 import site.billbill.apiserver.model.user.UserJpaEntity;
+import site.billbill.apiserver.model.user.UserLocationJpaEntity;
 import site.billbill.apiserver.model.user.UserSearchHistJpaEntity;
 
 import java.time.format.DateTimeFormatter;
@@ -19,6 +20,15 @@ public class PostsConverter {
         return PostsResponse.UploadResponse.builder().
                 postId(id).
                 build();
+    }
+    public static ItemsLocationJpaEntity toItemsLocation(UserLocationJpaEntity userLocation,ItemsJpaEntity item){
+        return ItemsLocationJpaEntity.builder()
+                .item(item)
+                .address(userLocation.getAddress())
+                .coordinates(userLocation.getCoordinates())
+                .latitude(userLocation.getLatitude())
+                .longitude(userLocation.getLongitude())
+                .build();
     }
     public static ItemsJpaEntity toItem(String postId, PostsRequest.UploadRequest request, UserJpaEntity user, ItemsCategoryJpaEntity category){
         return ItemsJpaEntity.builder()
@@ -48,7 +58,7 @@ public class PostsConverter {
                 .build();
     }
 
-    public static PostsResponse.Post toPost(ItemsJpaEntity item,ItemsBorrowJpaEntity borrowItem){
+    public static PostsResponse.Post toPost(ItemsJpaEntity item, ItemsBorrowJpaEntity borrowItem, ItemsLocationJpaEntity location){
         return PostsResponse.Post.builder()
                 .postId(item.getId())
                 .title(item.getTitle())
@@ -61,6 +71,14 @@ public class PostsConverter {
                 .userName(item.getOwner().getNickname())
                 .createdAt(item.getCreatedAt().format(DATE_TIME_FORMATTER))
                 .likeCount(item.getLikeCount())
+                .address(location.getAddress())
+                .categoryId(Optional.ofNullable(item.getCategory())
+                    .map(category -> category.getId())
+                    .orElse(null))
+                .categoryName(Optional.ofNullable(item.getCategory())
+                    .map(category -> category.getName())
+                    .orElse(null))
+                .userProfile(item.getOwner().getProfile())
                 .build();
     }
     public static PostsResponse.ViewAllResultResponse toViewAllList(List<PostsResponse.Post> posts){
