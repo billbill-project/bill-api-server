@@ -142,6 +142,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
     @Override
     public List<PostHistoryResponse> getPostHistory(String userId, Pageable pageable) {
         QItemsJpaEntity qItems = QItemsJpaEntity.itemsJpaEntity;
+        QItemsBorrowJpaEntity qBorrow = QItemsBorrowJpaEntity.itemsBorrowJpaEntity;
         QitemsLikeJpaEntity qLike = QitemsLikeJpaEntity.itemsLikeJpaEntity;
         QChatChannelJpaEntity qChatChannel = QChatChannelJpaEntity.chatChannelJpaEntity;
 
@@ -150,6 +151,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                                 PostHistoryResponse.class,
                                 qItems.id,
                                 qItems.images,
+                                qBorrow.price,
                                 qItems.title,
                                 qItems.itemStatus,
                                 qLike.countDistinct().as("likeCount"),
@@ -160,6 +162,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                         )
                 )
                 .from(qItems)
+                .leftJoin(qBorrow).on(qItems.id.eq(qBorrow.id))
                 .leftJoin(qLike).on(qItems.id.eq(qLike.items.id).and(qLike.delYn.isFalse()))
                 .leftJoin(qChatChannel).on(qItems.id.eq(qChatChannel.item.id).and(qChatChannel.delYn.isFalse()))
                 .where(qItems.owner.userId.eq(userId)
@@ -174,6 +177,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
     @Override
     public List<BorrowHistoryResponse> getBorrowHistory(String userId, Pageable pageable, ItemHistoryType type) {
         QItemsJpaEntity qItems = QItemsJpaEntity.itemsJpaEntity;
+        QItemsBorrowJpaEntity qBorrow = QItemsBorrowJpaEntity.itemsBorrowJpaEntity;
         QitemsLikeJpaEntity qLike = QitemsLikeJpaEntity.itemsLikeJpaEntity;
         QChatChannelJpaEntity qChatChannel = QChatChannelJpaEntity.chatChannelJpaEntity;
         QBorrowHistJpaEntity qBorrowHist = QBorrowHistJpaEntity.borrowHistJpaEntity;
@@ -186,6 +190,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                                 qItems.owner.userId.as("borrowerId"),
                                 Expressions.constant(type),
                                 qItems.images,
+                                qBorrow.price,
                                 qItems.title,
                                 qBorrowHist.startedAt.as("startedAt"),
                                 qBorrowHist.endedAt.as("endedAt"),
@@ -198,6 +203,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                         )
                 )
                 .from(qItems)
+                .leftJoin(qBorrow).on(qItems.id.eq(qBorrow.id))
                 .leftJoin(qLike).on(qItems.id.eq(qLike.items.id).and(qLike.delYn.isFalse()))
                 .leftJoin(qChatChannel).on(qItems.id.eq(qChatChannel.item.id).and(qChatChannel.delYn.isFalse()))
                 .rightJoin(qBorrowHist).on(qItems.id.eq(qBorrowHist.item.id).and(qBorrowHist.delYn.isFalse()))

@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -15,10 +14,12 @@ import org.springframework.web.bind.annotation.*;
 import site.billbill.apiserver.api.auth.dto.request.DeviceRequest;
 import site.billbill.apiserver.api.auth.dto.request.LocationRequest;
 import site.billbill.apiserver.api.users.dto.request.BlacklistRequest;
+import site.billbill.apiserver.api.users.dto.request.PasswordRequest;
 import site.billbill.apiserver.api.users.dto.response.*;
 import site.billbill.apiserver.api.users.service.UserService;
 import site.billbill.apiserver.common.response.BaseResponse;
 import site.billbill.apiserver.common.utils.posts.ItemHistoryType;
+import site.billbill.apiserver.model.common.CodeDetailJpaEntity;
 
 import java.util.List;
 
@@ -133,5 +134,27 @@ public class UserController {
     public BaseResponse<String> updateLocation(@RequestBody LocationRequest request) {
         userService.saveLocation(null, request);
         return new BaseResponse<>(null);
+    }
+
+    @Operation(summary = "비밀번호 확인", description = "비밀번호를 확인하는 API")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/password-check")
+    public BaseResponse<Boolean> checkPassword(@RequestParam(name = "password") String password) {
+        return new BaseResponse<>(userService.checkOriginalPassword(password));
+    }
+
+    @Operation(summary = "비밀번호 변경", description = "비밀번호를 변경하는 API")
+    @ResponseStatus(HttpStatus.OK)
+    @PatchMapping("/password")
+    public BaseResponse<String> updatePassword(@RequestBody PasswordRequest request) {
+        userService.updatePassword(request);
+        return new BaseResponse<>(null);
+    }
+
+    @Operation(summary = "회원 탈퇴 코드 목록 조회", description = "회원 탈퇴 코드 목록 조회 API")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/withdraw/code")
+    public BaseResponse<List<CodeDetailJpaEntity>> getWithdrawCodeList() {
+        return new BaseResponse<>(userService.getWithdrawCodeList());
     }
 }
