@@ -29,6 +29,8 @@ public class BorrowHistoryResponse {
             example = "[\"image1.jpg\", \"image2.jpg\"]"
     )
     private List<String> itemImages;
+    @Schema(description = "물건 가격", type = "int", example = "18000")
+    private Integer price;
     @Schema(description = "물품 이름", example = "Pronto600 폴라로이드 카메라")
     private String title;
     @Schema(description = "대여 시작 일자", example = "yyyy-MM-dd")
