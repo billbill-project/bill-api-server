@@ -9,10 +9,13 @@ import org.locationtech.jts.geom.PrecisionModel;
 import org.slf4j.MDC;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import site.billbill.apiserver.api.auth.dto.request.DeviceRequest;
 import site.billbill.apiserver.api.auth.dto.request.LocationRequest;
+import site.billbill.apiserver.api.auth.service.AuthService;
+import site.billbill.apiserver.api.users.dto.request.PasswordRequest;
 import site.billbill.apiserver.api.users.dto.response.*;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.jwt.JWTUtil;
@@ -42,7 +45,8 @@ public class UserServiceImpl implements UserService {
     private final UserIdentityRepository userIdentityRepository;
     private final UserBlacklistRepository userBlacklistRepository;
     private final ItemsRepository itemsRepository;
-    private final JWTUtil jWTUtil;
+    private final JWTUtil jwtUtil;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final UserLocationReposity userLocationRepository;
     private final UserDeviceRepository userDeviceRepository;
 
@@ -189,5 +193,31 @@ public class UserServiceImpl implements UserService {
         userLocation.setCoordinates(coordinates);
 
         userLocationRepository.save(userLocation);
+    }
+
+    @Override
+    public void updatePassword(PasswordRequest request) {
+        String userId = MDC.get(JWTUtil.MDC_USER_ID);
+        UserJpaEntity user = userRepository.findById(userId).orElseThrow();
+
+        if (!checkPassword(request.getPassword(), user.getPassword()))
+            throw new CustomException(ErrorCode.Unauthorized, "비밀번호를 확인해 주세요.", HttpStatus.UNAUTHORIZED);
+
+        user.setPassword(bCryptPasswordEncoder.encode(request.getNewPassword()));
+
+        userRepository.save(user);
+    }
+
+
+
+    /**
+     * Method that check password is right
+     *
+     * @param password          password plaintext
+     * @param encryptedPassword password encrypted text
+     * @return isPassword correct true/false
+     */
+    private boolean checkPassword(String password, String encryptedPassword) {
+        return bCryptPasswordEncoder.matches(password, encryptedPassword);
     }
 }
