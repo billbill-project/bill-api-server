@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -15,12 +14,12 @@ import org.springframework.web.bind.annotation.*;
 import site.billbill.apiserver.api.auth.dto.request.DeviceRequest;
 import site.billbill.apiserver.api.auth.dto.request.LocationRequest;
 import site.billbill.apiserver.api.users.dto.request.BlacklistRequest;
-import site.billbill.apiserver.api.users.dto.request.PasswordCheckRequest;
 import site.billbill.apiserver.api.users.dto.request.PasswordRequest;
 import site.billbill.apiserver.api.users.dto.response.*;
 import site.billbill.apiserver.api.users.service.UserService;
 import site.billbill.apiserver.common.response.BaseResponse;
 import site.billbill.apiserver.common.utils.posts.ItemHistoryType;
+import site.billbill.apiserver.model.common.CodeDetailJpaEntity;
 
 import java.util.List;
 
@@ -150,5 +149,12 @@ public class UserController {
     public BaseResponse<String> updatePassword(@RequestBody PasswordRequest request) {
         userService.updatePassword(request);
         return new BaseResponse<>(null);
+    }
+
+    @Operation(summary = "회원 탈퇴 코드 목록 조회", description = "회원 탈퇴 코드 목록 조회 API")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/withdraw/code")
+    public BaseResponse<List<CodeDetailJpaEntity>> getWithdrawCodeList() {
+        return new BaseResponse<>(userService.getWithdrawCodeList());
     }
 }

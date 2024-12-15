@@ -6,6 +6,7 @@ import site.billbill.apiserver.api.auth.dto.request.LocationRequest;
 import site.billbill.apiserver.api.users.dto.request.PasswordRequest;
 import site.billbill.apiserver.api.users.dto.response.*;
 import site.billbill.apiserver.common.utils.posts.ItemHistoryType;
+import site.billbill.apiserver.model.common.CodeDetailJpaEntity;
 
 import java.util.List;
 
@@ -35,4 +36,6 @@ public interface UserService {
     Boolean checkOriginalPassword(String password);
 
     void updatePassword(PasswordRequest request);
+
+    List<CodeDetailJpaEntity> getWithdrawCodeList();
 }
