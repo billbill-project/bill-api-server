@@ -26,4 +26,6 @@ public interface PostsService {
 
     PostsResponse.NoRentalPeriodsResponse ViewNoRentalPeriodsService(String userId, String postId);
 
+    PostsResponse.BillAcceptResponse DoBillAcceptService(String userId, PostsRequest.BillAcceptRequest request);
+
 }

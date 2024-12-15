@@ -142,6 +142,14 @@ public class PostsController {
         return new BaseResponse<>(postsService.ViewNoRentalPeriodsService(userId,postId));
 
     }
-
+    @Operation(summary="거래처리",description = "해당 게시물에 대한 거래처리를 합니다.")
+    @PostMapping("/payment")
+    public BaseResponse<PostsResponse.BillAcceptResponse> BillAcceptController(@RequestBody @Valid PostsRequest.BillAcceptRequest request){
+        String userId = "";
+        if(MDC.get(JWTUtil.MDC_USER_ID) != null) {
+            userId=  MDC.get(JWTUtil.MDC_USER_ID).toString();
+        }
+        return new BaseResponse<>(postsService.DoBillAcceptService(userId,request));
+    }
 
 }

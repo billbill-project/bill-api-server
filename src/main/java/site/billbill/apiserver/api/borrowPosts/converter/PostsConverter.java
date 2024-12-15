@@ -120,6 +120,14 @@ public class PostsConverter {
     public static String toRecommandSearch(SearchKeywordStatsJpaEntity searchKeywordStats){
         return searchKeywordStats.getKeyword();
     }
+    public static BorrowHistJpaEntity toBorrowHist(ItemsJpaEntity item,UserJpaEntity user,PostsRequest.BillAcceptRequest request){
+        return BorrowHistJpaEntity.builder()
+                .item(item)
+                .borrower(user)
+                .startedAt(request.getStartDate())
+                .endedAt(request.getEndDate())
+                .build();
+    }
     public static ItemsReviewJpaEntity toItemsReview(UserJpaEntity user,ItemsJpaEntity item,PostsRequest.ReviewRequest request ,String reviewId){
         return ItemsReviewJpaEntity.builder()
                 .id(reviewId)
@@ -134,6 +142,11 @@ public class PostsConverter {
         return PostsResponse.ReviewIdResponse.builder()
                 .itemId(item.getId())
                 .reviewId(review.getId())
+                .build();
+    }
+    public static PostsResponse.BillAcceptResponse toBillAcceptResponse(Long billId){
+        return PostsResponse.BillAcceptResponse.builder()
+                .bilId(billId)
                 .build();
     }
 

@@ -176,7 +176,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
         QItemsJpaEntity qItems = QItemsJpaEntity.itemsJpaEntity;
         QitemsLikeJpaEntity qLike = QitemsLikeJpaEntity.itemsLikeJpaEntity;
         QChatChannelJpaEntity qChatChannel = QChatChannelJpaEntity.chatChannelJpaEntity;
-        QBorrowHistJapEntity qBorrowHist = QBorrowHistJapEntity.borrowHistJapEntity;
+        QBorrowHistJpaEntity qBorrowHist = QBorrowHistJpaEntity.borrowHistJpaEntity;
 
         JPAQuery<BorrowHistoryResponse> qb = queryFactory.select(
                         Projections.constructor(
