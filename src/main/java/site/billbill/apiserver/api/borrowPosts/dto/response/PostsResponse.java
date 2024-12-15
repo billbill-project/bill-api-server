@@ -5,7 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
 import site.billbill.apiserver.common.enums.items.PriceStandard;
-
+import org.locationtech.jts.geom.Point;
+import java.awt.*;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -31,8 +32,12 @@ public class PostsResponse {
         private int price;
         private String userId;
         private String userName;
+        private String userProfile;
         private String createdAt;
         private int likeCount;
+        private String categoryId;
+        private String categoryName;
+        private String address;
     }
     @Builder
     @Getter
@@ -54,6 +59,7 @@ public class PostsResponse {
         private String categoryName;
         private String userId;
         private String userName;
+
 
     }
     @Getter
