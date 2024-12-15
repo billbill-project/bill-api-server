@@ -196,6 +196,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Boolean checkOriginalPassword(String password) {
+        String userId = MDC.get(JWTUtil.MDC_USER_ID);
+        UserJpaEntity user = userRepository.findById(userId).orElseThrow();
+
+        return checkPassword(password, user.getPassword());
+    }
+
+    @Override
     public void updatePassword(PasswordRequest request) {
         String userId = MDC.get(JWTUtil.MDC_USER_ID);
         UserJpaEntity user = userRepository.findById(userId).orElseThrow();

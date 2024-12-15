@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import site.billbill.apiserver.api.auth.dto.request.DeviceRequest;
 import site.billbill.apiserver.api.auth.dto.request.LocationRequest;
 import site.billbill.apiserver.api.users.dto.request.BlacklistRequest;
+import site.billbill.apiserver.api.users.dto.request.PasswordCheckRequest;
 import site.billbill.apiserver.api.users.dto.request.PasswordRequest;
 import site.billbill.apiserver.api.users.dto.response.*;
 import site.billbill.apiserver.api.users.service.UserService;
@@ -134,6 +135,13 @@ public class UserController {
     public BaseResponse<String> updateLocation(@RequestBody LocationRequest request) {
         userService.saveLocation(null, request);
         return new BaseResponse<>(null);
+    }
+
+    @Operation(summary = "비밀번호 확인", description = "비밀번호를 확인하는 API")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/password-check")
+    public BaseResponse<Boolean> checkPassword(@RequestParam(name = "password") String password) {
+        return new BaseResponse<>(userService.checkOriginalPassword(password));
     }
 
     @Operation(summary = "비밀번호 변경", description = "비밀번호를 변경하는 API")

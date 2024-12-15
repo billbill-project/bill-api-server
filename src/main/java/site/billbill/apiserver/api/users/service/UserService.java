@@ -32,5 +32,7 @@ public interface UserService {
 
     void saveLocation(String userId, LocationRequest location);
 
+    Boolean checkOriginalPassword(String password);
+
     void updatePassword(PasswordRequest request);
 }
