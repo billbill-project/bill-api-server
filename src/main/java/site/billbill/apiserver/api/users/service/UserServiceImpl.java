@@ -80,6 +80,7 @@ public class UserServiceImpl implements UserService {
                 .profileImage(user.get().getProfile())
                 .nickname(user.get().getNickname())
                 .phoneNumber(userIdentity.get().getPhoneNumber())
+                .billPace(user.get().getBillPace())
                 .provider(user.get().getProvider())
                 .location(location)
                 .build();
