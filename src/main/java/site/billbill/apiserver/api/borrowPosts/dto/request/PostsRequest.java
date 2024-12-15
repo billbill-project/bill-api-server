@@ -41,7 +41,14 @@ public class PostsRequest {
         private LocalDate startDate;
         private LocalDate endDate;
     }
-
+    @Getter
+    @Setter
+    @Builder
+    public static class BillAcceptRequest{
+        private String postId;
+        private LocalDate startDate;
+        private LocalDate endDate;
+    }
     @Getter
     @Setter
     @Builder

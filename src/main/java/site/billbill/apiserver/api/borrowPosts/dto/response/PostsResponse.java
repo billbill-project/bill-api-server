@@ -36,6 +36,11 @@ public class PostsResponse {
     }
     @Builder
     @Getter
+    public static class BillAcceptResponse{
+        private Long bilId;
+    }
+    @Builder
+    @Getter
     public static class ViewPostResponse{
         private String postId;
         private String title;

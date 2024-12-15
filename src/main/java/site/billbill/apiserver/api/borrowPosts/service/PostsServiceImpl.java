@@ -186,6 +186,7 @@ public class PostsServiceImpl implements PostsService {
         return PostsConverter.toViewAllList(items);
     }
 
+
     public PostsResponse.saveSearchListResponse findSearchService(String userId){
         UserJpaEntity user = userRepository.findById(userId).orElse(null);
         List<UserSearchHistJpaEntity> searchHists=userSearchHistRepository.findByUserAndDelYnOrderByCreatedAtDesc(user,false);
@@ -203,7 +204,7 @@ public class PostsServiceImpl implements PostsService {
     public PostsResponse.ReviewIdResponse DoReviewPostService(String postId,String userId,PostsRequest.ReviewRequest request){
         UserJpaEntity user = userRepository.findById(userId).orElse(null);
         ItemsJpaEntity item=itemsRepository.findById(postId).orElse(null);
-        BorrowHistJapEntity borrwHist = borrowHistRepository.findBorrowHistByBorrower(user);
+        BorrowHistJpaEntity borrowHist = borrowHistRepository.findBorrowHistByBorrower(user);
         String postsId = ULIDUtil.generatorULID("REVIEW");
         if (item == null) {
             throw new CustomException(ErrorCode.BadRequest, "올바른 게시물 아이디가 아닙니다.", HttpStatus.BAD_REQUEST);
@@ -214,7 +215,7 @@ public class PostsServiceImpl implements PostsService {
         if(user == item.getOwner()){
             throw new CustomException(ErrorCode.BadRequest, "자기 자신의 게시물에는 리뷰작성이 안됩니다.", HttpStatus.BAD_REQUEST);
         }
-        if(borrwHist==null){
+        if(borrowHist==null){
             throw new CustomException(ErrorCode.BadRequest,"해당 게시물에 대한 대여 기록이 없습니다.", HttpStatus.BAD_REQUEST);
         }
         ItemsReviewJpaEntity review=PostsConverter.toItemsReview(user,item,request,postsId);
@@ -227,7 +228,9 @@ public class PostsServiceImpl implements PostsService {
     public PostsResponse.NoRentalPeriodsResponse ViewNoRentalPeriodsService(String userId,String postId){
         UserJpaEntity user = userRepository.findById(userId).orElse(null);
         ItemsJpaEntity item=itemsRepository.findById(postId).orElse(null);
-        List<ItemsBorrowStatusJpaEntity> itemsBorrowStatus = itemsBorrowStatusRepository.findAllByItemIdAndBorrowStatusCode(postId, "RENTAL_NOT_POSSIBLE");
+        // 상태 코드 리스트 정의
+        List<String> statusCodes = List.of("RENTAL_NOT_POSSIBLE", "RENTAL_POSSIBLE");
+        List<ItemsBorrowStatusJpaEntity> itemsBorrowStatus = itemsBorrowStatusRepository.findAllByItemIdAndBorrowStatusCodeIn(postId, statusCodes);
 
         List<PostsResponse.NoRentalPeriodResponse> ownerNoRentalPeriod=itemsBorrowStatus.stream().map(itemStatus->{
             return PostsConverter.toOwnerNoRentalPeriod(itemStatus);
@@ -242,7 +245,29 @@ public class PostsServiceImpl implements PostsService {
 
     }
 
+    public PostsResponse.BillAcceptResponse DoBillAcceptService(String userId, PostsRequest.BillAcceptRequest request){
+        UserJpaEntity user = userRepository.findById(userId).orElse(null);
+        ItemsJpaEntity item = itemsRepository.findById(request.getPostId()).orElse(null);
+        if (item == null) {
+            throw new CustomException(ErrorCode.BadRequest, "올바른 게시물 아이디가 아닙니다.", HttpStatus.BAD_REQUEST);
+        }
+        if(user == item.getOwner()){
+            throw new CustomException(ErrorCode.BadRequest, "자기 자신의 게시물을 거리할 수는 없습니다.", HttpStatus.BAD_REQUEST);
+        }
+        BorrowHistJpaEntity borrowHist = PostsConverter.toBorrowHist(item,user,request);
+        BorrowHistJpaEntity savedBorrowHist=borrowHistRepository.save(borrowHist);
 
+        PostsRequest.NoRentalPeriod noRentalPeriod= PostsRequest.NoRentalPeriod.builder()
+                .startDate(request.getStartDate())
+                .endDate(request.getEndDate())
+                .build();
+
+        ItemsBorrowStatusJpaEntity itemsBorrowStatus= PostsConverter.toItemBorrowStatus(item,"Renting",noRentalPeriod);
+        itemsBorrowStatusRepository.save(itemsBorrowStatus);
+
+        return PostsConverter.toBillAcceptResponse(savedBorrowHist.getBorrowSeq());
+        
+    }
 
 
 

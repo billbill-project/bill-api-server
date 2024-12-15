@@ -2,11 +2,11 @@ package site.billbill.apiserver.model.post;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 import site.billbill.apiserver.common.converter.BooleanConverter;
 import site.billbill.apiserver.model.BaseTime;
 import site.billbill.apiserver.model.user.UserJpaEntity;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -15,7 +15,7 @@ import java.time.OffsetDateTime;
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BorrowHistJapEntity extends BaseTime {
+public class BorrowHistJpaEntity extends BaseTime {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "borrow_seq", nullable = false)
     private long borrowSeq;
@@ -26,9 +26,9 @@ public class BorrowHistJapEntity extends BaseTime {
     @JoinColumn(name = "borrower_id", nullable = false)
     private UserJpaEntity borrower;
     @Column(name = "started_at", nullable = false)
-    private OffsetDateTime startedAt;
+    private LocalDate startedAt;
     @Column(name = "ended_at", nullable = false)
-    private OffsetDateTime endedAt;
+    private LocalDate endedAt;
     @Convert(converter = BooleanConverter.class)
     @Column(name = "use_yn", nullable = false)
     private boolean useYn = true;
