@@ -259,7 +259,7 @@ public class PostsServiceImpl implements PostsService {
             throw new CustomException(ErrorCode.BadRequest, "올바른 게시물 아이디가 아닙니다.", HttpStatus.BAD_REQUEST);
         }
         if(user == item.getOwner()){
-            throw new CustomException(ErrorCode.BadRequest, "자기 자신의 게시물을 거리할 수는 없습니다.", HttpStatus.BAD_REQUEST);
+            throw new CustomException(ErrorCode.BadRequest, "자기 자신의 게시물을 거래할 수는 없습니다.", HttpStatus.BAD_REQUEST);
         }
         BorrowHistJpaEntity borrowHist = PostsConverter.toBorrowHist(item,user,request);
         BorrowHistJpaEntity savedBorrowHist=borrowHistRepository.save(borrowHist);
@@ -276,6 +276,19 @@ public class PostsServiceImpl implements PostsService {
         
     }
 
+    public PostsResponse.ReviewsResponse ViewReviewService(String userId, String postId){
+
+        ItemsJpaEntity item = itemsRepository.findById(postId).orElse(null);
+        List<ItemsReviewJpaEntity> itemReviews= itemsReivewRepository.findAllByItemsOrderByCreatedAtDesc(item);
+
+
+
+        List<PostsResponse.ReviewResponse> reviews=itemReviews.stream().map(itemReview->{
+            return PostsConverter.toReview(itemReview);
+        }).toList();
+
+        return PostsConverter.toReviews(reviews);
+    }
 
 
 

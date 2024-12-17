@@ -28,4 +28,5 @@ public interface PostsService {
 
     PostsResponse.BillAcceptResponse DoBillAcceptService(String userId, PostsRequest.BillAcceptRequest request);
 
+    PostsResponse.ReviewsResponse ViewReviewService(String userId, String postId);
 }

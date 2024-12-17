@@ -98,4 +98,22 @@ public class PostsResponse {
         private String itemId;
         private String reviewId;
     }
+    @Getter
+    @Setter
+    @Builder
+    public static class ReviewResponse{
+        private String reviewId;
+        private String content;
+        private String reviewDate;
+        private int rating;
+        private String UserId;
+        private String UserName;
+        private String UserProfile;
+    }
+    @Getter
+    @Setter
+    @Builder
+    public static class ReviewsResponse{
+        private List<ReviewResponse> reviews;
+    }
 }
