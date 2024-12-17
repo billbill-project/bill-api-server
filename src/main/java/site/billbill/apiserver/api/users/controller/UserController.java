@@ -15,6 +15,7 @@ import site.billbill.apiserver.api.auth.dto.request.DeviceRequest;
 import site.billbill.apiserver.api.auth.dto.request.LocationRequest;
 import site.billbill.apiserver.api.users.dto.request.BlacklistRequest;
 import site.billbill.apiserver.api.users.dto.request.PasswordRequest;
+import site.billbill.apiserver.api.users.dto.request.WithdrawRequest;
 import site.billbill.apiserver.api.users.dto.response.*;
 import site.billbill.apiserver.api.users.service.UserService;
 import site.billbill.apiserver.common.response.BaseResponse;
@@ -81,8 +82,8 @@ public class UserController {
     @Operation(summary = "회원 탈퇴", description = "회원 탈퇴 API")
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/withdraw")
-    public BaseResponse<String> withdraw() {
-        userService.withdraw();
+    public BaseResponse<String> withdraw(@RequestBody WithdrawRequest request) {
+        userService.withdraw(request);
         return new BaseResponse<>(null);
     }
 
