@@ -15,24 +15,17 @@ import org.springframework.transaction.annotation.Transactional;
 import site.billbill.apiserver.api.auth.dto.request.DeviceRequest;
 import site.billbill.apiserver.api.auth.dto.request.LocationRequest;
 import site.billbill.apiserver.api.users.dto.request.PasswordRequest;
+import site.billbill.apiserver.api.users.dto.request.WithdrawRequest;
 import site.billbill.apiserver.api.users.dto.response.*;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.jwt.JWTUtil;
 import site.billbill.apiserver.common.utils.posts.ItemHistoryType;
 import site.billbill.apiserver.exception.CustomException;
 import site.billbill.apiserver.model.common.CodeDetailJpaEntity;
-import site.billbill.apiserver.model.user.UserBlacklistJpaEntity;
-import site.billbill.apiserver.model.user.UserDeviceJpaEntity;
-import site.billbill.apiserver.model.user.UserIdentityJpaEntity;
-import site.billbill.apiserver.model.user.UserJpaEntity;
-import site.billbill.apiserver.model.user.UserLocationJpaEntity;
+import site.billbill.apiserver.model.user.*;
 import site.billbill.apiserver.repository.borrowPosts.ItemsRepository;
 import site.billbill.apiserver.repository.common.CodeDetailRepository;
-import site.billbill.apiserver.repository.user.UserBlacklistRepository;
-import site.billbill.apiserver.repository.user.UserDeviceRepository;
-import site.billbill.apiserver.repository.user.UserIdentityRepository;
-import site.billbill.apiserver.repository.user.UserLocationReposity;
-import site.billbill.apiserver.repository.user.UserRepository;
+import site.billbill.apiserver.repository.user.*;
 
 import java.util.List;
 import java.util.Objects;
@@ -51,6 +44,7 @@ public class UserServiceImpl implements UserService {
     private final UserLocationReposity userLocationRepository;
     private final UserDeviceRepository userDeviceRepository;
     private final CodeDetailRepository codeDetailRepository;
+    private final WithdrawHistRepository withdrawHistRepository;
 
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
@@ -122,14 +116,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void withdraw() {
+    public void withdraw(WithdrawRequest request) {
         String userId = MDC.get(JWTUtil.MDC_USER_ID);
 
         Optional<UserJpaEntity> user = userRepository.findById(userId);
-
         if (user.isEmpty()) throw new CustomException(ErrorCode.NotFound, "존재하지 않는 회원입니다.", HttpStatus.NOT_FOUND);
 
         userRepository.withdrawUserById(userId);
+
+        WithdrawHistJpaEntity withdrawHist = WithdrawHistJpaEntity.builder()
+                .user(user.get())
+                .withdrawCode(request.getCode())
+                .detail(request.getDetail())
+                .build();
+
+        withdrawHistRepository.save(withdrawHist);
     }
 
     @Override
