@@ -84,6 +84,20 @@ public class PostsConverter {
     public static PostsResponse.ViewAllResultResponse toViewAllList(List<PostsResponse.Post> posts){
         return PostsResponse.ViewAllResultResponse.builder().result(posts).build();
     }
+    public static PostsResponse.ReviewResponse toReview(ItemsReviewJpaEntity review){
+        return PostsResponse.ReviewResponse.builder()
+                .reviewId(review.getId())
+                .content(review.getContent())
+                .reviewDate(review.getCreatedAt().format(DATE_TIME_FORMATTER))
+                .rating(review.getRating())
+                .UserId(review.getUser().getUserId())
+                .UserName(review.getUser().getNickname())
+                .UserProfile(review.getUser().getProfile())
+                .build();
+    }
+    public static PostsResponse.ReviewsResponse toReviews(List<PostsResponse.ReviewResponse> reviews){
+        return PostsResponse.ReviewsResponse.builder().reviews(reviews).build();
+    }
     public static PostsResponse.ViewPostResponse toViewPost(ItemsJpaEntity item, ItemsBorrowJpaEntity borrowItem, String status,UserJpaEntity user){
         return PostsResponse.ViewPostResponse.builder()
                 .postId(item.getId())
