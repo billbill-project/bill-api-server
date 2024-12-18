@@ -148,7 +148,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
     public List<PostHistoryResponse> getPostHistory(String userId, Pageable pageable) {
         QItemsJpaEntity qItems = QItemsJpaEntity.itemsJpaEntity;
         QItemsBorrowJpaEntity qBorrow = QItemsBorrowJpaEntity.itemsBorrowJpaEntity;
-        QitemsLikeJpaEntity qLike = QitemsLikeJpaEntity.itemsLikeJpaEntity;
+        QItemsLikeJpaEntity qLike = QItemsLikeJpaEntity.itemsLikeJpaEntity;
         QChatChannelJpaEntity qChatChannel = QChatChannelJpaEntity.chatChannelJpaEntity;
 
         JPAQuery<PostHistoryResponse> qb = queryFactory.select(
@@ -183,7 +183,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
     public List<BorrowHistoryResponse> getBorrowHistory(String userId, Pageable pageable, ItemHistoryType type) {
         QItemsJpaEntity qItems = QItemsJpaEntity.itemsJpaEntity;
         QItemsBorrowJpaEntity qBorrow = QItemsBorrowJpaEntity.itemsBorrowJpaEntity;
-        QitemsLikeJpaEntity qLike = QitemsLikeJpaEntity.itemsLikeJpaEntity;
+        QItemsLikeJpaEntity qLike = QItemsLikeJpaEntity.itemsLikeJpaEntity;
         QChatChannelJpaEntity qChatChannel = QChatChannelJpaEntity.chatChannelJpaEntity;
         QBorrowHistJpaEntity qBorrowHist = QBorrowHistJpaEntity.borrowHistJpaEntity;
 
@@ -215,10 +215,11 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                 .where(qItems.delYn.isFalse());
 
         switch (type) {
-            case BORROWED -> qb.where(qItems.owner.userId.eq(userId));
-            case BORROWING -> qb.where(qBorrowHist.borrower.userId.eq(userId));
+            case BORROWING -> qb.where(qItems.owner.userId.eq(userId));
+            case BORROWED -> qb.where(qBorrowHist.borrower.userId.eq(userId));
             case EXCHANGE -> {
             }
+            default -> throw new IllegalStateException("Unexpected value: " + type);
         }
 
         qb.groupBy(qItems.id)
@@ -232,7 +233,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
     public List<WishlistResponse> getWishlists(String userId, Pageable pageable) {
         QItemsJpaEntity qItems = QItemsJpaEntity.itemsJpaEntity;
         QItemsBorrowJpaEntity qBorrow = QItemsBorrowJpaEntity.itemsBorrowJpaEntity;
-        QitemsLikeJpaEntity qLike = QitemsLikeJpaEntity.itemsLikeJpaEntity;
+        QItemsLikeJpaEntity qLike = QItemsLikeJpaEntity.itemsLikeJpaEntity;
         QChatChannelJpaEntity qChatChannel = QChatChannelJpaEntity.chatChannelJpaEntity;
 
         JPAQuery<WishlistResponse> qb = queryFactory.select(

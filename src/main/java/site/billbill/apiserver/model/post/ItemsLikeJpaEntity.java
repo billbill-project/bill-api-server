@@ -16,8 +16,7 @@ import site.billbill.apiserver.model.user.UserJpaEntity;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-
-public class itemsLikeJpaEntity extends BaseTime {
+public class ItemsLikeJpaEntity extends BaseTime {
     @EmbeddedId
     private ItemsLikeId id;
 
