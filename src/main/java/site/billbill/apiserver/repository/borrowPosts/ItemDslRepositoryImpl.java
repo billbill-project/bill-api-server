@@ -37,12 +37,12 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
 
 
         JPAQuery<ItemsJpaEntity> query = queryFactory.selectFrom(items)
-            .leftJoin(items.category, categoryEntity).fetchJoin() // 명시적 Fetch Join
-            .leftJoin(borrow).on(items.id.eq(borrow.item.id))
-            .where(items.delYn.isFalse());
+                .leftJoin(items.category, categoryEntity).fetchJoin() // 명시적 Fetch Join
+                .leftJoin(borrow).on(items.id.eq(borrow.item.id))
+                .where(items.delYn.isFalse());
 
         // 카테고리 필터링
-        if(category==null){
+        if (category == null) {
             query.where(items.category.isNull());
         } else if (!"entire".equals(category)) {
             var fetchedCategory = queryFactory.selectFrom(categoryEntity)
