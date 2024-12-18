@@ -1,6 +1,5 @@
 package site.billbill.apiserver.model.post;
 
-import jakarta.mail.FetchProfile;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicUpdate;
@@ -17,8 +16,7 @@ import site.billbill.apiserver.model.user.UserJpaEntity;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-
-public class itemsLikeJpaEntity extends BaseTime {
+public class ItemsLikeJpaEntity extends BaseTime {
     @EmbeddedId
     private ItemsLikeId id;
 

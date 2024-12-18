@@ -2,6 +2,7 @@ package site.billbill.apiserver.api.borrowPosts.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import site.billbill.apiserver.common.enums.items.PriceStandard;
@@ -32,29 +33,36 @@ public class PostsRequest {
         @Schema(description = "카테고리", example = "camp, sports, tools")
         private String category;
         private List<NoRentalPeriod> noRental;
-
     }
+
     @Getter
     @Setter
     @Builder
-    public static class NoRentalPeriod{
+    public static class NoRentalPeriod {
         private LocalDate startDate;
         private LocalDate endDate;
     }
+
     @Getter
     @Setter
     @Builder
-    public static class BillAcceptRequest{
+    public static class BillAcceptRequest {
         private String postId;
         private LocalDate startDate;
         private LocalDate endDate;
     }
+
     @Getter
     @Setter
     @Builder
-    public static class ReviewRequest{
+    public static class ReviewRequest {
         @Schema(description = "평점", example = "1~5 사이로 입력해주셔야합니다. 그 외엔 오류 처리")
         private int rating;
         private String content;
+    }
+
+    @Data
+    public static class PostIdRequest {
+        private String postId;
     }
 }
