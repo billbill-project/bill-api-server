@@ -30,11 +30,10 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<ItemsJpaEntity> findItemsWithConditions(String category, Pageable pageable, String sortField,String keyword) {
+    public Page<ItemsJpaEntity> findItemsWithConditions(String category, Pageable pageable, String sortField, String keyword) {
         QItemsJpaEntity items = QItemsJpaEntity.itemsJpaEntity;
         QItemsBorrowJpaEntity borrow = QItemsBorrowJpaEntity.itemsBorrowJpaEntity;
         QItemsCategoryJpaEntity categoryEntity = QItemsCategoryJpaEntity.itemsCategoryJpaEntity;
-
 
 
         JPAQuery<ItemsJpaEntity> query = queryFactory.selectFrom(items)
@@ -55,25 +54,27 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
         }
 
         //키워드 필터링
-        if(keyword !=null && !keyword.isEmpty()){
-            query.where(applyKeywordFilter(items,keyword));
+        if (keyword != null && !keyword.isEmpty()) {
+            query.where(applyKeywordFilter(items, keyword));
         }
 
         // 정렬 조건 처리
-    pageable.getSort().forEach(order -> {
-        OrderSpecifier<?> orderSpecifier;
-        switch (order.getProperty()) {
-            case "price" -> orderSpecifier = order.isAscending() ? borrow.price.asc() : borrow.price.desc();
-            case "createdAt" -> orderSpecifier = order.isAscending() ? items.createdAt.asc() : items.createdAt.desc();
-            case "likeCount" -> orderSpecifier = order.isAscending() ? items.likeCount.asc() : items.likeCount.desc();
-            default -> {
-                log.warn("Invalid sort field: {}", order.getProperty());
-                return;
+        pageable.getSort().forEach(order -> {
+            OrderSpecifier<?> orderSpecifier;
+            switch (order.getProperty()) {
+                case "price" -> orderSpecifier = order.isAscending() ? borrow.price.asc() : borrow.price.desc();
+                case "createdAt" ->
+                        orderSpecifier = order.isAscending() ? items.createdAt.asc() : items.createdAt.desc();
+                case "likeCount" ->
+                        orderSpecifier = order.isAscending() ? items.likeCount.asc() : items.likeCount.desc();
+                default -> {
+                    log.warn("Invalid sort field: {}", order.getProperty());
+                    return;
+                }
             }
-        }
 
-        query.orderBy(orderSpecifier);
-    });
+            query.orderBy(orderSpecifier);
+        });
 
 
         // 페이징 처리
@@ -115,6 +116,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                 return null; // 기본 정렬 없음
         }
     }
+
     private BooleanExpression applyKeywordFilter(QItemsJpaEntity items, String keyword) {
         if (keyword == null || keyword.isEmpty()) {
             return null;
@@ -226,6 +228,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
     @Override
     public List<WishlistResponse> getWishlists(String userId, Pageable pageable) {
         QItemsJpaEntity qItems = QItemsJpaEntity.itemsJpaEntity;
+        QItemsBorrowJpaEntity qBorrow = QItemsBorrowJpaEntity.itemsBorrowJpaEntity;
         QitemsLikeJpaEntity qLike = QitemsLikeJpaEntity.itemsLikeJpaEntity;
         QChatChannelJpaEntity qChatChannel = QChatChannelJpaEntity.chatChannelJpaEntity;
 
@@ -235,6 +238,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                                 qItems.id,
                                 qItems.owner.userId,
                                 qItems.images,
+                                qBorrow.price,
                                 qItems.title,
                                 qItems.itemStatus,
                                 qLike.countDistinct().as("likeCount"),
@@ -245,6 +249,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                         )
                 )
                 .from(qItems)
+                .leftJoin(qBorrow).on(qItems.id.eq(qBorrow.id))
                 .leftJoin(qLike).on(qItems.id.eq(qLike.items.id).and(qLike.delYn.isFalse()))
                 .leftJoin(qChatChannel).on(qItems.id.eq(qChatChannel.item.id).and(qChatChannel.delYn.isFalse()))
                 .where(qLike.user.userId.eq(userId)
