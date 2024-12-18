@@ -1,4 +1,4 @@
-package site.billbill.apiserver.model.post.embedded;
+package site.billbill.apiserver.model.post.embeded;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

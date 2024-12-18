@@ -5,7 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.DynamicUpdate;
 import site.billbill.apiserver.common.converter.BooleanConverter;
 import site.billbill.apiserver.model.BaseTime;
-import site.billbill.apiserver.model.post.embedded.ItemsLikeId;
+import site.billbill.apiserver.model.post.embeded.ItemsLikeId;
 import site.billbill.apiserver.model.user.UserJpaEntity;
 
 @DynamicUpdate

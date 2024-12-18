@@ -16,7 +16,7 @@ import site.billbill.apiserver.common.utils.ULID.ULIDUtil;
 import site.billbill.apiserver.exception.CustomException;
 import site.billbill.apiserver.model.chat.ChatChannelJpaEntity;
 import site.billbill.apiserver.model.post.*;
-import site.billbill.apiserver.model.post.emebeded.ItemsLikeId;
+import site.billbill.apiserver.model.post.embeded.ItemsLikeId;
 import site.billbill.apiserver.model.user.UserJpaEntity;
 import site.billbill.apiserver.model.user.UserLocationJpaEntity;
 import site.billbill.apiserver.model.user.UserSearchHistJpaEntity;
