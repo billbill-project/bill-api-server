@@ -305,12 +305,18 @@ public class PostsServiceImpl implements PostsService {
                 .userId(userId)
                 .build();
 
-        ItemsLikeJpaEntity itemsLike = ItemsLikeJpaEntity.builder()
-                .id(id)
-                .items(item)
-                .user(user)
-                .delYn(false)
-                .build();
+        ItemsLikeJpaEntity itemsLike = itemsLikeRepository.findById(id).orElse(null);
+
+        if (itemsLike != null) {
+            itemsLike.setDelYn(true);
+        } else {
+            itemsLike = ItemsLikeJpaEntity.builder()
+                    .id(id)
+                    .items(item)
+                    .user(user)
+                    .delYn(false)
+                    .build();
+        }
 
         itemsLikeRepository.save(itemsLike);
     }
