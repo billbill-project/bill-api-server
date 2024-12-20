@@ -1,6 +1,7 @@
 package site.billbill.apiserver.api.chat.service;
 
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -96,6 +97,11 @@ public class ChatServiceImpl implements ChatService {
                 .orElseThrow(() -> new CustomException(ErrorCode.NotFound, "회원을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
         List<String> activeChatIdsByUserId = chatRepository.findActiveChatIdsByUserId(userId);
+
+        if (activeChatIdsByUserId == null || activeChatIdsByUserId.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         ChatInfoList webhookResult = webhookService.sendWebhookForChatList(activeChatIdsByUserId, beforeTimestamp);
         List<ChatInfo> chatInfoList = webhookResult.getChatInfoList();
 
