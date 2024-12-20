@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -20,8 +21,8 @@ public class WebhookServiceImpl implements WebhookService {
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
 
-//    @Value("${webhook.url}")
-    private String webhookUrl = "http://localhost:8081/webhook";
+    @Value("${webhook.url}")
+    private String webhookUrl;
 
     @Autowired
     public WebhookServiceImpl(WebClient.Builder webClientBuilder, ObjectMapper objectMapper) {
