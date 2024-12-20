@@ -7,10 +7,12 @@ import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import site.billbill.apiserver.api.chat.dto.request.WebhookRequest;
+import site.billbill.apiserver.common.enums.exception.ErrorCode;
+import site.billbill.apiserver.exception.CustomException;
 
 @Slf4j
 @Service
@@ -18,8 +20,8 @@ public class WebhookServiceImpl implements WebhookService {
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
 
-    @Value("${webhook.url}")
-    private String webhookUrl;
+//    @Value("${webhook.url}")
+    private String webhookUrl = "http://localhost:8081/webhook";
 
     @Autowired
     public WebhookServiceImpl(WebClient.Builder webClientBuilder, ObjectMapper objectMapper) {
@@ -33,13 +35,17 @@ public class WebhookServiceImpl implements WebhookService {
         payload.put("contactId", contact);
         payload.put("ownerId", owner);
 
-        webClient.post()
-                .uri("/channel")
-                .bodyValue(payload)
-                .retrieve()
-                .bodyToMono(Void.class)
-                .doOnError(error -> log.error("Webhook 호출 실패: {}", error.getMessage()))
-                .subscribe();
+        try {
+            webClient.post()
+                    .uri("/channel")
+                    .bodyValue(payload)
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .block();
+        } catch (Exception e) {
+            log.error("Webhook 호출 실패: {}", e.getMessage());
+            throw new CustomException(ErrorCode.ServerError, "Webhook 호출 실패", HttpStatus.BAD_GATEWAY);
+        }
     }
 
     public WebhookRequest.ChatInfoList sendWebhookForChatList(List<String> chatRoomIds, String beforeTimestamp) {
