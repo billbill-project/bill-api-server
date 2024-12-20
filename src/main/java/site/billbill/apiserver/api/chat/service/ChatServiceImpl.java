@@ -2,15 +2,17 @@ package site.billbill.apiserver.api.chat.service;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import site.billbill.apiserver.api.chat.converter.ChatConverter;
 import site.billbill.apiserver.api.chat.dto.request.ChatRequest;
+import site.billbill.apiserver.api.chat.dto.request.WebhookRequest.ChatInfo;
+import site.billbill.apiserver.api.chat.dto.request.WebhookRequest.ChatInfoList;
 import site.billbill.apiserver.api.chat.dto.response.ChatResponse;
+import site.billbill.apiserver.api.chat.dto.response.ChatResponse.ViewChatInfoResponse;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.ULID.ULIDUtil;
 import site.billbill.apiserver.exception.CustomException;
@@ -27,7 +29,6 @@ import site.billbill.apiserver.repository.user.UserRepository;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ChatServiceImpl implements ChatService {
-    private static final Logger log = LoggerFactory.getLogger(ChatServiceImpl.class);
     private final ChatRepository chatRepository;
     private final UserRepository userRepository;
     private final ItemsRepository itemsRepository;
@@ -88,5 +89,21 @@ public class ChatServiceImpl implements ChatService {
         };
 
         return ChatConverter.toViewChannelInfo(chatChannel, opponent, item, totalPrice, status, userId);
+    }
+
+    public List<ViewChatInfoResponse> getChatList(String beforeTimestamp, String userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NotFound, "회원을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
+        List<String> activeChatIdsByUserId = chatRepository.findActiveChatIdsByUserId(userId);
+        ChatInfoList webhookResult = webhookService.sendWebhookForChatList(activeChatIdsByUserId, beforeTimestamp);
+        List<ChatInfo> chatInfoList = webhookResult.getChatInfoList();
+
+        return chatInfoList.stream().map(chatInfo -> {
+            ChatChannelJpaEntity chatChannel = chatRepository.findById(chatInfo.getChannelId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.NotFound, "채널을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+            UserJpaEntity opponent = chatChannel.getOpponent(userId);
+            return ChatConverter.toViewChatInfo(chatInfo, userId, opponent, chatChannel.getItem());
+        }).collect(Collectors.toList());
     }
 }

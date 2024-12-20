@@ -2,6 +2,8 @@ package site.billbill.apiserver.api.chat.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -22,5 +24,19 @@ public class ChatResponse {
         LocalDate startedAt;
         @JsonFormat(pattern = "yyyy-MM-dd")
         LocalDate endedAt;
+    }
+
+    @Getter
+    @Builder
+    public static class ViewChatInfoResponse {
+        private String channelId;
+        private int unreadCount;
+        private String lastChat;
+        private String lastSender;
+        private LocalDateTime updatedAt;
+        private String opponentId;
+        private String opponentNickname;
+        private String opponentProfileUrl;
+        private String itemFirstUrl;
     }
 }
