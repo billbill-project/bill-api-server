@@ -1,6 +1,7 @@
 package site.billbill.apiserver.api.chat.converter;
 
 import java.time.LocalDate;
+import site.billbill.apiserver.api.chat.dto.request.WebhookRequest.ChatInfo;
 import site.billbill.apiserver.api.chat.dto.response.ChatResponse;
 import site.billbill.apiserver.model.chat.ChatChannelJpaEntity;
 import site.billbill.apiserver.model.post.ItemsJpaEntity;
@@ -19,7 +20,9 @@ public class ChatConverter {
                 .build();
     }
 
-    public static ChatResponse.ViewChannelInfoResponse toViewChannelInfo(ChatChannelJpaEntity channel, UserJpaEntity opponent, ItemsJpaEntity item, int totalPrice,
+    public static ChatResponse.ViewChannelInfoResponse toViewChannelInfo(ChatChannelJpaEntity channel,
+                                                                         UserJpaEntity opponent, ItemsJpaEntity item,
+                                                                         int totalPrice,
                                                                          String status, String userId) {
 
         return ChatResponse.ViewChannelInfoResponse.builder()
@@ -34,6 +37,28 @@ public class ChatConverter {
                 .startedAt(channel.getStartedAt())
                 .endedAt(channel.getEndedAt())
                 .myId(userId)
+                .build();
+    }
+
+    public static ChatResponse.ViewChatInfoResponse toViewChatInfo(ChatInfo chatInfo,
+                                                                           String userId, UserJpaEntity opponent,
+                                                                           ItemsJpaEntity item) {
+        int unReadCount = chatInfo.getUnreadCount();
+
+        if (chatInfo.getLastSender().equals(userId)) {
+            unReadCount = 0;
+        }
+
+        return ChatResponse.ViewChatInfoResponse.builder()
+                .channelId(chatInfo.getChannelId())
+                .lastChat(chatInfo.getLastChat())
+                .lastSender(chatInfo.getLastSender())
+                .updatedAt(chatInfo.getUpdatedAt())
+                .unreadCount(unReadCount)
+                .opponentId(opponent.getUserId())
+                .opponentProfileUrl(opponent.getProfile())
+                .opponentNickname(opponent.getNickname())
+                .itemFirstUrl(item.getImages().get(0))
                 .build();
     }
 }
