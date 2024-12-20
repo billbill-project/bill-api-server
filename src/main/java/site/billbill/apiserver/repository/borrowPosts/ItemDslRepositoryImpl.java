@@ -30,20 +30,19 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<ItemsJpaEntity> findItemsWithConditions(String category, Pageable pageable, String sortField,String keyword) {
+    public Page<ItemsJpaEntity> findItemsWithConditions(String category, Pageable pageable, String sortField, String keyword) {
         QItemsJpaEntity items = QItemsJpaEntity.itemsJpaEntity;
         QItemsBorrowJpaEntity borrow = QItemsBorrowJpaEntity.itemsBorrowJpaEntity;
         QItemsCategoryJpaEntity categoryEntity = QItemsCategoryJpaEntity.itemsCategoryJpaEntity;
 
 
-
         JPAQuery<ItemsJpaEntity> query = queryFactory.selectFrom(items)
-            .leftJoin(items.category, categoryEntity).fetchJoin() // 명시적 Fetch Join
-            .leftJoin(borrow).on(items.id.eq(borrow.item.id))
-            .where(items.delYn.isFalse());
+                .leftJoin(items.category, categoryEntity).fetchJoin() // 명시적 Fetch Join
+                .leftJoin(borrow).on(items.id.eq(borrow.item.id))
+                .where(items.delYn.isFalse());
 
         // 카테고리 필터링
-        if(category==null){
+        if (category == null) {
             query.where(items.category.isNull());
         } else if (!"entire".equals(category)) {
             var fetchedCategory = queryFactory.selectFrom(categoryEntity)
@@ -58,25 +57,27 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
         }
 
         //키워드 필터링
-        if(keyword !=null && !keyword.isEmpty()){
-            query.where(applyKeywordFilter(items,keyword));
+        if (keyword != null && !keyword.isEmpty()) {
+            query.where(applyKeywordFilter(items, keyword));
         }
 
         // 정렬 조건 처리
-    pageable.getSort().forEach(order -> {
-        OrderSpecifier<?> orderSpecifier;
-        switch (order.getProperty()) {
-            case "price" -> orderSpecifier = order.isAscending() ? borrow.price.asc() : borrow.price.desc();
-            case "createdAt" -> orderSpecifier = order.isAscending() ? items.createdAt.asc() : items.createdAt.desc();
-            case "likeCount" -> orderSpecifier = order.isAscending() ? items.likeCount.asc() : items.likeCount.desc();
-            default -> {
-                log.warn("Invalid sort field: {}", order.getProperty());
-                return;
+        pageable.getSort().forEach(order -> {
+            OrderSpecifier<?> orderSpecifier;
+            switch (order.getProperty()) {
+                case "price" -> orderSpecifier = order.isAscending() ? borrow.price.asc() : borrow.price.desc();
+                case "createdAt" ->
+                        orderSpecifier = order.isAscending() ? items.createdAt.asc() : items.createdAt.desc();
+                case "likeCount" ->
+                        orderSpecifier = order.isAscending() ? items.likeCount.asc() : items.likeCount.desc();
+                default -> {
+                    log.warn("Invalid sort field: {}", order.getProperty());
+                    return;
+                }
             }
-        }
 
-        query.orderBy(orderSpecifier);
-    });
+            query.orderBy(orderSpecifier);
+        });
 
 
         // 페이징 처리
@@ -118,6 +119,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                 return null; // 기본 정렬 없음
         }
     }
+
     private BooleanExpression applyKeywordFilter(QItemsJpaEntity items, String keyword) {
         if (keyword == null || keyword.isEmpty()) {
             return null;
@@ -146,7 +148,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
     public List<PostHistoryResponse> getPostHistory(String userId, Pageable pageable) {
         QItemsJpaEntity qItems = QItemsJpaEntity.itemsJpaEntity;
         QItemsBorrowJpaEntity qBorrow = QItemsBorrowJpaEntity.itemsBorrowJpaEntity;
-        QitemsLikeJpaEntity qLike = QitemsLikeJpaEntity.itemsLikeJpaEntity;
+        QItemsLikeJpaEntity qLike = QItemsLikeJpaEntity.itemsLikeJpaEntity;
         QChatChannelJpaEntity qChatChannel = QChatChannelJpaEntity.chatChannelJpaEntity;
 
         JPAQuery<PostHistoryResponse> qb = queryFactory.select(
@@ -181,7 +183,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
     public List<BorrowHistoryResponse> getBorrowHistory(String userId, Pageable pageable, ItemHistoryType type) {
         QItemsJpaEntity qItems = QItemsJpaEntity.itemsJpaEntity;
         QItemsBorrowJpaEntity qBorrow = QItemsBorrowJpaEntity.itemsBorrowJpaEntity;
-        QitemsLikeJpaEntity qLike = QitemsLikeJpaEntity.itemsLikeJpaEntity;
+        QItemsLikeJpaEntity qLike = QItemsLikeJpaEntity.itemsLikeJpaEntity;
         QChatChannelJpaEntity qChatChannel = QChatChannelJpaEntity.chatChannelJpaEntity;
         QBorrowHistJpaEntity qBorrowHist = QBorrowHistJpaEntity.borrowHistJpaEntity;
 
@@ -213,10 +215,11 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                 .where(qItems.delYn.isFalse());
 
         switch (type) {
-            case BORROWED -> qb.where(qItems.owner.userId.eq(userId));
-            case BORROWING -> qb.where(qBorrowHist.borrower.userId.eq(userId));
+            case BORROWING -> qb.where(qItems.owner.userId.eq(userId));
+            case BORROWED -> qb.where(qBorrowHist.borrower.userId.eq(userId));
             case EXCHANGE -> {
             }
+            default -> throw new IllegalStateException("Unexpected value: " + type);
         }
 
         qb.groupBy(qItems.id)
@@ -229,7 +232,8 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
     @Override
     public List<WishlistResponse> getWishlists(String userId, Pageable pageable) {
         QItemsJpaEntity qItems = QItemsJpaEntity.itemsJpaEntity;
-        QitemsLikeJpaEntity qLike = QitemsLikeJpaEntity.itemsLikeJpaEntity;
+        QItemsBorrowJpaEntity qBorrow = QItemsBorrowJpaEntity.itemsBorrowJpaEntity;
+        QItemsLikeJpaEntity qLike = QItemsLikeJpaEntity.itemsLikeJpaEntity;
         QChatChannelJpaEntity qChatChannel = QChatChannelJpaEntity.chatChannelJpaEntity;
 
         JPAQuery<WishlistResponse> qb = queryFactory.select(
@@ -238,6 +242,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                                 qItems.id,
                                 qItems.owner.userId,
                                 qItems.images,
+                                qBorrow.price,
                                 qItems.title,
                                 qItems.itemStatus,
                                 qLike.countDistinct().as("likeCount"),
@@ -248,6 +253,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                         )
                 )
                 .from(qItems)
+                .leftJoin(qBorrow).on(qItems.id.eq(qBorrow.id))
                 .leftJoin(qLike).on(qItems.id.eq(qLike.items.id).and(qLike.delYn.isFalse()))
                 .leftJoin(qChatChannel).on(qItems.id.eq(qChatChannel.item.id).and(qChatChannel.delYn.isFalse()))
                 .where(qLike.user.userId.eq(userId)

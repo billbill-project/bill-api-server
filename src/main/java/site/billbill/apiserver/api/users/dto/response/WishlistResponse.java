@@ -24,6 +24,8 @@ public class WishlistResponse {
             example = "[\"image1.jpg\", \"image2.jpg\"]"
     )
     private List<String> itemImages;
+    @Schema(description = "물품 가격", example = "20000")
+    private Integer price;
     @Schema(description = "물품 이름", example = "Pronto600 폴라로이드 카메라")
     private String title;
     @Schema(description = "아이템 상태", example = "3")
