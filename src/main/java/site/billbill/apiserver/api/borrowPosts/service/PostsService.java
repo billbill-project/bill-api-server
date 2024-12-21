@@ -3,13 +3,14 @@ package site.billbill.apiserver.api.borrowPosts.service;
 import org.springframework.data.domain.Sort;
 import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
 import site.billbill.apiserver.api.borrowPosts.dto.response.PostsResponse;
+import site.billbill.apiserver.model.user.UserLocationJpaEntity;
 
 import java.util.List;
 
 public interface PostsService {
     PostsResponse.UploadResponse uploadPostService(PostsRequest.UploadRequest request, String userId);
 
-    PostsResponse.ViewAllResultResponse ViewAllPostService(String category, int page, Sort.Direction direction, String orderType);
+    PostsResponse.ViewAllResultResponse ViewAllPostService(String category, int page, Sort.Direction direction, String orderType, String userId);
 
     PostsResponse.ViewPostResponse ViewPostService(String postId, String userId);
 

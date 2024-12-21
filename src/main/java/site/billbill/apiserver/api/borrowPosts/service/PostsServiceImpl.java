@@ -83,11 +83,11 @@ public class PostsServiceImpl implements PostsService {
     }
 
     public PostsResponse.ViewAllResultResponse ViewAllPostService(
-            String category, int page, Sort.Direction direction, String orderType) {
-
+            String category, int page, Sort.Direction direction, String orderType,String userId) {
+        UserLocationJpaEntity userLocation = userLocationReposity.findByUserId(userId).orElse(null);
         Pageable pageable = createPageable(page, direction, orderType);
         log.info(category);
-        List<PostsResponse.Post> items = findAndConvertItems(category, pageable, null);
+        List<PostsResponse.Post> items = findAndConvertItems(category, pageable, null,userLocation);
         return PostsConverter.toViewAllList(items);
     }
 
@@ -175,10 +175,10 @@ public class PostsServiceImpl implements PostsService {
 
     @Transactional
     public PostsResponse.ViewAllResultResponse ViewSearchPostService(String userId, String category, int page, Sort.Direction direction, String orderType, String keyword, boolean state) {
-        UserJpaEntity user = userRepository.findById(userId).orElse(null);
+        UserLocationJpaEntity userLocation= userLocationReposity.findByUserId(userId).orElse(null);
 
         Pageable pageable = createPageable(page, direction, orderType);
-        List<PostsResponse.Post> items = findAndConvertItems(category, pageable, keyword);
+        List<PostsResponse.Post> items = findAndConvertItems(category, pageable, keyword,userLocation);
         //사용자가 검색어 저장을 허용했을 경우
         String tempKeyword = keyword.replaceAll("\\+", " ");
 //        if(state){
@@ -330,6 +330,7 @@ public class PostsServiceImpl implements PostsService {
             case "price" -> "price";
             case "createdAt" -> "createdAt";
             case "likeCount" -> "likeCount";
+            case "distance"->"distance";
             default -> "createdAt"; // 기본 정렬
         };
         //정렬 순서
@@ -342,9 +343,9 @@ public class PostsServiceImpl implements PostsService {
         );
     }
 
-    private List<PostsResponse.Post> findAndConvertItems(String category, Pageable pageable, String keyword) {
+    private List<PostsResponse.Post> findAndConvertItems(String category, Pageable pageable, String keyword,UserLocationJpaEntity userLocation) {
         // Repository 호출
-        Page<ItemsJpaEntity> itemsPage = itemsRepository.findItemsWithConditions(category, pageable, null, keyword);
+        Page<ItemsJpaEntity> itemsPage = itemsRepository.findItemsWithConditions(category, pageable, null, keyword,userLocation.getLatitude(),userLocation.getLongitude());
 
         // 빈 결과 체크
         if (itemsPage.isEmpty()) {

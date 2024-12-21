@@ -7,6 +7,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
 
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -30,11 +31,11 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<ItemsJpaEntity> findItemsWithConditions(String category, Pageable pageable, String sortField, String keyword) {
+    public Page<ItemsJpaEntity> findItemsWithConditions(String category, Pageable pageable, String sortField, String keyword,Double latitude,Double longitude) {
         QItemsJpaEntity items = QItemsJpaEntity.itemsJpaEntity;
         QItemsBorrowJpaEntity borrow = QItemsBorrowJpaEntity.itemsBorrowJpaEntity;
         QItemsCategoryJpaEntity categoryEntity = QItemsCategoryJpaEntity.itemsCategoryJpaEntity;
-
+        QItemsLocationJpaEntity QItemsLocation = QItemsLocationJpaEntity.itemsLocationJpaEntity;
 
         JPAQuery<ItemsJpaEntity> query = queryFactory.selectFrom(items)
                 .leftJoin(items.category, categoryEntity).fetchJoin() // 명시적 Fetch Join
@@ -70,6 +71,20 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                         orderSpecifier = order.isAscending() ? items.createdAt.asc() : items.createdAt.desc();
                 case "likeCount" ->
                         orderSpecifier = order.isAscending() ? items.likeCount.asc() : items.likeCount.desc();
+                case "distance" -> {
+                    if (latitude != null && longitude != null) {
+                        // 거리 계산식
+                        NumberExpression<Double> distanceExpression = Expressions.numberTemplate(
+                                Double.class,
+                                "ST_Distance_Sphere(POINT({0}, {1}), POINT({2}, {3}))",
+                                QItemsLocation.latitude, QItemsLocation.longitude, latitude, longitude
+                        );
+                        orderSpecifier = order.isAscending() ? distanceExpression.asc() : distanceExpression.desc();
+                    } else {
+                        log.warn("Latitude와 Longitude가 필요합니다.");
+                        return;
+                    }
+                }
                 default -> {
                     log.warn("Invalid sort field: {}", order.getProperty());
                     return;

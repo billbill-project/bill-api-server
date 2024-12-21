@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface ItemDslRepository {
 
-    Page<ItemsJpaEntity> findItemsWithConditions(String category, Pageable pageable, String sortField,String keyword);
+    Page<ItemsJpaEntity> findItemsWithConditions(String category, Pageable pageable, String sortField,String keyword,Double latitude,Double longitude);
 
     List<PostHistoryResponse> getPostHistory(String userId, Pageable pageable);
 
