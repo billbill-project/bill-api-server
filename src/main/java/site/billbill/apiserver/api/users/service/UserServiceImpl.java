@@ -222,7 +222,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<CodeDetailJpaEntity> getWithdrawCodeList() {
-        return codeDetailRepository.findByIdGroupCode("WITHDRAW_CODE");
+        return codeDetailRepository.findByIdGroupCodeOrderBySeqAsc("WITHDRAW_CODE");
     }
 
 
