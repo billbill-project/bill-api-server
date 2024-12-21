@@ -9,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface CodeDetailRepository extends JpaRepository<CodeDetailJpaEntity, CodeDetailId> {
-    List<CodeDetailJpaEntity> findByIdGroupCode(String groupCode);
+    List<CodeDetailJpaEntity> findByIdGroupCodeOrderBySeqAsc(String groupCode);
 }

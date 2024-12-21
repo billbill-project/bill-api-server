@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
 import site.billbill.apiserver.api.borrowPosts.dto.response.PostsResponse;
@@ -49,14 +48,17 @@ public class PostsController {
             @RequestParam(value = "category", required = false) String category,
             @Parameter(name = "page", description = "페이지 번호 (1부터 시작)", example = "1", in = ParameterIn.QUERY, required = false)
             @RequestParam(value = "page", required = false, defaultValue = "1") int page,
-            @Parameter(name = "order", description = "정렬 방향 (asc: 오름차순, desc: 내림차순)", example = "desc", in = ParameterIn.QUERY, required = false)
+            @Parameter(name = "order", description = "정렬 방향 (asc: 오름차순, desc: 내림차순)", example = "asc", in = ParameterIn.QUERY, required = false)
             @RequestParam(value = "order", required = false, defaultValue = "desc") String order,
-            @Parameter(name = "sortBy", description = "정렬 기준 (예: price, createdAt, likeCount)", example = "createdAt", in = ParameterIn.QUERY, required = true)
+            @Parameter(name = "sortBy", description = "정렬 기준 (예: price, createdAt, likeCount,distance)", example = "distance", in = ParameterIn.QUERY, required = true)
             @RequestParam(value = "sortBy", required = true, defaultValue = "accuracy") String sortBy
     ) {
-
+        String userId = "";
+        if (MDC.get(JWTUtil.MDC_USER_ID) != null) {
+            userId = MDC.get(JWTUtil.MDC_USER_ID);
+        }
         Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
-        return new BaseResponse<>(postsService.ViewAllPostService(category, page, direction, sortBy));
+        return new BaseResponse<>(postsService.ViewAllPostService(category, page, direction, sortBy,userId));
     }
 
     @Operation(summary = "게시물 검색", description = "게시물 검색 API")
@@ -66,9 +68,9 @@ public class PostsController {
             @RequestParam(value = "category", required = false) String category,
             @Parameter(name = "page", description = "페이지 번호 (1부터 시작)", example = "1", in = ParameterIn.QUERY, required = false)
             @RequestParam(value = "page", required = false, defaultValue = "1") int page,
-            @Parameter(name = "order", description = "정렬 방향 (asc: 오름차순, desc: 내림차순)", example = "desc", in = ParameterIn.QUERY, required = false)
+            @Parameter(name = "order", description = "정렬 방향 (asc: 오름차순, desc: 내림차순)", example = "asc", in = ParameterIn.QUERY, required = false)
             @RequestParam(value = "order", required = false, defaultValue = "desc") String order,
-            @Parameter(name = "sortBy", description = "정렬 기준 (예: price, createdAt, likeCount)", example = "createdAt", in = ParameterIn.QUERY, required = true)
+            @Parameter(name = "sortBy", description = "정렬 기준 (예: price, createdAt, likeCount,distance)", example = "distance", in = ParameterIn.QUERY, required = true)
             @RequestParam(value = "sortBy", required = true, defaultValue = "accuracy") String sortBy,
             @Parameter(name = "keyword", description = "검색 키워드(예: 6인용+텐트)", in = ParameterIn.QUERY, required = true)
             @RequestParam(value = "keyword", required = true) String keyword) {

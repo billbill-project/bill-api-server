@@ -15,6 +15,9 @@ import site.billbill.apiserver.api.base.service.BaseService;
 import site.billbill.apiserver.common.enums.base.ReportType;
 import site.billbill.apiserver.common.response.BaseResponse;
 import site.billbill.apiserver.common.utils.jwt.dto.JwtDto;
+import site.billbill.apiserver.model.common.CodeDetailJpaEntity;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -28,6 +31,13 @@ import site.billbill.apiserver.common.utils.jwt.dto.JwtDto;
 })
 public class BaseController {
     private final BaseService baseService;
+
+    @Operation(summary = "신고하기 코드 목록 조회", description = "신고하기 코드 목록 조회 API")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/report/code")
+    public BaseResponse<List<CodeDetailJpaEntity>> getReportCodeList() {
+        return new BaseResponse<>(baseService.getReportCodeList());
+    }
 
     @Operation(summary = "신고하기", description = "신고하기 API")
     @ResponseStatus(HttpStatus.CREATED)
