@@ -79,23 +79,19 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public JwtDto login(LoginRequest request) {
         // bring user's phone number
-        Optional<UserIdentityJpaEntity> userIdentityJpaEntity = userIdentityRepository.findUserByPhoneNumberWithoutWithdraw(request.getPhoneNumber());
+//        Optional<UserIdentityJpaEntity> userIdentityJpaEntity = userIdentityRepository.findUserByPhoneNumberWithoutWithdraw(request.getPhoneNumber());
 
-        if (userIdentityJpaEntity.isEmpty())
-            throw new CustomException(ErrorCode.NotFound, "전화번호를 확인해주세요", HttpStatus.NOT_FOUND);
+        Optional<UserJpaEntity> user = userRepository.findByEmailWithoutWithdraw(request.getEmail());
 
-        // bring user's password
-        String userId = userIdentityJpaEntity.get().getUserId();
-        Optional<UserJpaEntity> userJpaEntity = userRepository.findById(userId);
-        if (userJpaEntity.isEmpty())
-            throw new CustomException(ErrorCode.NotFound, "해당 회원이 존재하지 않습니다.", HttpStatus.NOT_FOUND);
+        // if user already exists
+        if (user.isEmpty())
+            throw new CustomException(ErrorCode.Conflict, "해당 회원이 존재하지 않습니다.", HttpStatus.CONFLICT);
 
-        String encryptedPassword = userJpaEntity.get().getPassword();
+        String encryptedPassword = user.get().getPassword();
         if (!checkPassword(request.getPassword(), encryptedPassword))
             throw new CustomException(ErrorCode.Unauthorized, "비밀번호를 확인해 주세요.", HttpStatus.UNAUTHORIZED);
-
-
-        return jwtUtil.generateJwtDto(userId, userJpaEntity.get().getRole());
+        
+        return jwtUtil.generateJwtDto(user.get().getUserId(), user.get().getRole());
     }
 
     @Override
