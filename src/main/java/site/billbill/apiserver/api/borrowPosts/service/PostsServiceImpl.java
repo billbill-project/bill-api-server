@@ -119,7 +119,7 @@ public class PostsServiceImpl implements PostsService {
                 break;
 
         }
-        return PostsConverter.toViewPost(item, borrowItem, status, user);
+        return PostsConverter.toViewPost(item, borrowItem, status);
 
     }
 

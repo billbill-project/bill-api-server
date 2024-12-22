@@ -98,7 +98,7 @@ public class PostsConverter {
     public static PostsResponse.ReviewsResponse toReviews(List<PostsResponse.ReviewResponse> reviews){
         return PostsResponse.ReviewsResponse.builder().reviews(reviews).build();
     }
-    public static PostsResponse.ViewPostResponse toViewPost(ItemsJpaEntity item, ItemsBorrowJpaEntity borrowItem, String status,UserJpaEntity user){
+    public static PostsResponse.ViewPostResponse toViewPost(ItemsJpaEntity item, ItemsBorrowJpaEntity borrowItem, String status){
         return PostsResponse.ViewPostResponse.builder()
                 .postId(item.getId())
                 .title(item.getTitle())
@@ -110,8 +110,8 @@ public class PostsConverter {
                 .itemStatus(status)
                 .categoryId(item.getCategory().getId())
                 .categoryName(item.getCategory().getName())
-                .userId(user.getUserId())
-                .userName(user.getNickname())
+                .userId(item.getOwner().getUserId())
+                .userName(item.getOwner().getNickname())
                 .build();
     }
     public static PostsResponse.NoRentalPeriodResponse toOwnerNoRentalPeriod(ItemsBorrowStatusJpaEntity borrowStatus){
