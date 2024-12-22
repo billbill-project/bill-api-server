@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import site.billbill.apiserver.api.auth.dto.request.DeviceRequest;
 import site.billbill.apiserver.api.auth.dto.request.LocationRequest;
 import site.billbill.apiserver.api.users.dto.request.PasswordRequest;
+import site.billbill.apiserver.api.users.dto.request.ProfileRequest;
 import site.billbill.apiserver.api.users.dto.request.WithdrawRequest;
 import site.billbill.apiserver.api.users.dto.response.*;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
@@ -223,6 +224,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<CodeDetailJpaEntity> getWithdrawCodeList() {
         return codeDetailRepository.findByIdGroupCodeOrderBySeqAsc("WITHDRAW_CODE");
+    }
+
+    @Override
+    @Transactional
+    public void updateProfile(ProfileRequest request) {
+        String userId = MDC.get(JWTUtil.MDC_USER_ID);
+        userRepository.updateProfileById(userId, request);
     }
 
 

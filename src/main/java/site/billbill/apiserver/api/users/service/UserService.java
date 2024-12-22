@@ -4,6 +4,7 @@ import org.springframework.data.domain.Pageable;
 import site.billbill.apiserver.api.auth.dto.request.DeviceRequest;
 import site.billbill.apiserver.api.auth.dto.request.LocationRequest;
 import site.billbill.apiserver.api.users.dto.request.PasswordRequest;
+import site.billbill.apiserver.api.users.dto.request.ProfileRequest;
 import site.billbill.apiserver.api.users.dto.request.WithdrawRequest;
 import site.billbill.apiserver.api.users.dto.response.*;
 import site.billbill.apiserver.common.utils.posts.ItemHistoryType;
@@ -39,4 +40,6 @@ public interface UserService {
     void updatePassword(PasswordRequest request);
 
     List<CodeDetailJpaEntity> getWithdrawCodeList();
+
+    void updateProfile(ProfileRequest request);
 }
