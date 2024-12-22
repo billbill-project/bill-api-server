@@ -57,6 +57,7 @@ public class UserJpaEntity extends BaseTime {
 
     public UserJpaEntity(UserBaseInfo info) {
         this.userId = info.getUserId();
+        this.email = info.getEmail();
         this.nickname = info.getNickname();
         this.profile = info.getProfileImage();
         this.password = info.getPassword();

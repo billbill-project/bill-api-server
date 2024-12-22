@@ -7,8 +7,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import site.billbill.apiserver.api.users.dto.request.ProfileRequest;
 import site.billbill.apiserver.model.user.QUserJpaEntity;
+import site.billbill.apiserver.model.user.UserJpaEntity;
 
 import java.time.OffsetDateTime;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -39,5 +41,15 @@ public class UserDslRepositoryImpl implements UserDslRepository {
         if (request.getProfileUrl() != null) qb.set(qUser.profile, request.getProfileUrl());
 
         qb.execute();
+    }
+
+    @Override
+    public Optional<UserJpaEntity> findByEmailWithoutWithdraw(String email) {
+        QUserJpaEntity qUser = QUserJpaEntity.userJpaEntity;
+
+        JPAQuery<UserJpaEntity> qb = query.selectFrom(qUser)
+                .where(qUser.email.eq(email).and(qUser.withdrawStatus.isFalse()));
+
+        return Optional.ofNullable(qb.fetchOne());
     }
 }
