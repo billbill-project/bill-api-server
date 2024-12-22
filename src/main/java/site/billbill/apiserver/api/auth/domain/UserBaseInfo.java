@@ -7,6 +7,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class UserBaseInfo {
     private String userId;
+    private String email;
     private String profileImage;
     private String nickname;
     private String password;

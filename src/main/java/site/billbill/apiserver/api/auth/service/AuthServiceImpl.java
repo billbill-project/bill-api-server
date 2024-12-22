@@ -27,6 +27,7 @@ import site.billbill.apiserver.exception.CustomException;
 import site.billbill.apiserver.model.user.*;
 import site.billbill.apiserver.repository.user.*;
 
+import javax.swing.text.html.Option;
 import java.util.Optional;
 
 @Slf4j
@@ -46,30 +47,31 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public JwtDto signup(SignupRequest request) {
         // Check new by name & phoneNumber
-        Optional<UserIdentityJpaEntity> identityJpaEntity = userIdentityRepository.findUserByPhoneNumberWithoutWithdraw(request.getIdentity().getPhoneNumber());
+//        Optional<UserIdentityJpaEntity> identityJpaEntity = userIdentityRepository.findUserByPhoneNumberWithoutWithdraw(request.getIdentity().getPhoneNumber());
+
+        Optional<UserJpaEntity> userAlready = userRepository.findByEmailWithoutWithdraw(request.getEmail());
 
         // if user already exists
-        if (identityJpaEntity.isPresent()) {
+        if (userAlready.isPresent())
             throw new CustomException(ErrorCode.Conflict, "이미 존재하는 회원입니다.", HttpStatus.CONFLICT);
-        }
 
         String encryptedPassword = bCryptPasswordEncoder.encode(request.getPassword());
 
         // if user new
         String userId = ULIDUtil.generatorULID("USER");
-        UserIdentityJpaEntity userIdentity = UserIdentityJpaEntity.toJpaEntity(userId, request.getIdentity());
-        UserJpaEntity user = new UserJpaEntity(new UserBaseInfo(userId, request.getProfileImage(), request.getNickname(), encryptedPassword));
+//        UserIdentityJpaEntity userIdentity = UserIdentityJpaEntity.toJpaEntity(userId, request.getIdentity());
+        UserJpaEntity user = new UserJpaEntity(new UserBaseInfo(userId, request.getEmail(), request.getProfileImage(), request.getNickname(), encryptedPassword));
         UserAgreeHistJpaEntity userAgree = new UserAgreeHistJpaEntity(userId, request.getAgree().isServiceAgree(), request.getAgree().isPrivacyAgree(), request.getAgree().isMarketingAgree(), request.getAgree().isThirdPartyAgree());
         UserDeviceJpaEntity userDevice = new UserDeviceJpaEntity(userId, ULIDUtil.generatorULID("DEVICE"), request.getDevice().getDeviceToken(), request.getDevice().getDeviceType(), request.getDevice().getAppVersion());
 
         // save new user
         userRepository.save(user);
-        userIdentityRepository.save(userIdentity);
+//        userIdentityRepository.save(userIdentity);
         userDeviceRepository.save(userDevice);
         userAgreeHistRepository.save(userAgree);
 
         // save location
-        userService.saveLocation(userId, request.getLocation());
+//        userService.saveLocation(userId, request.getLocation());
 
         return jwtUtil.generateJwtDto(userId, UserRole.USER);
     }
