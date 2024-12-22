@@ -20,4 +20,6 @@ public interface ItemDslRepository {
 
     List<WishlistResponse> getWishlists(String userId, Pageable pageable);
 
+    void deleteBorrowHistory(String userId, Long borrowSeq);
+
 }

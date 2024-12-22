@@ -180,4 +180,13 @@ public class PostsController {
         postsService.likePost(userId, request.getPostId());
         return new BaseResponse<>(null);
     }
+
+    @Operation(summary = "대여 기록 삭제", description = "대여 기록 삭제 API")
+    @DeleteMapping("/history")
+    @ResponseStatus(HttpStatus.OK)
+    public BaseResponse<String> deletePostHistory(@RequestBody @Valid PostsRequest.BorrowHistRequest request) {
+        String userId = MDC.get(JWTUtil.MDC_USER_ID);
+        postsService.deleteBorrowHistory(userId, request.getBorrowSeq());
+        return new BaseResponse<>(null);
+    }
 }

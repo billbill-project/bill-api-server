@@ -33,4 +33,6 @@ public interface PostsService {
     PostsResponse.ReviewsResponse ViewReviewService(String userId, String postId);
 
     void likePost(String userId, String postId);
+
+    void deleteBorrowHistory(String userId, Long borrowSeq);
 }
