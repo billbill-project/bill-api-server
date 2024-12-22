@@ -321,6 +321,12 @@ public class PostsServiceImpl implements PostsService {
         itemsLikeRepository.save(itemsLike);
     }
 
+    @Transactional
+    @Override
+    public void deleteBorrowHistory(String userId, Long borrowSeq) {
+        itemsRepository.deleteBorrowHistory(userId, borrowSeq);
+    }
+
 
     //모듈화 코드
 

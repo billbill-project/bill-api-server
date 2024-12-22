@@ -65,4 +65,9 @@ public class PostsRequest {
     public static class PostIdRequest {
         private String postId;
     }
+
+    @Data
+    public static class BorrowHistRequest {
+        private Long borrowSeq;
+    }
 }

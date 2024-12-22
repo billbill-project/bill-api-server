@@ -16,13 +16,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import site.billbill.apiserver.api.users.dto.response.BorrowHistoryResponse;
 import site.billbill.apiserver.api.users.dto.response.PostHistoryResponse;
 import site.billbill.apiserver.api.users.dto.response.WishlistResponse;
+import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.posts.ItemHistoryType;
+import site.billbill.apiserver.exception.CustomException;
 import site.billbill.apiserver.model.chat.QChatChannelJpaEntity;
 import site.billbill.apiserver.model.post.*;
+import site.billbill.apiserver.model.user.QUserJpaEntity;
+import site.billbill.apiserver.model.user.UserJpaEntity;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Slf4j
@@ -31,7 +37,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<ItemsJpaEntity> findItemsWithConditions(String category, Pageable pageable, String sortField, String keyword,Double latitude,Double longitude) {
+    public Page<ItemsJpaEntity> findItemsWithConditions(String category, Pageable pageable, String sortField, String keyword, Double latitude, Double longitude) {
         QItemsJpaEntity items = QItemsJpaEntity.itemsJpaEntity;
         QItemsBorrowJpaEntity borrow = QItemsBorrowJpaEntity.itemsBorrowJpaEntity;
         QItemsCategoryJpaEntity categoryEntity = QItemsCategoryJpaEntity.itemsCategoryJpaEntity;
@@ -278,5 +284,20 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                 .limit(pageable.getPageSize());
 
         return qb.fetch();
+    }
+
+    @Override
+    public void deleteBorrowHistory(String userId, Long borrowSeq) {
+        QBorrowHistJpaEntity qBorrowHist = QBorrowHistJpaEntity.borrowHistJpaEntity;
+        QUserJpaEntity qUser = QUserJpaEntity.userJpaEntity;
+
+        UserJpaEntity user = queryFactory.selectFrom(qUser).where(qUser.userId.eq(userId)).fetchOne();
+        if(user == null) throw new CustomException(ErrorCode.NotFound, "회원 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+
+        queryFactory.update(qBorrowHist)
+                .set(qBorrowHist.delYn, true)
+                .set(qBorrowHist.updatedAt, OffsetDateTime.now())
+                .where(qBorrowHist.borrowSeq.eq(borrowSeq))
+                .execute();
     }
 }

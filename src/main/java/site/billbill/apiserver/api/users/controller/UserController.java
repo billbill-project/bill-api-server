@@ -15,6 +15,7 @@ import site.billbill.apiserver.api.auth.dto.request.DeviceRequest;
 import site.billbill.apiserver.api.auth.dto.request.LocationRequest;
 import site.billbill.apiserver.api.users.dto.request.BlacklistRequest;
 import site.billbill.apiserver.api.users.dto.request.PasswordRequest;
+import site.billbill.apiserver.api.users.dto.request.ProfileRequest;
 import site.billbill.apiserver.api.users.dto.request.WithdrawRequest;
 import site.billbill.apiserver.api.users.dto.response.*;
 import site.billbill.apiserver.api.users.service.UserService;
@@ -157,5 +158,13 @@ public class UserController {
     @GetMapping("/withdraw/code")
     public BaseResponse<List<CodeDetailJpaEntity>> getWithdrawCodeList() {
         return new BaseResponse<>(userService.getWithdrawCodeList());
+    }
+
+    @Operation(summary = "회원 프로필 수정", description = "내 프로필을 수정하는 API")
+    @ResponseStatus(HttpStatus.OK)
+    @PatchMapping("/profile")
+    public BaseResponse<String> updateProfile(@RequestBody ProfileRequest request) {
+        userService.updateProfile(request);
+        return new BaseResponse<>(null);
     }
 }
