@@ -20,15 +20,15 @@ public class ItemsLikeJpaEntity extends BaseTime {
     @EmbeddedId
     private ItemsLikeId id;
 
-    @ManyToOne
-    @MapsId
-    @JoinColumn(name="item_id")
-    private ItemsJpaEntity items;
-
-    @ManyToOne
-    @MapsId
-    @JoinColumn(name="user_id")
-    private UserJpaEntity user;
+//    @ManyToOne
+//    @MapsId
+//    @JoinColumn(name="item_id")
+//    private ItemsJpaEntity items;
+//
+//    @ManyToOne
+//    @MapsId
+//    @JoinColumn(name="user_id")
+//    private UserJpaEntity user;
 
     @Column(name = "del_yn", nullable = false)
     @Convert(converter = BooleanConverter.class)
