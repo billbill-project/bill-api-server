@@ -21,11 +21,10 @@ public class WebhookServiceImpl implements WebhookService {
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
 
-    @Value("${webhook.url}")
-    private String webhookUrl;
-
     @Autowired
-    public WebhookServiceImpl(WebClient.Builder webClientBuilder, ObjectMapper objectMapper) {
+    public WebhookServiceImpl(@Value("${webhook.url}") String webhookUrl,
+                              WebClient.Builder webClientBuilder,
+                              ObjectMapper objectMapper) {
         this.webClient = webClientBuilder.baseUrl(webhookUrl).build();
         this.objectMapper = objectMapper;
     }
