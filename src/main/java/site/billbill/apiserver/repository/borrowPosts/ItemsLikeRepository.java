@@ -5,6 +5,8 @@ import org.springframework.stereotype.Repository;
 import site.billbill.apiserver.model.post.ItemsLikeJpaEntity;
 import site.billbill.apiserver.model.post.embeded.ItemsLikeId;
 
+import java.util.Optional;
+
 @Repository
 public interface ItemsLikeRepository extends JpaRepository<ItemsLikeJpaEntity, ItemsLikeId> {
 }

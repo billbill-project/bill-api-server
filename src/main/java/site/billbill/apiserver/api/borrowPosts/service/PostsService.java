@@ -34,5 +34,7 @@ public interface PostsService {
 
     void likePost(String userId, String postId);
 
+    void dislikePost(String userId, String postId);
+
     void deleteBorrowHistory(String userId, Long borrowSeq);
 }

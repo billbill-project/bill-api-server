@@ -181,6 +181,15 @@ public class PostsController {
         return new BaseResponse<>(null);
     }
 
+    @Operation(summary = "게시물 좋아요 취소", description = "해당 게시물에 좋아요를 취소하는 API, 위시리스트 삭제")
+    @DeleteMapping("/likes")
+    @ResponseStatus(HttpStatus.OK)
+    public BaseResponse<String> dislikePost(@RequestBody @Valid PostsRequest.PostIdRequest request) {
+        String userId = MDC.get(JWTUtil.MDC_USER_ID);
+        postsService.dislikePost(userId, request.getPostId());
+        return new BaseResponse<>(null);
+    }
+
     @Operation(summary = "대여 기록 삭제", description = "대여 기록 삭제 API")
     @DeleteMapping("/history")
     @ResponseStatus(HttpStatus.OK)
