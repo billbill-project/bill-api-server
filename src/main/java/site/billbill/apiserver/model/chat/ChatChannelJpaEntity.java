@@ -79,4 +79,9 @@ public class ChatChannelJpaEntity extends BaseTime {
         }
         return contact;
     }
+
+    public void ChangeDate(LocalDate startedAt, LocalDate endedAt) {
+        this.startedAt = startedAt;
+        this.endedAt = endedAt;
+    }
 }

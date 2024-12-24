@@ -10,9 +10,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import site.billbill.apiserver.api.chat.converter.ChatConverter;
 import site.billbill.apiserver.api.chat.dto.request.ChatRequest;
+import site.billbill.apiserver.api.chat.dto.request.ChatRequest.borrowInfo;
+import site.billbill.apiserver.api.chat.dto.request.ChatRequest.changeDate;
 import site.billbill.apiserver.api.chat.dto.request.WebhookRequest.ChatInfo;
 import site.billbill.apiserver.api.chat.dto.request.WebhookRequest.ChatInfoList;
 import site.billbill.apiserver.api.chat.dto.response.ChatResponse;
+import site.billbill.apiserver.api.chat.dto.response.ChatResponse.ViewChannelInfoResponse;
 import site.billbill.apiserver.api.chat.dto.response.ChatResponse.ViewChatInfoResponse;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.ULID.ULIDUtil;
@@ -36,6 +39,7 @@ public class ChatServiceImpl implements ChatService {
     private final ItemsBorrowRepository itemsBorrowRepository;
     private final WebhookServiceImpl webhookService;
 
+    @Override
     @Transactional
     public String leaveChatChannel(String channelId, String userId) {
         ChatChannelJpaEntity chatChannel = chatRepository.findById(channelId)
@@ -49,8 +53,9 @@ public class ChatServiceImpl implements ChatService {
         return "success";
     }
 
+    @Override
     @Transactional
-    public String startChannel(ChatRequest.borrowInfo request, String userId) {
+    public String startChannel(borrowInfo request, String userId) {
         ItemsJpaEntity item = itemsRepository.findById(request.getPostId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NotFound, "게시물을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
         UserJpaEntity contact = userRepository.findById(userId)
@@ -68,7 +73,8 @@ public class ChatServiceImpl implements ChatService {
         return chatChannel.get(0).getChannelId();
     }
 
-    public ChatResponse.ViewChannelInfoResponse getInfoChannel(String channelId, String userId) {
+    @Override
+    public ViewChannelInfoResponse getInfoChannel(String channelId, String userId) {
         ChatChannelJpaEntity chatChannel = chatRepository.findById(channelId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NotFound, "채널을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
         userRepository.findById(userId)
@@ -92,6 +98,7 @@ public class ChatServiceImpl implements ChatService {
         return ChatConverter.toViewChannelInfo(chatChannel, opponent, item, totalPrice, status, userId);
     }
 
+    @Override
     public List<ViewChatInfoResponse> getChatList(String beforeTimestamp, String userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NotFound, "회원을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
@@ -115,5 +122,26 @@ public class ChatServiceImpl implements ChatService {
             UserJpaEntity opponent = chatChannel.getOpponent(userId);
             return ChatConverter.toViewChatInfo(chatInfo, userId, opponent, chatChannel.getItem());
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public String changeDate(String userId, String channelId, changeDate request) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NotFound, "회원을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
+        ChatChannelJpaEntity chatChannel = chatRepository.findById(channelId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NotFound, "채널을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
+        boolean isExist = false;
+        if (chatChannel.getOwner().getUserId().equals(userId) || chatChannel.getContact().getUserId().equals(userId)) {
+            isExist = true;
+        }
+        if (!isExist) {
+            throw new CustomException(ErrorCode.BadRequest, "채팅방 참여자가 아닙니다.", HttpStatus.BAD_REQUEST);
+        }
+
+        chatChannel.ChangeDate(request.getStartedAt(), request.getEndedAt());
+        return "success";
     }
 }

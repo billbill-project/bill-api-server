@@ -56,4 +56,11 @@ public class ChatController {
         String userId = MDC.get(JWTUtil.MDC_USER_ID).toString();
         return new BaseResponse<>(chatService.getChatList(beforeTimestamp, userId));
     }
+
+    @Operation(summary = "대여 날짜 변경", description = "대여 날짜 변경 API")
+    @PatchMapping("/{channelId}/date")
+    public BaseResponse<String> changeDate(@PathVariable(value = "channelId") String channelId, @RequestBody ChatRequest.changeDate request) {
+        String userId = MDC.get(JWTUtil.MDC_USER_ID).toString();
+        return new BaseResponse<>(chatService.changeDate(userId, channelId, request));
+    }
 }

@@ -14,4 +14,12 @@ public class ChatRequest {
         private LocalDate endedAt;
         private String postId;
     }
+
+    @Getter
+    @Setter
+    @Builder
+    public static class changeDate {
+        private LocalDate startedAt;
+        private LocalDate endedAt;
+    }
 }
