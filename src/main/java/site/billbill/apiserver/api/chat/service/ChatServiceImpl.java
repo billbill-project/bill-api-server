@@ -103,6 +103,10 @@ public class ChatServiceImpl implements ChatService {
         }
 
         ChatInfoList webhookResult = webhookService.sendWebhookForChatList(activeChatIdsByUserId, beforeTimestamp);
+        if (webhookResult == null || webhookResult.getChatInfoList() == null || webhookResult.getChatInfoList().isEmpty()) {
+            return Collections.emptyList();
+        }
+
         List<ChatInfo> chatInfoList = webhookResult.getChatInfoList();
 
         return chatInfoList.stream().map(chatInfo -> {

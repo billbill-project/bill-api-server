@@ -3,7 +3,6 @@ package site.billbill.apiserver.api.chat.dto.response;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -33,6 +32,7 @@ public class ChatResponse {
         private int unreadCount;
         private String lastChat;
         private String lastSender;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
         private LocalDateTime updatedAt;
         private String opponentId;
         private String opponentNickname;
