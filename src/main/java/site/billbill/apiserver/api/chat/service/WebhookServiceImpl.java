@@ -2,6 +2,8 @@ package site.billbill.apiserver.api.chat.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,10 +25,11 @@ public class WebhookServiceImpl implements WebhookService {
 
     @Autowired
     public WebhookServiceImpl(@Value("${webhook.url}") String webhookUrl,
-                              WebClient.Builder webClientBuilder,
-                              ObjectMapper objectMapper) {
+                              WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.baseUrl(webhookUrl).build();
-        this.objectMapper = objectMapper;
+        this.objectMapper = new ObjectMapper();
+        this.objectMapper.registerModule(new JavaTimeModule()); // Java 8 시간 타입 지원
+        this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS); // 배열 대신 ISO-8601 사용
     }
 
     public void sendWebhookForChatRoomCreate(String channelId, String contact, String owner) {
@@ -49,6 +52,9 @@ public class WebhookServiceImpl implements WebhookService {
     }
 
     public WebhookRequest.ChatInfoList sendWebhookForChatList(List<String> chatRoomIds, String beforeTimestamp) {
+        if (beforeTimestamp == null) {
+            beforeTimestamp = "";
+        }
         String jsonResponse = webClient.post()
                 .uri("/chat/list")
                 .bodyValue(Map.of(
@@ -58,10 +64,13 @@ public class WebhookServiceImpl implements WebhookService {
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();
+        log.info(jsonResponse.toString());
         try {
-            return objectMapper.readValue(jsonResponse, WebhookRequest.ChatInfoList.class);
+            WebhookRequest.ChatInfoList result = objectMapper.readValue(jsonResponse, WebhookRequest.ChatInfoList.class);
+            return result;
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("JSON Parsing Error", e);
         }
+
     }
 }
