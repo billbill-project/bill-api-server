@@ -3,6 +3,7 @@ package site.billbill.apiserver.api.auth.service;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,8 @@ import java.util.Random;
 public class MailService {
 
     private final JavaMailSender javaMailSender;
-    private static final String senderEmail = "메일을 보낼 구글 이메일";
+    @Value("${mail.username}")
+    private String senderEmail;
 
     // 랜덤으로 숫자 생성
     public String createNumber() {
