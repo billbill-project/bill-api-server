@@ -10,6 +10,12 @@ public class ChatResponse {
     @Getter
     @Builder
     public static class ViewChannelInfoResponse {
+        String myRole;
+        String channelState;
+        boolean ownerLeft;
+        boolean contactLeft;
+        boolean isClose;
+        boolean isDelete;
         String opponentId;
         String opponentNickname;
         String opponentProfileUrl;

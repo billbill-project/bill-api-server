@@ -23,9 +23,15 @@ public class ChatConverter {
     public static ChatResponse.ViewChannelInfoResponse toViewChannelInfo(ChatChannelJpaEntity channel,
                                                                          UserJpaEntity opponent, ItemsJpaEntity item,
                                                                          int totalPrice,
-                                                                         String status, String userId) {
+                                                                         String status, String userId, String role) {
 
         return ChatResponse.ViewChannelInfoResponse.builder()
+                .myRole(role)
+                .channelState(String.valueOf(channel.getChannelState()))
+                .ownerLeft(channel.isOwnerLeft())
+                .contactLeft(channel.isContactLeft())
+                .isClose(channel.isCloYn())
+                .isDelete(channel.isDelYn())
                 .opponentId(opponent.getUserId())
                 .opponentNickname(opponent.getNickname())
                 .opponentProfileUrl(opponent.getProfile())
