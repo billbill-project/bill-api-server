@@ -84,6 +84,7 @@ public class ChatServiceImpl implements ChatService {
 
         long daysBetween = ChronoUnit.DAYS.between(chatChannel.getStartedAt(), chatChannel.getEndedAt()) + 1;
         int totalPrice = (int) (daysBetween * itemBorrow.getPrice());
+        String role = "owner";
         UserJpaEntity opponent = chatChannel.getOpponent(userId);
 
         String status = switch (item.getItemStatus()) {
@@ -95,7 +96,11 @@ public class ChatServiceImpl implements ChatService {
             default -> "";
         };
 
-        return ChatConverter.toViewChannelInfo(chatChannel, opponent, item, totalPrice, status, userId);
+        if (chatChannel.getContact().getUserId().equals(userId)) {
+            role = "contact";
+        }
+
+        return ChatConverter.toViewChannelInfo(chatChannel, opponent, item, totalPrice, status, userId, role);
     }
 
     @Override
