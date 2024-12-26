@@ -10,6 +10,7 @@ public class ChatResponse {
     @Getter
     @Builder
     public static class ViewChannelInfoResponse {
+        String postTitle;
         String myRole;
         String channelState;
         boolean ownerLeft;
