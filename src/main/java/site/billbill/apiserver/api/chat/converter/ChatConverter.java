@@ -26,6 +26,7 @@ public class ChatConverter {
                                                                          String status, String userId, String role) {
 
         return ChatResponse.ViewChannelInfoResponse.builder()
+                .postTitle(item.getTitle())
                 .myRole(role)
                 .channelState(String.valueOf(channel.getChannelState()))
                 .ownerLeft(channel.isOwnerLeft())
