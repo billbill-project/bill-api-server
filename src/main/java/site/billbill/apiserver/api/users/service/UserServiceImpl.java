@@ -213,9 +213,6 @@ public class UserServiceImpl implements UserService {
         String userId = MDC.get(JWTUtil.MDC_USER_ID);
         UserJpaEntity user = userRepository.findById(userId).orElseThrow();
 
-        if (!checkPassword(request.getPassword(), user.getPassword()))
-            throw new CustomException(ErrorCode.Unauthorized, "비밀번호를 확인해 주세요.", HttpStatus.UNAUTHORIZED);
-
         user.setPassword(bCryptPasswordEncoder.encode(request.getNewPassword()));
 
         userRepository.save(user);
