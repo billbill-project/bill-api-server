@@ -48,8 +48,8 @@ public class ChatConverter {
     }
 
     public static ChatResponse.ViewChatInfoResponse toViewChatInfo(ChatInfo chatInfo,
-                                                                           String userId, UserJpaEntity opponent,
-                                                                           ItemsJpaEntity item) {
+                                                                   String userId, UserJpaEntity opponent,
+                                                                   ChatChannelJpaEntity channel) {
         int unReadCount = chatInfo.getUnreadCount();
 
         if (chatInfo.getLastSender().equals(userId)) {
@@ -57,6 +57,8 @@ public class ChatConverter {
         }
 
         return ChatResponse.ViewChatInfoResponse.builder()
+                .startedAt(channel.getStartedAt())
+                .endedAt(channel.getEndedAt())
                 .channelId(chatInfo.getChannelId())
                 .lastChat(chatInfo.getLastChat())
                 .lastSender(chatInfo.getLastSender())
@@ -65,7 +67,7 @@ public class ChatConverter {
                 .opponentId(opponent.getUserId())
                 .opponentProfileUrl(opponent.getProfile())
                 .opponentNickname(opponent.getNickname())
-                .itemFirstUrl(item.getImages().get(0))
+                .itemFirstUrl(channel.getItem().getImages().get(0))
                 .build();
     }
 }

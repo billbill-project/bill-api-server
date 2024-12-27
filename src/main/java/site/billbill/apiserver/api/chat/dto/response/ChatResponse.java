@@ -35,6 +35,10 @@ public class ChatResponse {
     @Getter
     @Builder
     public static class ViewChatInfoResponse {
+        @JsonFormat(pattern = "yyyy-MM-dd")
+        LocalDate startedAt;
+        @JsonFormat(pattern = "yyyy-MM-dd")
+        LocalDate endedAt;
         private String channelId;
         private int unreadCount;
         private String lastChat;
