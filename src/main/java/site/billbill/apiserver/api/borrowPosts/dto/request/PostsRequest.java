@@ -47,9 +47,8 @@ public class PostsRequest {
     @Setter
     @Builder
     public static class BillAcceptRequest {
-        private String postId;
-        private LocalDate startDate;
-        private LocalDate endDate;
+
+        private String channelId;
     }
 
     @Getter
