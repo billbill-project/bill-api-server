@@ -69,6 +69,8 @@ jobs:
               -e SPRING_DATASOURCE_URL="${{secrets.SPRING_DATASOURCE_URL}}" \
               -e SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }} \
               -e SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }} \
+              -e SPRING_JPA_SHOW_SQL=${{ secrets.SPRING_JPA_SHOW_SQL }} \
+              -e SPRING_JPA_PROPERTIES_HIBERNATE=${{ secrets.SPRING_JPA_PROPERTIES_HIBERNATE }} \
               -e JWT_BILL_SECRET_KEY=${{ secrets.JWT_BILL_SECRET_KEY }} \
               -e JWT_BILL_ACCESS_TOKEN_EXPIRED=${{ secrets.JWT_BILL_ACCESS_TOKEN_EXPIRED }} \
               -e JWT_BILL_REFRESH_TOKEN_EXPIRED=${{ secrets.JWT_BILL_REFRESH_TOKEN_EXPIRED }} \
@@ -96,6 +98,16 @@ jobs:
               -e KAKAO_PROVIDER_USER_INFO_URI=${{secrets.KAKAO_PROVIDER_USER_INFO_URI}} \
               -e PORTONE_API_SECRET=${{secrets.PORTONE_API_SECRET}} \
               -e WEBHOOK_URL=${{secrets.WEBHOOK_URL}} \
+              -e MAIL_PORT=${{secrets.MAIL_PORT}} \
+              -e MAIL_USERNAME=${{secrets.MAIL_USERNAME}} \
+              -e MAIL_PASSWORD=${{secrets.MAIL_PASSWORD}} \
+              -e MAIL_PROPERTIES_MAIL_SMTP_AUTH=${{secrets.MAIL_PROPERTIES_MAIL_SMTP_AUTH}} \
+              -e MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=${{secrets.MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE}} \
+              -e MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED=${{secrets.MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED}} \
+              -e MAIL_PROPERTIES_MAIL_SMTP_CONNECTIONTIMEOUT=${{secrets.MAIL_PROPERTIES_MAIL_SMTP_CONNECTIONTIMEOUT}} \
+              -e MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT=${{secrets.MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT}} \
+              -e MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOUT=${{secrets.MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOUT}} \
+              -e MAIL_AUTH_CODE_EXPIRATION_MILLIS=${{secrets.MAIL_AUTH_CODE_EXPIRATION_MILLIS}} \
               ${{ secrets.DOCKERHUB_USERNAME }}/bill-api:latest
   
             sudo docker rm $(sudo docker ps --filter 'status=exited' -a -q)
