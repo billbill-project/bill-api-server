@@ -9,12 +9,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import site.billbill.apiserver.api.chat.converter.ChatConverter;
-import site.billbill.apiserver.api.chat.dto.request.ChatRequest;
 import site.billbill.apiserver.api.chat.dto.request.ChatRequest.borrowInfo;
 import site.billbill.apiserver.api.chat.dto.request.ChatRequest.changeDate;
 import site.billbill.apiserver.api.chat.dto.request.WebhookRequest.ChatInfo;
 import site.billbill.apiserver.api.chat.dto.request.WebhookRequest.ChatInfoList;
-import site.billbill.apiserver.api.chat.dto.response.ChatResponse;
 import site.billbill.apiserver.api.chat.dto.response.ChatResponse.ViewChannelInfoResponse;
 import site.billbill.apiserver.api.chat.dto.response.ChatResponse.ViewChatInfoResponse;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
@@ -125,7 +123,7 @@ public class ChatServiceImpl implements ChatService {
             ChatChannelJpaEntity chatChannel = chatRepository.findById(chatInfo.getChannelId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NotFound, "채널을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
             UserJpaEntity opponent = chatChannel.getOpponent(userId);
-            return ChatConverter.toViewChatInfo(chatInfo, userId, opponent, chatChannel.getItem());
+            return ChatConverter.toViewChatInfo(chatInfo, userId, opponent, chatChannel);
         }).collect(Collectors.toList());
     }
 
