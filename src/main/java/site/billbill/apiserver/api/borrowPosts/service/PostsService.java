@@ -28,7 +28,9 @@ public interface PostsService {
 
     PostsResponse.NoRentalPeriodsResponse ViewNoRentalPeriodsService(String userId, String postId);
 
-    PostsResponse.BillAcceptResponse DoBillAcceptService(String userId, PostsRequest.BillAcceptRequest request);
+    PostsResponse.BillAcceptResponse DoBillAcceptService(String userId, String channelId);
+
+    String CancelBillAcceptService(String userId, String channelId);
 
     PostsResponse.ReviewsResponse ViewReviewService(String userId, String postId);
 

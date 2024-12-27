@@ -152,12 +152,12 @@ public class PostsConverter {
     public static String toRecommandSearch(SearchKeywordStatsJpaEntity searchKeywordStats){
         return searchKeywordStats.getKeyword();
     }
-    public static BorrowHistJpaEntity toBorrowHist(ItemsJpaEntity item,UserJpaEntity user,PostsRequest.BillAcceptRequest request){
+    public static BorrowHistJpaEntity toBorrowHist(ItemsJpaEntity item,UserJpaEntity user,ChatChannelJpaEntity chat){
         return BorrowHistJpaEntity.builder()
                 .item(item)
                 .borrower(user)
-                .startedAt(request.getStartDate())
-                .endedAt(request.getEndDate())
+                .startedAt(chat.getStartedAt())
+                .endedAt(chat.getEndedAt())
                 .build();
     }
     public static ItemsReviewJpaEntity toItemsReview(UserJpaEntity user,ItemsJpaEntity item,PostsRequest.ReviewRequest request ,String reviewId){

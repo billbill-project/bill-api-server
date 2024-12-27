@@ -2,6 +2,7 @@ package site.billbill.apiserver.api.borrowPosts.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.actuate.autoconfigure.observation.ObservationProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import site.billbill.apiserver.api.borrowPosts.converter.PostsConverter;
 import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
 import site.billbill.apiserver.api.borrowPosts.dto.response.PostsResponse;
+import site.billbill.apiserver.common.enums.chat.ChannelState;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.ULID.ULIDUtil;
 import site.billbill.apiserver.exception.CustomException;
@@ -257,29 +259,64 @@ public class PostsServiceImpl implements PostsService {
         return PostsConverter.toNoRentalPeriods(ownerNoRentalPeriod, contactNoRentalPeriod);
 
     }
-
-    public PostsResponse.BillAcceptResponse DoBillAcceptService(String userId, PostsRequest.BillAcceptRequest request) {
+    @Transactional
+    @Override
+    public PostsResponse.BillAcceptResponse DoBillAcceptService(String userId, String channelId) {
         UserJpaEntity user = userRepository.findById(userId).orElse(null);
-        ItemsJpaEntity item = itemsRepository.findById(request.getPostId()).orElse(null);
+
+        ChatChannelJpaEntity chat =chatRepository.findById(channelId).orElse(null);
+        ItemsJpaEntity item = chat.getItem();
         if (item == null) {
             throw new CustomException(ErrorCode.BadRequest, "올바른 게시물 아이디가 아닙니다.", HttpStatus.BAD_REQUEST);
         }
         if (user == item.getOwner()) {
             throw new CustomException(ErrorCode.BadRequest, "자기 자신의 게시물을 거래할 수는 없습니다.", HttpStatus.BAD_REQUEST);
         }
-        BorrowHistJpaEntity borrowHist = PostsConverter.toBorrowHist(item, user, request);
+        if (user != chat.getContact()){
+            throw new CustomException(ErrorCode.BadRequest, "해당 채팅방에 대한 권한이 없습니다.", HttpStatus.BAD_REQUEST);
+        }
+        if(chat == null){
+            throw new CustomException(ErrorCode.BadRequest, " 올바른 채팅방 정보가 아닙니다.", HttpStatus.BAD_REQUEST);
+        }
+
+        BorrowHistJpaEntity borrowHist = PostsConverter.toBorrowHist(item, user, chat);
         BorrowHistJpaEntity savedBorrowHist = borrowHistRepository.save(borrowHist);
 
         PostsRequest.NoRentalPeriod noRentalPeriod = PostsRequest.NoRentalPeriod.builder()
-                .startDate(request.getStartDate())
-                .endDate(request.getEndDate())
+                .startDate(chat.getStartedAt())
+                .endDate(chat.getEndedAt())
                 .build();
 
         ItemsBorrowStatusJpaEntity itemsBorrowStatus = PostsConverter.toItemBorrowStatus(item, "Renting", noRentalPeriod);
         itemsBorrowStatusRepository.save(itemsBorrowStatus);
-
+        chat.setChannelState(ChannelState.CONFIRMED);
         return PostsConverter.toBillAcceptResponse(savedBorrowHist.getBorrowSeq());
 
+    }
+    @Transactional
+    @Override
+    public String CancelBillAcceptService(String userId, String channelId){
+        try {
+            UserJpaEntity user = userRepository.findById(userId).orElse(null);
+            ChatChannelJpaEntity chat = chatRepository.findById(channelId).orElse(null);
+            ItemsJpaEntity item = chat.getItem();
+            BorrowHistJpaEntity borrowHist = borrowHistRepository.findBorrowHistByItemAndBorrowerAndStartedAtAndEndedAt(item,user,chat.getStartedAt(), chat.getEndedAt());
+
+            if (user != chat.getContact()) {
+                throw new CustomException(ErrorCode.BadRequest, "해당 채팅방에 대한 권한이 없습니다.", HttpStatus.BAD_REQUEST);
+            }
+            if (chat == null) {
+                throw new CustomException(ErrorCode.BadRequest, " 올바른 채팅방 정보가 아닙니다.", HttpStatus.BAD_REQUEST);
+            }
+            if( borrowHist==null){
+                throw new CustomException(ErrorCode.BadRequest, " 확정된 거래가 아닙니다.", HttpStatus.BAD_REQUEST);
+            }
+            borrowHist.setUseYn(false);
+            chat.setChannelState(ChannelState.CANCELLED);
+        } catch (Exception e){
+            throw new CustomException(ErrorCode.BadRequest, e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+        return "success";
     }
 
     public PostsResponse.ReviewsResponse ViewReviewService(String userId, String postId) {

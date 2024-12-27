@@ -163,15 +163,23 @@ public class PostsController {
     }
 
     @Operation(summary = "거래처리", description = "해당 게시물에 대한 거래처리를 합니다.")
-    @PostMapping("/payment")
-    public BaseResponse<PostsResponse.BillAcceptResponse> BillAcceptController(@RequestBody @Valid PostsRequest.BillAcceptRequest request) {
+    @PostMapping("/payment/{channelId}")
+    public BaseResponse<PostsResponse.BillAcceptResponse> BillAcceptController(@PathVariable(value = "channelId", required = true) String channelId) {
         String userId = "";
         if (MDC.get(JWTUtil.MDC_USER_ID) != null) {
             userId = MDC.get(JWTUtil.MDC_USER_ID);
         }
-        return new BaseResponse<>(postsService.DoBillAcceptService(userId, request));
+        return new BaseResponse<>(postsService.DoBillAcceptService(userId, channelId));
     }
-
+    @Operation(summary ="거래취소",description = "해당 게시물에 대한 거래 취소를 합니다. 거래 확정된 경우에 대해 취소를 해야합니다. 거래가 확정되지 않은 상태에서는 요청하면 안됩니다.")
+    @DeleteMapping("/payment/{channelId}")
+    public BaseResponse<String> BillCancelController(@PathVariable(value = "channelId", required = true) String channelId) {
+        String userId = "";
+        if (MDC.get(JWTUtil.MDC_USER_ID) != null) {
+            userId = MDC.get(JWTUtil.MDC_USER_ID);
+        }
+        return new BaseResponse<>(postsService.CancelBillAcceptService(userId, channelId));
+    }
     @Operation(summary = "게시물 좋아요", description = "해당 게시물에 좋아요를 누르는 API, 위시리스트 추가")
     @PostMapping("/likes")
     @ResponseStatus(HttpStatus.CREATED)
