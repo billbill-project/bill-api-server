@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import site.billbill.apiserver.api.users.dto.request.WithdrawRequest;
 import site.billbill.apiserver.api.users.dto.response.*;
 import site.billbill.apiserver.api.users.service.UserService;
 import site.billbill.apiserver.common.response.BaseResponse;
+import site.billbill.apiserver.common.utils.jwt.JWTUtil;
 import site.billbill.apiserver.common.utils.posts.ItemHistoryType;
 import site.billbill.apiserver.model.common.CodeDetailJpaEntity;
 
@@ -88,15 +90,28 @@ public class UserController {
         return new BaseResponse<>(null);
     }
 
-    @Operation(summary = "내 글 조회", description = "대여중인 글 조회 API")
+    @Operation(summary = "내 글 조회(대여 내역)", description = "대여중인 글 조회 API")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/history/posts")
     public BaseResponse<List<PostHistoryResponse>> postsHistory(
             @RequestParam(name = "size", defaultValue = "20") int size,
             @RequestParam(name = "page", defaultValue = "1") int page
     ) {
+        String userId = MDC.get(JWTUtil.MDC_USER_ID);
         Pageable pageable = PageRequest.of((page < 1 ? 0 : page - 1), size);
-        return new BaseResponse<>(userService.getPostHistory(pageable));
+        return new BaseResponse<>(userService.getPostHistory(userId, pageable));
+    }
+
+    @Operation(summary = "타 회원 대여 내역 조회", description = "타 회원의 대여 내역을 조회하는 API")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/history/posts/{userId}")
+    public BaseResponse<List<PostHistoryResponse>> postsHistoryOthers(
+            @PathVariable String userId,
+            @RequestParam(name = "size", defaultValue = "20") int size,
+            @RequestParam(name = "page", defaultValue = "1") int page
+    ) {
+        Pageable pageable = PageRequest.of((page < 1 ? 0 : page - 1), size);
+        return new BaseResponse<>(userService.getPostHistory(userId, pageable));
     }
 
     @Operation(summary = "내 대여기록 조회", description = "내 대여기록 조회 API")

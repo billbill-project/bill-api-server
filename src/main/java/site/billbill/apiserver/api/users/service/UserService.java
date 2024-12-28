@@ -25,7 +25,7 @@ public interface UserService {
 
     void withdraw(WithdrawRequest request);
 
-    List<PostHistoryResponse> getPostHistory(Pageable pageable);
+    List<PostHistoryResponse> getPostHistory(String userId, Pageable pageable);
 
     List<BorrowHistoryResponse> getPostHistory(Pageable pageable, ItemHistoryType type);
 
