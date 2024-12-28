@@ -135,9 +135,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<PostHistoryResponse> getPostHistory(Pageable pageable) {
-        String userId = MDC.get(JWTUtil.MDC_USER_ID);
-
+    public List<PostHistoryResponse> getPostHistory(String userId, Pageable pageable) {
         return itemsRepository.getPostHistory(userId, pageable);
     }
 
