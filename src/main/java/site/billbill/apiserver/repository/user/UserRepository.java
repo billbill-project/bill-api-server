@@ -10,5 +10,6 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<UserJpaEntity, String>, UserDslRepository {
     Optional<UserJpaEntity> findByUserIdAndWithdrawStatus(String userId, boolean withdrawStatus);
     Optional<UserJpaEntity> findByProviderId(String providerId);
-    boolean existsByNickname(String nickname);
+    boolean existsByNicknameAndWithdrawStatusFalse(String nickname);
+    boolean existsByEmailAndWithdrawStatusFalse(String email);
 }

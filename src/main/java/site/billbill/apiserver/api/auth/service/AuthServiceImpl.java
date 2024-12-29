@@ -90,7 +90,7 @@ public class AuthServiceImpl implements AuthService {
         String encryptedPassword = user.get().getPassword();
         if (!checkPassword(request.getPassword(), encryptedPassword))
             throw new CustomException(ErrorCode.Unauthorized, "비밀번호를 확인해 주세요.", HttpStatus.UNAUTHORIZED);
-        
+
         return jwtUtil.generateJwtDto(user.get().getUserId(), user.get().getRole());
     }
 
@@ -111,14 +111,17 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public boolean identifyUser(IdentityRequest request) {
-
-
         return false;
     }
 
     @Override
     public boolean getNicknameValidity(String nickname) {
-        return !userRepository.existsByNickname(nickname);
+        return !userRepository.existsByNicknameAndWithdrawStatusFalse(nickname);
+    }
+
+    @Override
+    public boolean getEmailValidity(String email) {
+        return !userRepository.existsByEmailAndWithdrawStatusFalse(email);
     }
 
     /**

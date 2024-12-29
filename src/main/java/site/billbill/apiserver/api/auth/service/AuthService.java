@@ -15,4 +15,6 @@ public interface AuthService {
     boolean identifyUser(IdentityRequest request);
 
     boolean getNicknameValidity(String nickname);
+
+    boolean getEmailValidity(String email);
 }
