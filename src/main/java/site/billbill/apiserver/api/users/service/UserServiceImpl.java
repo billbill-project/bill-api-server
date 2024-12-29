@@ -59,10 +59,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public ProfileResponse getProfileInfo(String userId) {
         Optional<UserJpaEntity> user = userRepository.findById(userId);
-        Optional<UserIdentityJpaEntity> userIdentity = userIdentityRepository.findById(userId);
+//        Optional<UserIdentityJpaEntity> userIdentity = userIdentityRepository.findById(userId);
         Optional<UserLocationJpaEntity> userLocation = userLocationRepository.findById(userId);
 
-        if (user.isEmpty() || userIdentity.isEmpty()) {
+        if (user.isEmpty()) {
             throw new CustomException(ErrorCode.NotFound, "회원을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
         }
 
@@ -76,7 +76,6 @@ public class UserServiceImpl implements UserService {
                 .userId(userId)
                 .profileImage(user.get().getProfile())
                 .nickname(user.get().getNickname())
-                .phoneNumber(userIdentity.get().getPhoneNumber())
                 .billPace(user.get().getBillPace())
                 .provider(user.get().getProvider())
                 .location(location)
