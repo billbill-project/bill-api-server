@@ -27,14 +27,14 @@ public class OAuthServiceImpl implements OAuthService {
     private final KakaoUtil kakaoUtil;
     private final JWTUtil jwtUtil;
     private final UserRepository userRepository;
-    private final UserIdentityRepository userIdentityRepository;
+//    private final UserIdentityRepository userIdentityRepository;
 
     @Override
-    public JwtDto kakaoCallback(String code) {
-        String accessToken = kakaoUtil.getAccessToken(code);
-        if (accessToken == null)
-            throw new CustomException(ErrorCode.ServerError, "토큰을 발급받는데 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
-        KakaoUserInfoResponse userInfo = kakaoUtil.getUserInfo(accessToken);
+    public JwtDto kakaoLogin(String token) {
+//        String accessToken = kakaoUtil.getAccessToken(code);
+//        if (accessToken == null)
+//            throw new CustomException(ErrorCode.ServerError, "토큰을 발급받는데 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        KakaoUserInfoResponse userInfo = kakaoUtil.getUserInfo(token);
 
         Optional<UserJpaEntity> optionalUser = userRepository.findByProviderId(userInfo.partner.getUuid());
 
@@ -46,11 +46,11 @@ public class OAuthServiceImpl implements OAuthService {
         // 만약 신규 회원이라면
         String userId = ULIDUtil.generatorULID("USER");
 
-        String birthDateString = userInfo.kakaoAccount.getBirthYear() + userInfo.kakaoAccount.getBirthDay();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        LocalDate birth = LocalDate.parse(birthDateString, formatter);
-
-        char gender = Character.toUpperCase(userInfo.kakaoAccount.getGender().charAt(0));
+//        String birthDateString = userInfo.kakaoAccount.getBirthYear() + userInfo.kakaoAccount.getBirthDay();
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+//        LocalDate birth = LocalDate.parse(birthDateString, formatter);
+//
+//        char gender = Character.toUpperCase(userInfo.kakaoAccount.getGender().charAt(0));
 
         UserJpaEntity user = UserJpaEntity.builder()
                 .userId(userId)
@@ -64,16 +64,16 @@ public class OAuthServiceImpl implements OAuthService {
                 .withdrawAt(null)
                 .build();
 
-        UserIdentityJpaEntity userIdentity = UserIdentityJpaEntity.builder()
-                .userId(userId)
-                .name(userInfo.kakaoAccount.getName())
-                .phoneNumber(userInfo.kakaoAccount.getPhoneNumber().replace("+82 ", "0"))
-                .birth(birth)
-                .gender(gender)
-                .build();
+//        UserIdentityJpaEntity userIdentity = UserIdentityJpaEntity.builder()
+//                .userId(userId)
+//                .name(userInfo.kakaoAccount.getName())
+//                .phoneNumber(userInfo.kakaoAccount.getPhoneNumber().replace("+82 ", "0"))
+//                .birth(birth)
+//                .gender(gender)
+//                .build();
 
         userRepository.save(user);
-        userIdentityRepository.save(userIdentity);
+//        userIdentityRepository.save(userIdentity);
 
         // UserAgreeHist 랑 UserDevice, UserLocation 은 별도로 추가해야됨
 

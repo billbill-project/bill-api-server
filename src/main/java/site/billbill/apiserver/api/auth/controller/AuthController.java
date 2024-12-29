@@ -2,6 +2,7 @@ package site.billbill.apiserver.api.auth.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -59,10 +60,14 @@ public class AuthController {
         return new BaseResponse<>(authService.reissue(request.getRefreshToken()));
     }
 
+    @Operation(summary = "카카오 로그인",description = "카카오 로그인 API")
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/oauth2/code/kakao/callback")
-    public BaseResponse<JwtDto> kakaoCallback(@RequestParam("code") String code) {
-        return new BaseResponse<>(oAuthService.kakaoCallback(code));
+    @PostMapping("/oauth2/kakao")
+    public BaseResponse<JwtDto> kakaoLogin(
+            @Schema(description = "카카오 요청을 통해 받아온 엑세스 토큰")
+            @RequestParam("token") String token
+    ) {
+        return new BaseResponse<>(oAuthService.kakaoLogin(token));
     }
 
 //    @Operation(summary = "휴대폰 본인인증", description = "PASS NICE 본인인증 API")
