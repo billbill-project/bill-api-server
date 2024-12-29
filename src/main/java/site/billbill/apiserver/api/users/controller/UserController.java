@@ -45,14 +45,14 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/profile")
     public BaseResponse<ProfileResponse> profile() {
-        return new BaseResponse<ProfileResponse>(userService.getProfileInfo());
+        return new BaseResponse<>(userService.getProfileInfo());
     }
 
     @Operation(summary = "타 회원 프로필 조회", description = "타 회원 프로필 조회 API")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/profile/{userId}")
     public BaseResponse<ProfileResponse> profile(@PathVariable String userId) {
-        return new BaseResponse<ProfileResponse>(userService.getProfileInfo(userId));
+        return new BaseResponse<>(userService.getProfileInfo(userId));
     }
 
     @Operation(summary = "회원 차단하기", description = "회원 차단 API")
