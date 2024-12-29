@@ -1,6 +1,5 @@
 package site.billbill.apiserver.api.auth.controller;
 
-import com.nimbusds.openid.connect.sdk.assurance.IdentityVerification;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -12,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import site.billbill.apiserver.api.auth.dto.request.*;
-import site.billbill.apiserver.api.auth.dto.response.NicknameResponse;
+import site.billbill.apiserver.api.auth.dto.response.ValidResponse;
 import site.billbill.apiserver.api.auth.service.AuthService;
 import site.billbill.apiserver.api.auth.service.MailService;
 import site.billbill.apiserver.api.auth.service.OAuthService;
@@ -63,22 +62,31 @@ public class AuthController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/oauth2/code/kakao/callback")
     public BaseResponse<JwtDto> kakaoCallback(@RequestParam("code") String code) {
-        return new BaseResponse<JwtDto>(oAuthService.kakaoCallback(code));
+        return new BaseResponse<>(oAuthService.kakaoCallback(code));
     }
 
-    @Operation(summary = "휴대폰 본인인증", description = "PASS NICE 본인인증 API")
-    @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/identity")
-    public BaseResponse<JwtDto> identity(@RequestBody IdentityVerificationRequest request) {
-        return null;
-    }
+//    @Operation(summary = "휴대폰 본인인증", description = "PASS NICE 본인인증 API")
+//    @ResponseStatus(HttpStatus.OK)
+//    @PostMapping("/identity")
+//    public BaseResponse<JwtDto> identity(@RequestBody IdentityVerificationRequest request) {
+//        return null;
+//    }
 
     @Operation(summary = "닉네임 중복검사", description = "닉네임 중복검사")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/nickname")
-    public BaseResponse<NicknameResponse> getNicknameValidity(@RequestParam String nickname) {
-        return new BaseResponse<>(NicknameResponse.builder()
+    public BaseResponse<ValidResponse> getNicknameValidity(@RequestParam String nickname) {
+        return new BaseResponse<>(ValidResponse.builder()
                 .valid(authService.getNicknameValidity(nickname))
+                .build());
+    }
+
+    @Operation(summary = "이메일 중복여부 검사", description = "이메일 중복여부 검사 API")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/email/duplicated")
+    public BaseResponse<ValidResponse> getEmailDuplicated(@RequestParam String email) {
+        return new BaseResponse<>(ValidResponse.builder()
+                .valid(authService.getEmailValidity(email))
                 .build());
     }
 

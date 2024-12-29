@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 @Builder
-public class NicknameResponse {
+public class ValidResponse {
     private boolean valid;
 }
