@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.parameters.P;
 import org.springframework.transaction.annotation.Transactional;
 import site.billbill.apiserver.api.borrowPosts.converter.PostsConverter;
 import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
@@ -30,6 +31,8 @@ import site.billbill.apiserver.repository.user.UserSearchHistRepository;
 
 import java.util.List;
 import java.util.Optional;
+
+
 
 @org.springframework.stereotype.Service
 @RequiredArgsConstructor
@@ -332,7 +335,11 @@ public class PostsServiceImpl implements PostsService {
 
 
         List<PostsResponse.ReviewResponse> reviews = itemReviews.stream().map(itemReview -> {
-            return PostsConverter.toReview(itemReview);
+            List<BorrowHistJpaEntity> borrow=borrowHistRepository.findALLBorrowHistByItemAndBorrower(item,itemReview.getUser());
+            List<PostsResponse.ReviewPeriods> reviewPeriods=borrow.stream().map(borrowHistJpaEntity -> {
+                return PostsConverter.toReviewPeriods(borrowHistJpaEntity);
+            }).toList();
+            return PostsConverter.toReview(itemReview,reviewPeriods);
         }).toList();
 
         return PostsConverter.toReviews(reviews);
