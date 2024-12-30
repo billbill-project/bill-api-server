@@ -3,12 +3,8 @@ package site.billbill.apiserver.api.borrowPosts.dto.response;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
 import site.billbill.apiserver.common.enums.items.PriceStandard;
-import org.locationtech.jts.geom.Point;
-import java.awt.*;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
+
 import java.util.List;
 
 
@@ -109,6 +105,14 @@ public class PostsResponse {
         private String UserId;
         private String UserName;
         private String UserProfile;
+        private List<ReviewPeriods> reviewPeriods;
+    }
+    @Getter
+    @Setter
+    @Builder
+    public static class ReviewPeriods {
+        private String startTime;
+        private String endTime;
     }
     @Getter
     @Setter
