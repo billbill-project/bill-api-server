@@ -59,7 +59,7 @@ public class PostsResponse {
         private String categoryName;
         private String userId;
         private String userName;
-
+        private boolean like;
 
     }
     @Getter

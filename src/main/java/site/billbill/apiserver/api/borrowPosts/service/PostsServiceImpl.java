@@ -97,8 +97,14 @@ public class PostsServiceImpl implements PostsService {
         ItemsJpaEntity item = itemsRepository.findById(postId).orElse(null);
         ItemsBorrowJpaEntity borrowItem = itemsBorrowRepository.findById(postId).orElse(null);
         UserJpaEntity user = userRepository.findById(userId).orElse(null);
-
-
+        ItemsLikeId likeId=new ItemsLikeId(postId,userId);
+        ItemsLikeJpaEntity itemsLikeJpa= itemsLikeRepository.findById(likeId).orElse(null);
+        boolean isLike;
+        if(itemsLikeJpa==null) {
+            isLike = false;
+        }else{
+            isLike = true;
+        }
         if (item == null) {
             throw new CustomException(ErrorCode.BadRequest, "올바른 게시물 아이디가 아닙니다.", HttpStatus.BAD_REQUEST);
         }
@@ -121,7 +127,7 @@ public class PostsServiceImpl implements PostsService {
                 break;
 
         }
-        return PostsConverter.toViewPost(item, borrowItem, status);
+        return PostsConverter.toViewPost(item, borrowItem, status,isLike);
 
     }
 
