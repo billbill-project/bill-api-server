@@ -98,7 +98,7 @@ public class PostsConverter {
     public static PostsResponse.ReviewsResponse toReviews(List<PostsResponse.ReviewResponse> reviews){
         return PostsResponse.ReviewsResponse.builder().reviews(reviews).build();
     }
-    public static PostsResponse.ViewPostResponse toViewPost(ItemsJpaEntity item, ItemsBorrowJpaEntity borrowItem, String status){
+    public static PostsResponse.ViewPostResponse toViewPost(ItemsJpaEntity item, ItemsBorrowJpaEntity borrowItem, String status,boolean isLike){
         return PostsResponse.ViewPostResponse.builder()
                 .postId(item.getId())
                 .title(item.getTitle())
@@ -112,6 +112,7 @@ public class PostsConverter {
                 .categoryName(item.getCategory().getName())
                 .userId(item.getOwner().getUserId())
                 .userName(item.getOwner().getNickname())
+                .like(isLike)
                 .build();
     }
     public static PostsResponse.NoRentalPeriodResponse toOwnerNoRentalPeriod(ItemsBorrowStatusJpaEntity borrowStatus){
