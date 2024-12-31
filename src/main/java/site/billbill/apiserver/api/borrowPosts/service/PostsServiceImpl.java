@@ -278,9 +278,6 @@ public class PostsServiceImpl implements PostsService {
         if (item == null) {
             throw new CustomException(ErrorCode.BadRequest, "올바른 게시물 아이디가 아닙니다.", HttpStatus.BAD_REQUEST);
         }
-        if (user == item.getOwner()) {
-            throw new CustomException(ErrorCode.BadRequest, "자기 자신의 게시물을 거래할 수는 없습니다.", HttpStatus.BAD_REQUEST);
-        }
         if (user != chat.getContact()){
             throw new CustomException(ErrorCode.BadRequest, "해당 채팅방에 대한 권한이 없습니다.", HttpStatus.BAD_REQUEST);
         }
