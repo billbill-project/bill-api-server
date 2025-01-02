@@ -108,6 +108,17 @@ jobs:
               -e MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT=${{secrets.MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT}} \
               -e MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOUT=${{secrets.MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOUT}} \
               -e MAIL_AUTH_CODE_EXPIRATION_MILLIS=${{secrets.MAIL_AUTH_CODE_EXPIRATION_MILLIS}} \
+              -e FIREBASE_TYPE=${{secrets.FIREBASE_TYPE}} \
+              -e FIREBASE_PROJECT_ID=${{secrects.FIREBASE_PROJECT_ID}} \
+              -e FIREBASE_PRIVATE_KEY_ID=${{secrects.FIREBASE_PRIVATE_KEY_ID}} \
+              -e FIREBASE_PRIVATE_KEY=${{secrets.FIREBASE_PRIVATE_KEY}} \
+              -e FIREBASE_CLIENT_EMAIL=${{secrets.FIREBASE_CLIENT_EMAIL}} \
+              -e FIREBASE_CLIENT_ID=${{secrets.FIREBASE_CLIENT_ID}} \
+              -e FIREBASE_AUTH_URI=${{secrets.FIREBASE_AUTH_URI}} \
+              -e FIREBASE_TOKEN_URI=${{secrets.FIREBASE_TOKEN_URI}} \
+              -e FIREBASE_AUTH_PROVIDER_X509_CERT_URL=${{secrets.FIREBASE_AUTH_PROVIDER_X09_CERT_URL}} \
+              -e FIREBASE_CLIENT_X509_CERT_URL=${{secrets.FIREBASE_CLIENT_X509_CERT_URL}} \
+              -e FIREBASE_UNIVERSE_DOMAIN=${{secrets.FIREBASE_UNIVERSE_DOMAIN}} \
               ${{ secrets.DOCKERHUB_USERNAME }}/bill-api:latest
   
             sudo docker rm $(sudo docker ps --filter 'status=exited' -a -q)
