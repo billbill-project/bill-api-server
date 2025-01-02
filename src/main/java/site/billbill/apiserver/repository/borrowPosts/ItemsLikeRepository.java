@@ -11,5 +11,5 @@ import java.util.Optional;
 
 @Repository
 public interface ItemsLikeRepository extends JpaRepository<ItemsLikeJpaEntity, ItemsLikeId> {
-
+    ItemsLikeJpaEntity findByIdAndDelYn(ItemsLikeId id, boolean delYn);
 }
