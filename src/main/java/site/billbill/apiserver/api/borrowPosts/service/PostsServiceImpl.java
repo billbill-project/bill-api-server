@@ -101,7 +101,7 @@ public class PostsServiceImpl implements PostsService {
         ItemsBorrowJpaEntity borrowItem = itemsBorrowRepository.findById(postId).orElse(null);
         UserJpaEntity user = userRepository.findById(userId).orElse(null);
         ItemsLikeId likeId=new ItemsLikeId(postId,userId);
-        ItemsLikeJpaEntity itemsLikeJpa= itemsLikeRepository.findById(likeId).orElse(null);
+        ItemsLikeJpaEntity itemsLikeJpa= itemsLikeRepository.findByIdAndDelYn(likeId,false);
         boolean isLike;
         if(itemsLikeJpa==null) {
             isLike = false;
@@ -278,7 +278,7 @@ public class PostsServiceImpl implements PostsService {
         if (item == null) {
             throw new CustomException(ErrorCode.BadRequest, "올바른 게시물 아이디가 아닙니다.", HttpStatus.BAD_REQUEST);
         }
-        if (user != chat.getContact()){
+        if (user != chat.getContact()||user != chat.getOwner()){
             throw new CustomException(ErrorCode.BadRequest, "해당 채팅방에 대한 권한이 없습니다.", HttpStatus.BAD_REQUEST);
         }
         if(chat == null){
