@@ -1,11 +1,8 @@
-package site.billbill.apiserver.model.post.emebeded;
+package site.billbill.apiserver.model.post.embeded;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.io.Serializable;
 
@@ -14,9 +11,10 @@ import java.io.Serializable;
 @NoArgsConstructor
 @EqualsAndHashCode
 @Data
+@Builder
 public class ItemsLikeId implements Serializable {
-    @Column(name="item_id")
+    @Column(name = "item_id")
     private String itemId;
-    @Column(name="user_id")
+    @Column(name = "user_id")
     private String userId;
 }

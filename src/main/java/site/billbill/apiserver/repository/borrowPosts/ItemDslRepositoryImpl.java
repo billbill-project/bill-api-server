@@ -1,8 +1,13 @@
 package site.billbill.apiserver.repository.borrowPosts;
 
 import com.querydsl.core.types.OrderSpecifier;
+
+import com.querydsl.core.types.dsl.BooleanExpression;
+
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
+
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -11,13 +16,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import site.billbill.apiserver.api.users.dto.response.BorrowHistoryResponse;
 import site.billbill.apiserver.api.users.dto.response.PostHistoryResponse;
 import site.billbill.apiserver.api.users.dto.response.WishlistResponse;
+import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.posts.ItemHistoryType;
+import site.billbill.apiserver.exception.CustomException;
 import site.billbill.apiserver.model.chat.QChatChannelJpaEntity;
 import site.billbill.apiserver.model.post.*;
+import site.billbill.apiserver.model.user.QUserJpaEntity;
+import site.billbill.apiserver.model.user.UserJpaEntity;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Slf4j
@@ -26,39 +37,69 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<ItemsJpaEntity> findItemsWithConditions(String category, Pageable pageable, String sortField) {
+    public Page<ItemsJpaEntity> findItemsWithConditions(String category, Pageable pageable, String sortField, String keyword, Double latitude, Double longitude) {
         QItemsJpaEntity items = QItemsJpaEntity.itemsJpaEntity;
         QItemsBorrowJpaEntity borrow = QItemsBorrowJpaEntity.itemsBorrowJpaEntity;
         QItemsCategoryJpaEntity categoryEntity = QItemsCategoryJpaEntity.itemsCategoryJpaEntity;
-
-        log.info("Category: {}, Sort Field: {}, Pageable: {}", category, sortField, pageable);
+        QItemsLocationJpaEntity QItemsLocation = QItemsLocationJpaEntity.itemsLocationJpaEntity;
 
         JPAQuery<ItemsJpaEntity> query = queryFactory.selectFrom(items)
-                .leftJoin(borrow).on(items.id.eq(borrow.item.id)) // 식별 관계 조인
+                .leftJoin(items.category, categoryEntity).fetchJoin() // 명시적 Fetch Join
+                .leftJoin(borrow).on(items.id.eq(borrow.item.id))
                 .where(items.delYn.isFalse());
 
         // 카테고리 필터링
-        if (!"entire".equals(category)) {
+        if (category == null) {
+            query.where(items.category.isNull());
+        } else if (!"entire".equals(category)) {
             var fetchedCategory = queryFactory.selectFrom(categoryEntity)
                     .where(categoryEntity.name.eq(category))
                     .fetchOne();
 
             if (fetchedCategory == null) {
-                log.warn("Category '{}' not found. Returning empty result.", category);
+                log.warn("카테고리를 찾을 수 없음.", category);
                 return new PageImpl<>(List.of(), pageable, 0);
             }
             query.where(items.category.eq(fetchedCategory));
         }
 
-        // 정렬 조건
-        if (sortField != null) {
-            OrderSpecifier<?> orderSpecifier = getOrderSpecifier(sortField, pageable.getSort().getOrderFor(sortField));
-            if (orderSpecifier != null) {
-                query.orderBy(orderSpecifier);
-            } else {
-                log.warn("Invalid sort field: {}, no sorting applied.", sortField);
-            }
+        //키워드 필터링
+        if (keyword != null && !keyword.isEmpty()) {
+            query.where(applyKeywordFilter(items, keyword));
         }
+
+        // 정렬 조건 처리
+        pageable.getSort().forEach(order -> {
+            OrderSpecifier<?> orderSpecifier;
+            switch (order.getProperty()) {
+                case "price" -> orderSpecifier = order.isAscending() ? borrow.price.asc() : borrow.price.desc();
+                case "createdAt" ->
+                        orderSpecifier = order.isAscending() ? items.createdAt.asc() : items.createdAt.desc();
+                case "likeCount" ->
+                        orderSpecifier = order.isAscending() ? items.likeCount.asc() : items.likeCount.desc();
+                case "distance" -> {
+                    if (latitude != null && longitude != null) {
+                        // 거리 계산식
+                        NumberExpression<Double> distanceExpression = Expressions.numberTemplate(
+                                Double.class,
+                                "ST_Distance_Sphere(POINT({0}, {1}), POINT({2}, {3}))",
+                                QItemsLocation.latitude, QItemsLocation.longitude, latitude, longitude
+                        );
+                        orderSpecifier = order.isAscending() ? distanceExpression.asc() : distanceExpression.desc();
+                    } else {
+                        log.warn("Latitude와 Longitude가 필요합니다.");
+                        return;
+                    }
+                }
+                default -> {
+                    log.warn("Invalid sort field: {}", order.getProperty());
+                    return;
+                }
+            }
+
+            query.orderBy(orderSpecifier);
+        });
+
 
         // 페이징 처리
         List<ItemsJpaEntity> content = query.offset(pageable.getOffset())
@@ -100,10 +141,35 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
         }
     }
 
+    private BooleanExpression applyKeywordFilter(QItemsJpaEntity items, String keyword) {
+        if (keyword == null || keyword.isEmpty()) {
+            return null;
+        }
+
+        // '+'를 기준으로 키워드 분리
+        String[] keywords = keyword.split("\\+");
+
+        // 키워드 조건 생성
+        BooleanExpression keywordCondition = null;
+        for (String key : keywords) {
+            BooleanExpression condition = items.title.containsIgnoreCase(key)
+                    .or(items.content.containsIgnoreCase(key));
+
+            if (keywordCondition == null) {
+                keywordCondition = condition;
+            } else {
+                keywordCondition = keywordCondition.or(condition); // AND 대신 OR 사용
+            }
+        }
+
+        return keywordCondition;
+    }
+
     @Override
     public List<PostHistoryResponse> getPostHistory(String userId, Pageable pageable) {
         QItemsJpaEntity qItems = QItemsJpaEntity.itemsJpaEntity;
-        QitemsLikeJpaEntity qLike = QitemsLikeJpaEntity.itemsLikeJpaEntity;
+        QItemsBorrowJpaEntity qBorrow = QItemsBorrowJpaEntity.itemsBorrowJpaEntity;
+        QItemsLikeJpaEntity qLike = QItemsLikeJpaEntity.itemsLikeJpaEntity;
         QChatChannelJpaEntity qChatChannel = QChatChannelJpaEntity.chatChannelJpaEntity;
 
         JPAQuery<PostHistoryResponse> qb = queryFactory.select(
@@ -111,6 +177,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                                 PostHistoryResponse.class,
                                 qItems.id,
                                 qItems.images,
+                                qBorrow.price,
                                 qItems.title,
                                 qItems.itemStatus,
                                 qLike.countDistinct().as("likeCount"),
@@ -121,7 +188,8 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                         )
                 )
                 .from(qItems)
-                .leftJoin(qLike).on(qItems.id.eq(qLike.items.id).and(qLike.delYn.isFalse()))
+                .leftJoin(qBorrow).on(qItems.id.eq(qBorrow.id))
+                .leftJoin(qLike).on(qItems.id.eq(qLike.id.itemId).and(qLike.delYn.isFalse()))
                 .leftJoin(qChatChannel).on(qItems.id.eq(qChatChannel.item.id).and(qChatChannel.delYn.isFalse()))
                 .where(qItems.owner.userId.eq(userId)
                         .and(qItems.delYn.isFalse()))
@@ -135,9 +203,10 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
     @Override
     public List<BorrowHistoryResponse> getBorrowHistory(String userId, Pageable pageable, ItemHistoryType type) {
         QItemsJpaEntity qItems = QItemsJpaEntity.itemsJpaEntity;
-        QitemsLikeJpaEntity qLike = QitemsLikeJpaEntity.itemsLikeJpaEntity;
+        QItemsBorrowJpaEntity qBorrow = QItemsBorrowJpaEntity.itemsBorrowJpaEntity;
+        QItemsLikeJpaEntity qLike = QItemsLikeJpaEntity.itemsLikeJpaEntity;
         QChatChannelJpaEntity qChatChannel = QChatChannelJpaEntity.chatChannelJpaEntity;
-        QBorrowHistJapEntity qBorrowHist = QBorrowHistJapEntity.borrowHistJapEntity;
+        QBorrowHistJpaEntity qBorrowHist = QBorrowHistJpaEntity.borrowHistJpaEntity;
 
         JPAQuery<BorrowHistoryResponse> qb = queryFactory.select(
                         Projections.constructor(
@@ -147,6 +216,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                                 qItems.owner.userId.as("borrowerId"),
                                 Expressions.constant(type),
                                 qItems.images,
+                                qBorrow.price,
                                 qItems.title,
                                 qBorrowHist.startedAt.as("startedAt"),
                                 qBorrowHist.endedAt.as("endedAt"),
@@ -159,16 +229,18 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                         )
                 )
                 .from(qItems)
-                .leftJoin(qLike).on(qItems.id.eq(qLike.items.id).and(qLike.delYn.isFalse()))
+                .leftJoin(qBorrow).on(qItems.id.eq(qBorrow.id))
+                .leftJoin(qLike).on(qItems.id.eq(qLike.id.itemId).and(qLike.delYn.isFalse()))
                 .leftJoin(qChatChannel).on(qItems.id.eq(qChatChannel.item.id).and(qChatChannel.delYn.isFalse()))
                 .rightJoin(qBorrowHist).on(qItems.id.eq(qBorrowHist.item.id).and(qBorrowHist.delYn.isFalse()))
                 .where(qItems.delYn.isFalse());
 
         switch (type) {
-            case BORROWED -> qb.where(qItems.owner.userId.eq(userId));
-            case BORROWING -> qb.where(qBorrowHist.borrower.userId.eq(userId));
+            case BORROWING -> qb.where(qItems.owner.userId.eq(userId));
+            case BORROWED -> qb.where(qBorrowHist.borrower.userId.eq(userId));
             case EXCHANGE -> {
             }
+            default -> throw new IllegalStateException("Unexpected value: " + type);
         }
 
         qb.groupBy(qItems.id)
@@ -181,7 +253,8 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
     @Override
     public List<WishlistResponse> getWishlists(String userId, Pageable pageable) {
         QItemsJpaEntity qItems = QItemsJpaEntity.itemsJpaEntity;
-        QitemsLikeJpaEntity qLike = QitemsLikeJpaEntity.itemsLikeJpaEntity;
+        QItemsBorrowJpaEntity qBorrow = QItemsBorrowJpaEntity.itemsBorrowJpaEntity;
+        QItemsLikeJpaEntity qLike = QItemsLikeJpaEntity.itemsLikeJpaEntity;
         QChatChannelJpaEntity qChatChannel = QChatChannelJpaEntity.chatChannelJpaEntity;
 
         JPAQuery<WishlistResponse> qb = queryFactory.select(
@@ -190,6 +263,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                                 qItems.id,
                                 qItems.owner.userId,
                                 qItems.images,
+                                qBorrow.price,
                                 qItems.title,
                                 qItems.itemStatus,
                                 qLike.countDistinct().as("likeCount"),
@@ -200,14 +274,30 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                         )
                 )
                 .from(qItems)
-                .leftJoin(qLike).on(qItems.id.eq(qLike.items.id).and(qLike.delYn.isFalse()))
+                .leftJoin(qBorrow).on(qItems.id.eq(qBorrow.id))
+                .leftJoin(qLike).on(qItems.id.eq(qLike.id.itemId).and(qLike.delYn.isFalse()))
                 .leftJoin(qChatChannel).on(qItems.id.eq(qChatChannel.item.id).and(qChatChannel.delYn.isFalse()))
-                .where(qLike.user.userId.eq(userId)
+                .where(qLike.id.userId.eq(userId)
                         .and(qItems.delYn.isFalse()))
                 .groupBy(qItems.id)  // 그룹핑 필요
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize());
 
         return qb.fetch();
+    }
+
+    @Override
+    public void deleteBorrowHistory(String userId, Long borrowSeq) {
+        QBorrowHistJpaEntity qBorrowHist = QBorrowHistJpaEntity.borrowHistJpaEntity;
+        QUserJpaEntity qUser = QUserJpaEntity.userJpaEntity;
+
+        UserJpaEntity user = queryFactory.selectFrom(qUser).where(qUser.userId.eq(userId)).fetchOne();
+        if(user == null) throw new CustomException(ErrorCode.NotFound, "회원 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+
+        queryFactory.update(qBorrowHist)
+                .set(qBorrowHist.delYn, true)
+                .set(qBorrowHist.updatedAt, OffsetDateTime.now())
+                .where(qBorrowHist.borrowSeq.eq(borrowSeq))
+                .execute();
     }
 }

@@ -13,4 +13,8 @@ public interface AuthService {
     JwtDto reissue(String refreshToken);
 
     boolean identifyUser(IdentityRequest request);
+
+    boolean getNicknameValidity(String nickname);
+
+    boolean getEmailValidity(String email);
 }

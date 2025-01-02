@@ -6,6 +6,7 @@ import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.OffsetDateTime;
@@ -15,10 +16,10 @@ import java.time.OffsetDateTime;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseTime {
     @CreationTimestamp
-    @Column(name = "created_at", insertable = true, updatable = false)
+    @Column(name = "created_at", updatable = false)
     private final OffsetDateTime createdAt = OffsetDateTime.now();
 
-    @CreationTimestamp
-    @Column(name = "updated_at", insertable = false, updatable = true)
+    @UpdateTimestamp
+    @Column(name = "updated_at")
     private OffsetDateTime updatedAt = OffsetDateTime.now();
 }

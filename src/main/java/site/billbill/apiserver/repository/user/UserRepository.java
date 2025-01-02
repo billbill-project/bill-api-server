@@ -10,4 +10,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<UserJpaEntity, String>, UserDslRepository {
     Optional<UserJpaEntity> findByUserIdAndWithdrawStatus(String userId, boolean withdrawStatus);
     Optional<UserJpaEntity> findByProviderId(String providerId);
+    boolean existsByNicknameAndWithdrawStatusFalse(String nickname);
+    boolean existsByEmailAndWithdrawStatusFalse(String email);
+    Optional<UserJpaEntity> findByEmailAndWithdrawStatusFalse(String email);
 }

@@ -5,8 +5,10 @@ import lombok.Data;
 
 @Data
 public class LoginRequest {
-    @Schema(description = "전화번호", example = "010-0000-0001")
-    private String phoneNumber;
+//    @Schema(description = "전화번호", example = "010-0000-0001")
+//    private String phoneNumber;
+    @Schema(description = "이메일", example = "abcde@gmail.com")
+    private String email;
     @Schema(description = "비밀번호", example = "password")
     private String password;
 }

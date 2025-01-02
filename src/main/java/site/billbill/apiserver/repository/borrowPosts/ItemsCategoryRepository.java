@@ -4,5 +4,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import site.billbill.apiserver.model.post.ItemsCategoryJpaEntity;
 
 public interface ItemsCategoryRepository extends JpaRepository<ItemsCategoryJpaEntity,String> {
-    ItemsCategoryRepository findByName(String name);
+    ItemsCategoryJpaEntity findByName(String name);
 }

@@ -16,9 +16,13 @@ public class ProfileResponse {
     private String profileImage;
     @Schema(description = "닉네임", example = "nickname")
     private String nickname;
-    @Schema(description = "전화번호", example = "010-1234-5678")
-    private String phoneNumber;
+//    @Schema(description = "전화번호", example = "010-1234-5678")
+//    private String phoneNumber;
+    @Schema(description = "빌빌 페이스", example = "40")
+    private int billPace;
     @Enumerated(EnumType.STRING)
     @Schema(description = "소셜 로그인 제공사", example = "KAKAO")
     private Provider provider;
+    @Schema(description = "유저 위치 정보")
+    private LocationResponse location;
 }

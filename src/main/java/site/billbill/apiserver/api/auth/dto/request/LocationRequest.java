@@ -7,8 +7,8 @@ import lombok.Data;
 public class LocationRequest {
     @Schema(description = "주소", example = "서울특별시 강남구")
     private String address;
-    @Schema(description = "위도", example = "127.423084873712")
+    @Schema(description = "위도", example = "37.0789561558879")
     private double latitude;
-    @Schema(description = "경도", example = "37.0789561558879")
+    @Schema(description = "경도", example = "127.423084873712")
     private double longitude;
 }
