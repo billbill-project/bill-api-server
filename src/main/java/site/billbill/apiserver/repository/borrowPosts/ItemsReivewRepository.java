@@ -8,6 +8,8 @@ import java.util.List;
 
 public interface ItemsReivewRepository extends JpaRepository<ItemsReviewJpaEntity,String> {
     List<ItemsReviewJpaEntity> findAllByItemsOrderByCreatedAtDesc(ItemsJpaEntity item);
+    List<ItemsReviewJpaEntity> findAllByItemsOrderByRatingDesc(ItemsJpaEntity item);
+    List<ItemsReviewJpaEntity> findAllByItemsOrderByRatingAsc(ItemsJpaEntity item);
 
 
 }

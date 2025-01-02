@@ -32,7 +32,7 @@ public interface PostsService {
 
     String CancelBillAcceptService(String userId, String channelId);
 
-    PostsResponse.ReviewsResponse ViewReviewService(String userId, String postId);
+    PostsResponse.ReviewsResponse ViewReviewService(String userId, String postId,String sortBy);
 
     void likePost(String userId, String postId);
 

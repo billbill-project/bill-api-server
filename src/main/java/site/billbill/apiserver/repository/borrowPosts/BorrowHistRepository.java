@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface BorrowHistRepository extends JpaRepository<BorrowHistJpaEntity,Long> {
-    BorrowHistJpaEntity findBorrowHistByBorrower(UserJpaEntity borrower);
+    BorrowHistJpaEntity findTop1BorrowHistByBorrowerOrderByCreatedAt(UserJpaEntity borrower);
     List<BorrowHistJpaEntity> findALLBorrowHistByItemAndBorrower(ItemsJpaEntity item, UserJpaEntity borrower);
     BorrowHistJpaEntity findBorrowHistByItemAndBorrowerAndStartedAtAndEndedAt(ItemsJpaEntity item,UserJpaEntity borrower,  LocalDate startedAt, LocalDate endedAt);
 }
