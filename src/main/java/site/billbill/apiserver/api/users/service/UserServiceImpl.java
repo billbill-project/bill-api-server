@@ -207,8 +207,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updatePassword(PasswordRequest request) {
-        String userId = MDC.get(JWTUtil.MDC_USER_ID);
-        UserJpaEntity user = userRepository.findById(userId).orElseThrow();
+        UserJpaEntity user;
+
+        if (request.getEmail().isEmpty()) {
+            String userId = MDC.get(JWTUtil.MDC_USER_ID);
+            user = userRepository.findById(userId).orElseThrow();
+        } else {
+            user = userRepository.findByEmailAndWithdrawStatusFalse(request.getEmail()).orElseThrow();
+        }
 
         user.setPassword(bCryptPasswordEncoder.encode(request.getNewPassword()));
 
