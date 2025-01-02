@@ -22,29 +22,6 @@ import java.util.UUID;
 public class BillApiInterceptor implements HandlerInterceptor {
     private final JWTUtil jwtUtil;
 
-    private String resolveToken(HttpServletRequest request) {
-        String header = request.getHeader("Authorization");
-
-        if (header != null) {
-            if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
-                // if header format is right
-                if (header.length() < 8) {
-                    throw new CustomException(ErrorCode.Unauthorized, "JWT 토큰이 유효하지 않습니다.", HttpStatus.UNAUTHORIZED);
-                }
-
-                String subString = header.substring(7);
-                if (!StringUtils.hasText(subString)) {
-                    throw new CustomException(ErrorCode.Unauthorized, "JWT 토큰이 유효하지 않습니다.", HttpStatus.UNAUTHORIZED);
-                }
-
-                return subString;
-            }
-
-        }
-
-        return null;
-    }
-
     @Override
     public boolean preHandle(
             HttpServletRequest request,
@@ -68,7 +45,7 @@ public class BillApiInterceptor implements HandlerInterceptor {
         }
 
         // token check
-        String token = resolveToken(request);
+        String token = jwtUtil.resolveToken(request);
 
         if (token != null && jwtUtil.isValidAccessToken(token)) {
             // if token is valid

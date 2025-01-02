@@ -3,11 +3,13 @@ package site.billbill.apiserver.common.utils.jwt;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.enums.user.UserRole;
 import site.billbill.apiserver.common.utils.jwt.dto.JwtDto;
@@ -142,5 +144,28 @@ public class JWTUtil {
         }
 
         return false;
+    }
+
+    public String resolveToken(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+
+        if (header != null) {
+            if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
+                // if header format is right
+                if (header.length() < 8) {
+                    throw new CustomException(ErrorCode.Unauthorized, "JWT 토큰이 유효하지 않습니다.", HttpStatus.UNAUTHORIZED);
+                }
+
+                String subString = header.substring(7);
+                if (!StringUtils.hasText(subString)) {
+                    throw new CustomException(ErrorCode.Unauthorized, "JWT 토큰이 유효하지 않습니다.", HttpStatus.UNAUTHORIZED);
+                }
+
+                return subString;
+            }
+
+        }
+
+        return null;
     }
 }
