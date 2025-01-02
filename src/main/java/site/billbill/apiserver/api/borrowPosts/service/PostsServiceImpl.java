@@ -228,7 +228,7 @@ public class PostsServiceImpl implements PostsService {
     public PostsResponse.ReviewIdResponse DoReviewPostService(String postId, String userId, PostsRequest.ReviewRequest request) {
         UserJpaEntity user = userRepository.findById(userId).orElse(null);
         ItemsJpaEntity item = itemsRepository.findById(postId).orElse(null);
-        BorrowHistJpaEntity borrowHist = borrowHistRepository.findBorrowHistByBorrower(user);
+        BorrowHistJpaEntity borrowHist = borrowHistRepository.findTop1BorrowHistByBorrowerOrderByCreatedAt(user);
         String postsId = ULIDUtil.generatorULID("REVIEW");
         if (item == null) {
             throw new CustomException(ErrorCode.BadRequest, "올바른 게시물 아이디가 아닙니다.", HttpStatus.BAD_REQUEST);
@@ -325,10 +325,25 @@ public class PostsServiceImpl implements PostsService {
         return "success";
     }
 
-    public PostsResponse.ReviewsResponse ViewReviewService(String userId, String postId) {
+    public PostsResponse.ReviewsResponse ViewReviewService(String userId, String postId,String sortBy) {
 
         ItemsJpaEntity item = itemsRepository.findById(postId).orElse(null);
-        List<ItemsReviewJpaEntity> itemReviews = itemsReivewRepository.findAllByItemsOrderByCreatedAtDesc(item);
+        List<ItemsReviewJpaEntity> itemReviews;
+        switch (sortBy) {
+            case "createdAt":
+                itemReviews= itemsReivewRepository.findAllByItemsOrderByCreatedAtDesc(item);
+                break;
+            case "highest":
+                itemReviews= itemsReivewRepository.findAllByItemsOrderByRatingDesc(item);
+                break;
+            case "lowest":
+                itemReviews= itemsReivewRepository.findAllByItemsOrderByRatingAsc(item);
+                break;
+            default:
+                itemReviews= itemsReivewRepository.findAllByItemsOrderByCreatedAtDesc(item);
+                break;
+        }
+
 
 
         List<PostsResponse.ReviewResponse> reviews = itemReviews.stream().map(itemReview -> {
