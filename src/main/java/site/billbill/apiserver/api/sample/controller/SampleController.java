@@ -23,7 +23,7 @@ import java.util.List;
 @RequestMapping("/api/v1/sample")
 public class SampleController {
     private final SampleRepository sampleRepository;
-
+    //주석
     @PostMapping("")
     public BaseResponse postSample(
             @RequestBody SamplePostRequest request
