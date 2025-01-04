@@ -47,7 +47,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                 .leftJoin(items.category, categoryEntity).fetchJoin() // 명시적 Fetch Join
                 .leftJoin(borrow).on(items.id.eq(borrow.item.id))
                 .where(items.delYn.isFalse());
-
+        query.leftJoin(items.location, QItemsLocationJpaEntity.itemsLocationJpaEntity).fetchJoin();
         // 카테고리 필터링
         if (category == null) {
             query.where(items.category.isNull());
@@ -70,7 +70,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
 
         // 정렬 조건 처리
         pageable.getSort().forEach(order -> {
-            OrderSpecifier<?> orderSpecifier;
+            OrderSpecifier<?> orderSpecifier = null;
             switch (order.getProperty()) {
                 case "price" -> orderSpecifier = order.isAscending() ? borrow.price.asc() : borrow.price.desc();
                 case "createdAt" ->
@@ -78,17 +78,33 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                 case "likeCount" ->
                         orderSpecifier = order.isAscending() ? items.likeCount.asc() : items.likeCount.desc();
                 case "distance" -> {
-                    if (latitude != null && longitude != null) {
-                        // 거리 계산식
-                        NumberExpression<Double> distanceExpression = Expressions.numberTemplate(
+                    try {
+                        // null 체크를 먼저 수행
+                        if (latitude != null && longitude != null) {
+                            // 디버깅: 입력 값 출력
+
+
+                            // 거리 계산식
+                            NumberExpression<Double> distanceExpression = Expressions.numberTemplate(
                                 Double.class,
-                                "ST_Distance_Sphere(POINT({0}, {1}), POINT({2}, {3}))",
+                                "6371 * acos(cos(radians({0})) * cos(radians({2})) * cos(radians({3}) - radians({1})) + sin(radians({0})) * sin(radians({2})))",
                                 QItemsLocation.latitude, QItemsLocation.longitude, latitude, longitude
-                        );
-                        orderSpecifier = order.isAscending() ? distanceExpression.asc() : distanceExpression.desc();
-                    } else {
-                        log.warn("Latitude와 Longitude가 필요합니다.");
-                        return;
+                            );
+
+                            // 디버깅: 생성된 Querydsl 표현식 출력
+
+
+                            orderSpecifier = order.isAscending() ? distanceExpression.asc() : distanceExpression.desc();
+
+
+                        } else {
+                            // latitude와 longitude가 null일 경우 createdAt 기준 정렬
+
+                            orderSpecifier = order.isAscending() ? items.createdAt.asc() : items.createdAt.desc();
+                        }
+                    } catch (Exception e) {
+                        // 디버깅: 오류 발생 시 스택 트레이스 출력
+                        log.error("Error in distance sorting expression", e);
                     }
                 }
                 default -> {

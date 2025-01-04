@@ -10,7 +10,7 @@ import java.util.List;
 public interface PostsService {
     PostsResponse.UploadResponse uploadPostService(PostsRequest.UploadRequest request, String userId);
 
-    PostsResponse.ViewAllResultResponse ViewAllPostService(String category, int page, Sort.Direction direction, String orderType, String userId);
+    PostsResponse.ViewAllResultResponse ViewAllPostService(String category, int page, Sort.Direction direction, String orderType, String userId,Double latitude,Double longitude);
 
     PostsResponse.ViewPostResponse ViewPostService(String postId, String userId);
 
@@ -18,7 +18,7 @@ public interface PostsService {
 
     String UpdatePostService(String postId, String userId, PostsRequest.UploadRequest request);
 
-    PostsResponse.ViewAllResultResponse ViewSearchPostService(String userId, String category, int page, Sort.Direction direction, String orderType, String keyword, boolean state);
+    PostsResponse.ViewAllResultResponse ViewSearchPostService(String userId, String category, int page, Sort.Direction direction, String orderType, String keyword, boolean state,Double latitude,Double longitude);
 
     PostsResponse.saveSearchListResponse findSearchService(String userId);
 

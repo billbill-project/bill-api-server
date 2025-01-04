@@ -1,5 +1,8 @@
 package site.billbill.apiserver.api.borrowPosts.converter;
 
+
+import org.locationtech.jts.geom.Point;
+import site.billbill.apiserver.api.auth.dto.request.LocationRequest;
 import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
 import site.billbill.apiserver.api.borrowPosts.dto.response.PostsResponse;
 import site.billbill.apiserver.model.chat.ChatChannelJpaEntity;
@@ -7,6 +10,7 @@ import site.billbill.apiserver.model.post.*;
 import site.billbill.apiserver.model.user.UserJpaEntity;
 import site.billbill.apiserver.model.user.UserLocationJpaEntity;
 import site.billbill.apiserver.model.user.UserSearchHistJpaEntity;
+
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -21,13 +25,13 @@ public class PostsConverter {
                 postId(id).
                 build();
     }
-    public static ItemsLocationJpaEntity toItemsLocation(UserLocationJpaEntity userLocation,ItemsJpaEntity item){
+    public static ItemsLocationJpaEntity toItemsLocation(Point coordinate, LocationRequest location, ItemsJpaEntity item) {
         return ItemsLocationJpaEntity.builder()
                 .item(item)
-                .address(userLocation.getAddress())
-                .coordinates(userLocation.getCoordinates())
-                .latitude(userLocation.getLatitude())
-                .longitude(userLocation.getLongitude())
+                .address(location.getAddress())
+                .coordinates(coordinate)
+                .latitude(location.getLatitude())
+                .longitude(location.getLongitude())
                 .build();
     }
     public static ItemsJpaEntity toItem(String postId, PostsRequest.UploadRequest request, UserJpaEntity user, ItemsCategoryJpaEntity category){

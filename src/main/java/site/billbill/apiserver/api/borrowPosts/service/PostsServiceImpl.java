@@ -2,6 +2,10 @@ package site.billbill.apiserver.api.borrowPosts.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.boot.actuate.autoconfigure.observation.ObservationProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -53,14 +57,13 @@ public class PostsServiceImpl implements PostsService {
     private final ItemsLocationRepository itemsLocationRepository;
     private final UserLocationReposity userLocationReposity;
     private final ItemsLikeRepository itemsLikeRepository;
-
+    private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
     public PostsResponse.UploadResponse uploadPostService(PostsRequest.UploadRequest request, String userId) {
         //먼저 item 생성,
         Optional<UserJpaEntity> isUser = userRepository.findById(userId);
         String postsId = ULIDUtil.generatorULID("BORROW");
         ItemsCategoryJpaEntity category = itemsCategoryRepository.findByName(request.getCategory());
         UserJpaEntity user = new UserJpaEntity();
-        UserLocationJpaEntity location = userLocationReposity.findByUserId(userId).orElse(null);
         if (isUser.isPresent()) {
             user = isUser.get();
         }
@@ -80,7 +83,8 @@ public class PostsServiceImpl implements PostsService {
             itemsBorrowStatusRepository.saveAll(itemsBorrowStatusList);
         }
         //좌표 저장
-        ItemsLocationJpaEntity itemsLocation = PostsConverter.toItemsLocation(location, item);
+        Point coordinates = geometryFactory.createPoint(new Coordinate(request.getLocation().getLongitude(), request.getLocation().getLatitude()));
+        ItemsLocationJpaEntity itemsLocation = PostsConverter.toItemsLocation(coordinates,request.getLocation(), item);
         itemsLocationRepository.save(itemsLocation);
         return PostsConverter.toUploadResponse(postsId);
 
@@ -88,11 +92,12 @@ public class PostsServiceImpl implements PostsService {
     }
 
     public PostsResponse.ViewAllResultResponse ViewAllPostService(
-            String category, int page, Sort.Direction direction, String orderType, String userId) {
-        UserLocationJpaEntity userLocation = userLocationReposity.findByUserId(userId).orElse(null);
+            String category, int page, Sort.Direction direction, String orderType, String userId,Double latitude,Double longitude) {
+        latitude=roundToDecimal(latitude);
+        longitude=roundToDecimal(longitude);
+
         Pageable pageable = createPageable(page, direction, orderType);
-        log.info(category);
-        List<PostsResponse.Post> items = findAndConvertItems(category, pageable, null, userLocation);
+        List<PostsResponse.Post> items = findAndConvertItems(category, pageable, null, latitude,longitude);
         return PostsConverter.toViewAllList(items);
     }
 
@@ -185,11 +190,11 @@ public class PostsServiceImpl implements PostsService {
     }
 
     @Transactional
-    public PostsResponse.ViewAllResultResponse ViewSearchPostService(String userId, String category, int page, Sort.Direction direction, String orderType, String keyword, boolean state) {
+    public PostsResponse.ViewAllResultResponse ViewSearchPostService(String userId, String category, int page, Sort.Direction direction, String orderType, String keyword, boolean state,Double latitude,Double longitude) {
         UserLocationJpaEntity userLocation = userLocationReposity.findByUserId(userId).orElse(null);
 
         Pageable pageable = createPageable(page, direction, orderType);
-        List<PostsResponse.Post> items = findAndConvertItems(category, pageable, keyword, userLocation);
+        List<PostsResponse.Post> items = findAndConvertItems(category, pageable, keyword, latitude,longitude);
         //사용자가 검색어 저장을 허용했을 경우
         String tempKeyword = keyword.replaceAll("\\+", " ");
 //        if(state){
@@ -427,9 +432,9 @@ public class PostsServiceImpl implements PostsService {
         );
     }
 
-    private List<PostsResponse.Post> findAndConvertItems(String category, Pageable pageable, String keyword, UserLocationJpaEntity userLocation) {
+    private List<PostsResponse.Post> findAndConvertItems(String category, Pageable pageable, String keyword, Double latitude,Double longitude) {
         // Repository 호출
-        Page<ItemsJpaEntity> itemsPage = itemsRepository.findItemsWithConditions(category, pageable, null, keyword, userLocation.getLatitude(), userLocation.getLongitude());
+        Page<ItemsJpaEntity> itemsPage = itemsRepository.findItemsWithConditions(category, pageable, null, keyword, latitude, longitude);
 
         // 빈 결과 체크
         if (itemsPage.isEmpty()) {
@@ -448,6 +453,13 @@ public class PostsServiceImpl implements PostsService {
                     return PostsConverter.toPost(item, borrowItem, location);
                 })
                 .toList();
+    }
+    private Double roundToDecimal(Double value) {
+        if(value==null){
+            return null;
+
+        }
+        return Math.round(value*1e8)/1e8;
     }
 
 

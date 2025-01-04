@@ -45,4 +45,8 @@ public class ItemsJpaEntity extends BaseTime {
     @JoinColumn(name="category_id")
     private ItemsCategoryJpaEntity category;
 
+
+    @OneToOne(mappedBy = "item", cascade = CascadeType.ALL, optional = true) // 양방향 관계 설정
+    private ItemsLocationJpaEntity location;
+
 }
