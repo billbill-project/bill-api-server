@@ -63,6 +63,7 @@ public class PostsServiceImpl implements PostsService {
         Optional<UserJpaEntity> isUser = userRepository.findById(userId);
         String postsId = ULIDUtil.generatorULID("BORROW");
         ItemsCategoryJpaEntity category = itemsCategoryRepository.findByName(request.getCategory());
+        
         UserJpaEntity user = new UserJpaEntity();
         if (isUser.isPresent()) {
             user = isUser.get();
@@ -290,7 +291,7 @@ public class PostsServiceImpl implements PostsService {
             throw new CustomException(ErrorCode.BadRequest, " 올바른 채팅방 정보가 아닙니다.", HttpStatus.BAD_REQUEST);
         }
 
-        BorrowHistJpaEntity borrowHist = PostsConverter.toBorrowHist(item, user, chat);
+        BorrowHistJpaEntity borrowHist = PostsConverter.toBorrowHist(item,user, chat);
         BorrowHistJpaEntity savedBorrowHist = borrowHistRepository.save(borrowHist);
 
         PostsRequest.NoRentalPeriod noRentalPeriod = PostsRequest.NoRentalPeriod.builder()
