@@ -171,7 +171,7 @@ public class PostsConverter {
     public static BorrowHistJpaEntity toBorrowHist(ItemsJpaEntity item,UserJpaEntity user,ChatChannelJpaEntity chat){
         return BorrowHistJpaEntity.builder()
                 .item(item)
-                .borrower(user)
+                .borrower(chat.getContact())
                 .startedAt(chat.getStartedAt())
                 .endedAt(chat.getEndedAt())
                 .build();
