@@ -20,9 +20,9 @@ public class ItemsLocationJpaEntity extends BaseTime {
     @Column(name="item_id")
     private String id;
 
-    @ManyToOne
-    @MapsId
-    @JoinColumn(name="item_id")
+    @OneToOne
+    @MapsId // item_id가 ItemsJpaEntity의 id를 공유하도록 설정
+    @JoinColumn(name = "item_id")
     private ItemsJpaEntity item;
 
     @Column(name="address",nullable = false)

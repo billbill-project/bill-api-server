@@ -51,14 +51,23 @@ public class PostsController {
             @Parameter(name = "order", description = "정렬 방향 (asc: 오름차순, desc: 내림차순)", example = "asc", in = ParameterIn.QUERY, required = false)
             @RequestParam(value = "order", required = false, defaultValue = "desc") String order,
             @Parameter(name = "sortBy", description = "정렬 기준 (예: price, createdAt, likeCount,distance)", example = "distance", in = ParameterIn.QUERY, required = true)
-            @RequestParam(value = "sortBy", required = true, defaultValue = "accuracy") String sortBy
+            @RequestParam(value = "sortBy", required = true, defaultValue = "accuracy") String sortBy,
+            @Parameter(name="latitude",description = "위도",example = "37.0789561558879",in = ParameterIn.QUERY, required = false)
+            @RequestParam(value = "latitude",required = false)Double latitude,
+            @Parameter(name="longitude",description = "경도",example =  "127.423084873712",in = ParameterIn.QUERY, required = false)
+            @RequestParam(value = "longitude",required = false)Double longitude
     ) {
         String userId = "";
         if (MDC.get(JWTUtil.MDC_USER_ID) != null) {
             userId = MDC.get(JWTUtil.MDC_USER_ID);
         }
+         // Null 체크 추가
+        if (latitude == null || longitude == null) {
+            log.info("Latitude or Longitude is null. Using default sorting by createdAt.");
+            sortBy = "createdAt"; // 기본 정렬로 변경
+        }
         Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
-        return new BaseResponse<>(postsService.ViewAllPostService(category, page, direction, sortBy,userId));
+        return new BaseResponse<>(postsService.ViewAllPostService(category, page, direction, sortBy,userId,latitude,longitude));
     }
 
     @Operation(summary = "게시물 검색", description = "게시물 검색 API")
@@ -73,14 +82,18 @@ public class PostsController {
             @Parameter(name = "sortBy", description = "정렬 기준 (예: price, createdAt, likeCount,distance)", example = "distance", in = ParameterIn.QUERY, required = true)
             @RequestParam(value = "sortBy", required = true, defaultValue = "accuracy") String sortBy,
             @Parameter(name = "keyword", description = "검색 키워드(예: 6인용+텐트)", in = ParameterIn.QUERY, required = true)
-            @RequestParam(value = "keyword", required = true) String keyword) {
+            @RequestParam(value = "keyword", required = true) String keyword,
+            @Parameter(name="latitude",description = "위도",example = "37.0789561558879",in = ParameterIn.QUERY, required = false)
+            @RequestParam(value = "latitude",required = false)Double latitude,
+            @Parameter(name="longitude",description = "경도",example =  "127.423084873712",in = ParameterIn.QUERY, required = false)
+            @RequestParam(value = "longitude",required = false)Double longitude) {
 
         String userId = "";
         if (MDC.get(JWTUtil.MDC_USER_ID) != null) {
             userId = MDC.get(JWTUtil.MDC_USER_ID);
         }
         Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
-        return new BaseResponse<>(postsService.ViewSearchPostService(userId, category, page, direction, sortBy, keyword, false));
+        return new BaseResponse<>(postsService.ViewSearchPostService(userId, category, page, direction, sortBy, keyword, false,latitude,longitude));
     }
 
     @Operation(summary = "게시물 조회", description = "게시물 상세 조회")

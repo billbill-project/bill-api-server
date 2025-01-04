@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import site.billbill.apiserver.api.auth.dto.request.LocationRequest;
 import site.billbill.apiserver.common.enums.items.PriceStandard;
 import site.billbill.apiserver.common.validation.EnumValidator;
 
@@ -33,6 +34,8 @@ public class PostsRequest {
         @Schema(description = "카테고리", example = "camp, sports, tools")
         private String category;
         private List<NoRentalPeriod> noRental;
+        @Schema(description = "위치 정보")
+        private LocationRequest location;
     }
 
     @Getter
