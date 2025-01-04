@@ -234,12 +234,10 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                 .leftJoin(qChatChannel).on(qItems.id.eq(qChatChannel.item.id).and(qChatChannel.delYn.isFalse()))
                 .rightJoin(qBorrowHist).on(qItems.id.eq(qBorrowHist.item.id).and(qBorrowHist.delYn.isFalse()))
                 .where(qItems.delYn.isFalse());
-
         switch (type) {
-            case BORROWING -> qb.where(qItems.owner.userId.eq(userId));
+            case BORROWING -> qb.where(qItems.owner.userId.eq(userId).and(qItems.id.eq(qBorrowHist.item.id)));
             case BORROWED -> qb.where(qBorrowHist.borrower.userId.eq(userId));
-            case EXCHANGE -> {
-            }
+            case EXCHANGE -> {}
             default -> throw new IllegalStateException("Unexpected value: " + type);
         }
 
