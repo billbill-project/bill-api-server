@@ -3,6 +3,7 @@ package site.billbill.apiserver.api.auth.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import site.billbill.apiserver.api.auth.dto.response.OAuthLoginResponse;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.enums.user.Provider;
 import site.billbill.apiserver.common.enums.user.UserRole;
@@ -30,7 +31,7 @@ public class OAuthServiceImpl implements OAuthService {
 //    private final UserIdentityRepository userIdentityRepository;
 
     @Override
-    public JwtDto kakaoLogin(String token) {
+    public OAuthLoginResponse kakaoLogin(String token) {
 //        String accessToken = kakaoUtil.getAccessToken(code);
 //        if (accessToken == null)
 //            throw new CustomException(ErrorCode.ServerError, "토큰을 발급받는데 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -40,7 +41,11 @@ public class OAuthServiceImpl implements OAuthService {
 
         // 만약 이미 가입된 회원이라면 토큰 반환
         if (optionalUser.isPresent()) {
-            return jwtUtil.generateJwtDto(optionalUser.get().getUserId(), optionalUser.get().getRole());
+            JwtDto jwtDto = jwtUtil.generateJwtDto(optionalUser.get().getUserId(), optionalUser.get().getRole());
+            return OAuthLoginResponse.builder()
+                    .isNewMember(false)
+                    .jwtDto(jwtDto)
+                    .build();
         }
 
         // 만약 신규 회원이라면
@@ -77,6 +82,10 @@ public class OAuthServiceImpl implements OAuthService {
 
         // UserAgreeHist 랑 UserDevice, UserLocation 은 별도로 추가해야됨
 
-        return jwtUtil.generateJwtDto(userId, UserRole.USER);
+        JwtDto jwtDto = jwtUtil.generateJwtDto(userId, UserRole.USER);
+        return OAuthLoginResponse.builder()
+                .isNewMember(true)
+                .jwtDto(jwtDto)
+                .build();
     }
 }

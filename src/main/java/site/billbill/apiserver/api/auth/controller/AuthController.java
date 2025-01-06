@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import site.billbill.apiserver.api.auth.dto.request.*;
+import site.billbill.apiserver.api.auth.dto.response.OAuthLoginResponse;
 import site.billbill.apiserver.api.auth.dto.response.ValidResponse;
 import site.billbill.apiserver.api.auth.service.AuthService;
 import site.billbill.apiserver.api.auth.service.MailService;
@@ -63,7 +64,7 @@ public class AuthController {
     @Operation(summary = "카카오 로그인",description = "카카오 로그인 API")
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/oauth2/kakao")
-    public BaseResponse<JwtDto> kakaoLogin(
+    public BaseResponse<OAuthLoginResponse> kakaoLogin(
             @Schema(description = "카카오 요청을 통해 받아온 엑세스 토큰")
             @RequestParam("token") String token
     ) {

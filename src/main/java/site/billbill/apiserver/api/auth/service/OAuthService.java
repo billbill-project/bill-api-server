@@ -1,7 +1,7 @@
 package site.billbill.apiserver.api.auth.service;
 
-import site.billbill.apiserver.common.utils.jwt.dto.JwtDto;
+import site.billbill.apiserver.api.auth.dto.response.OAuthLoginResponse;
 
 public interface OAuthService {
-    JwtDto kakaoLogin(String code);
+    OAuthLoginResponse kakaoLogin(String code);
 }
