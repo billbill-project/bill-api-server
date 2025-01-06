@@ -13,4 +13,5 @@ public interface UserRepository extends JpaRepository<UserJpaEntity, String>, Us
     boolean existsByNicknameAndWithdrawStatusFalse(String nickname);
     boolean existsByEmailAndWithdrawStatusFalse(String email);
     Optional<UserJpaEntity> findByEmailAndWithdrawStatusFalse(String email);
+    Optional<UserJpaEntity> findByUserIdAndDmAlarmIsTrue(String userId);
 }

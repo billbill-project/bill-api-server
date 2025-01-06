@@ -10,8 +10,14 @@ import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.jwt.JWTUtil;
 import site.billbill.apiserver.exception.CustomException;
 import site.billbill.apiserver.external.firebase.fcm.utils.FirebaseUtil;
+import site.billbill.apiserver.model.alarm.AlarmListJpaEntity;
+import site.billbill.apiserver.model.alarm.AlarmLogJpaEntity;
 import site.billbill.apiserver.model.user.UserDeviceJpaEntity;
+import site.billbill.apiserver.model.user.UserJpaEntity;
+import site.billbill.apiserver.repository.alarm.AlarmListRepository;
+import site.billbill.apiserver.repository.alarm.AlarmLogRepository;
 import site.billbill.apiserver.repository.user.UserDeviceRepository;
+import site.billbill.apiserver.repository.user.UserRepository;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -21,15 +27,31 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PushServiceImpl implements PushService {
     private final UserDeviceRepository userDeviceRepository;
+    private final UserRepository userRepository;
+    private final AlarmListRepository alarmListRepository;
+    private final AlarmLogRepository alarmLogRepository;
     private final FirebaseUtil firebaseUtil;
 
     @Override
     public boolean sendPush(PushRequest request) throws IOException {
-        String userId = MDC.get(JWTUtil.MDC_USER_ID);
-        Optional<UserDeviceJpaEntity> userDevice = userDeviceRepository.findById(userId);
-
+        Optional<UserDeviceJpaEntity> userDevice = userDeviceRepository.findById(request.getUserId());
+        Optional<UserJpaEntity> user = userRepository.findByUserIdAndDmAlarmIsTrue(request.getUserId());
         if(userDevice.isEmpty()) throw new CustomException(ErrorCode.NotFound, "User Device 정보가 존재하지 않습니다", HttpStatus.NOT_FOUND);
 
-        return firebaseUtil.sendFcmTo(request, userDevice.get().getDeviceToken());
+        AlarmListJpaEntity alarmList = AlarmListJpaEntity.builder()
+                .title(request.getTitle())
+                .content(request.getContent())
+                .pushType(request.getPushType())
+                .moveToId(request.getChatChannelId())
+                .build();
+
+        AlarmLogJpaEntity alarmLog = AlarmLogJpaEntity.builder()
+                .userId(request.getUserId())
+                .build();
+
+        alarmListRepository.save(alarmList);
+        alarmLogRepository.save(alarmLog);
+
+        return user.isEmpty() || firebaseUtil.sendFcmTo(request, userDevice.get().getDeviceToken());
     }
 }
