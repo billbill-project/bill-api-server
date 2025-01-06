@@ -17,8 +17,8 @@ public class SignupRequest {
 //    private IdentityRequest identity;
     @Schema(description = "각종 약관 동의")
     private AgreeRequest agree;
-    @Schema(description = "위치 정보")
-    private LocationRequest location;
+//    @Schema(description = "위치 정보")
+//    private LocationRequest location;
     @Schema(description = "디바이스 정보")
     private DeviceRequest device;
 }
