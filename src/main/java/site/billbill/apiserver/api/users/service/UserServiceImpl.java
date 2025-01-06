@@ -60,17 +60,17 @@ public class UserServiceImpl implements UserService {
     public ProfileResponse getProfileInfo(String userId) {
         Optional<UserJpaEntity> user = userRepository.findById(userId);
 //        Optional<UserIdentityJpaEntity> userIdentity = userIdentityRepository.findById(userId);
-        Optional<UserLocationJpaEntity> userLocation = userLocationRepository.findById(userId);
+//        Optional<UserLocationJpaEntity> userLocation = userLocationRepository.findById(userId);
 
         if (user.isEmpty()) {
             throw new CustomException(ErrorCode.NotFound, "회원을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
         }
 
-        LocationResponse location = userLocation.map(userLocationJpaEntity -> LocationResponse.builder()
-                .address(userLocationJpaEntity.getAddress())
-                .longitude(userLocationJpaEntity.getLongitude())
-                .latitude(userLocationJpaEntity.getLatitude())
-                .build()).orElse(null);
+//        LocationResponse location = userLocation.map(userLocationJpaEntity -> LocationResponse.builder()
+//                .address(userLocationJpaEntity.getAddress())
+//                .longitude(userLocationJpaEntity.getLongitude())
+//                .latitude(userLocationJpaEntity.getLatitude())
+//                .build()).orElse(null);
 
         return ProfileResponse.builder()
                 .userId(userId)
@@ -78,7 +78,7 @@ public class UserServiceImpl implements UserService {
                 .nickname(user.get().getNickname())
                 .billPace(user.get().getBillPace())
                 .provider(user.get().getProvider())
-                .location(location)
+//                .location(location)
                 .build();
     }
 

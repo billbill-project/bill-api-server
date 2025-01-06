@@ -71,7 +71,7 @@ public class AuthServiceImpl implements AuthService {
         userAgreeHistRepository.save(userAgree);
 
         // save location
-        userService.saveLocation(userId, request.getLocation());
+//        userService.saveLocation(userId, request.getLocation());
 
         return jwtUtil.generateJwtDto(userId, UserRole.USER);
     }

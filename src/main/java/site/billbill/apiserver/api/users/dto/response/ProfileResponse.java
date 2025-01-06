@@ -23,6 +23,6 @@ public class ProfileResponse {
     @Enumerated(EnumType.STRING)
     @Schema(description = "소셜 로그인 제공사", example = "KAKAO")
     private Provider provider;
-    @Schema(description = "유저 위치 정보")
-    private LocationResponse location;
+//    @Schema(description = "유저 위치 정보")
+//    private LocationResponse location;
 }
