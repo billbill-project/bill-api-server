@@ -15,10 +15,12 @@ import site.billbill.apiserver.model.BaseTime;
 public class AlarmLogJpaEntity extends BaseTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "alarm_seq", nullable = false)
-    private long alarmSeq;
+    @Column(name = "log_seq", nullable = false)
+    private long logSeq;
     @Column(name = "user_id", nullable = false)
     private String userId;
+    @Column(name = "alarm_seq", nullable = false)
+    private long alarmSeq;
     @Convert(converter = BooleanConverter.class)
     @Column(name = "read_yn", nullable = false)
     private boolean readYn = false;

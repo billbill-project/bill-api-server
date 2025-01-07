@@ -18,6 +18,6 @@ public class PushRequest {
     @Enumerated(EnumType.STRING)
     @Schema(description = "푸시 종류", example = "CHAT")
     private PushType pushType;
-    @Schema(description = "채팅방의 ID", example = "CHAT-XXXXXX")
-    private String chatChannelId;
+    @Schema(description = "클릭 후 이동해야될 고유 ID", example = "CHAT-XXXXXX")
+    private String moveToId;
 }
