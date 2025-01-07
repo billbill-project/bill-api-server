@@ -28,9 +28,9 @@ import java.io.IOException;
 public class PushController {
     private final PushService pushService;
 
-    @Operation(summary = "채팅 push 발송 API", description = "상대에게 채팅 push를 발송하는 API")
+    @Operation(summary = "push 발송 API", description = "상대에게 채팅 push를 발송하는 API")
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/chat")
+    @PostMapping("")
     public BaseResponse<Boolean> sendChatFcm(@RequestBody PushRequest request) throws IOException {
         return new BaseResponse<>(pushService.sendPush(request));
     }

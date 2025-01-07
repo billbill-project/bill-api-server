@@ -6,6 +6,7 @@ import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import site.billbill.apiserver.api.push.dto.request.PushRequest;
+import site.billbill.apiserver.common.enums.alarm.PushType;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.jwt.JWTUtil;
 import site.billbill.apiserver.exception.CustomException;
@@ -42,14 +43,16 @@ public class PushServiceImpl implements PushService {
                 .title(request.getTitle())
                 .content(request.getContent())
                 .pushType(request.getPushType())
-                .moveToId(request.getChatChannelId())
+                .moveToId(request.getMoveToId())
                 .build();
+
+        alarmList = alarmListRepository.save(alarmList);
 
         AlarmLogJpaEntity alarmLog = AlarmLogJpaEntity.builder()
                 .userId(request.getUserId())
+                .alarmSeq(alarmList.getAlarmSeq())
                 .build();
 
-        alarmListRepository.save(alarmList);
         alarmLogRepository.save(alarmLog);
 
         return user.isEmpty() || firebaseUtil.sendFcmTo(request, userDevice.get().getDeviceToken());
