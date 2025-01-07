@@ -40,8 +40,8 @@ public class KakaoUserInfoResponse {
     public KakaoAccount kakaoAccount;
 
     //uuid 등 추가 정보
-    @JsonProperty("for_partner")
-    public Partner partner;
+//    @JsonProperty("for_partner")
+//    public Partner partner;
 
     @Getter
     @NoArgsConstructor
@@ -175,17 +175,16 @@ public class KakaoUserInfoResponse {
             //true : 기본 닉네임, false : 사용자 등록
             @JsonProperty("is_default_nickname")
             public Boolean isDefaultNickName;
-
         }
     }
 
-    @Getter
-    @NoArgsConstructor
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public class Partner {
-        //고유 ID
-        @JsonProperty("uuid")
-        public String uuid;
-    }
+//    @Getter
+//    @NoArgsConstructor
+//    @JsonIgnoreProperties(ignoreUnknown = true)
+//    public class Partner {
+//        //고유 ID
+//        @JsonProperty("uuid")
+//        public String uuid;
+//    }
 
 }
