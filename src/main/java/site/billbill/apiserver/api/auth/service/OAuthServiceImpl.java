@@ -37,7 +37,7 @@ public class OAuthServiceImpl implements OAuthService {
 //            throw new CustomException(ErrorCode.ServerError, "토큰을 발급받는데 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
         KakaoUserInfoResponse userInfo = kakaoUtil.getUserInfo(token);
 
-        Optional<UserJpaEntity> optionalUser = userRepository.findByProviderId(userInfo.partner.getUuid());
+        Optional<UserJpaEntity> optionalUser = userRepository.findByProviderId(userInfo.getId().toString());
 
         // 만약 이미 가입된 회원이라면 토큰 반환
         if (optionalUser.isPresent()) {
