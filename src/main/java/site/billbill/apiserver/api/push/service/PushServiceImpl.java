@@ -37,23 +37,26 @@ public class PushServiceImpl implements PushService {
     public boolean sendPush(PushRequest request) throws IOException {
         Optional<UserDeviceJpaEntity> userDevice = userDeviceRepository.findById(request.getUserId());
         Optional<UserJpaEntity> user = userRepository.findByUserIdAndDmAlarmIsTrue(request.getUserId());
-        if(userDevice.isEmpty()) throw new CustomException(ErrorCode.NotFound, "User Device 정보가 존재하지 않습니다", HttpStatus.NOT_FOUND);
+        if (userDevice.isEmpty())
+            throw new CustomException(ErrorCode.NotFound, "User Device 정보가 존재하지 않습니다", HttpStatus.NOT_FOUND);
 
-        AlarmListJpaEntity alarmList = AlarmListJpaEntity.builder()
-                .title(request.getTitle())
-                .content(request.getContent())
-                .pushType(request.getPushType())
-                .moveToId(request.getMoveToId())
-                .build();
+        if (request.getPushType() != PushType.CHAT) {
+            AlarmListJpaEntity alarmList = AlarmListJpaEntity.builder()
+                    .title(request.getTitle())
+                    .content(request.getContent())
+                    .pushType(request.getPushType())
+                    .moveToId(request.getMoveToId())
+                    .build();
 
-        alarmList = alarmListRepository.save(alarmList);
+            alarmList = alarmListRepository.save(alarmList);
 
-        AlarmLogJpaEntity alarmLog = AlarmLogJpaEntity.builder()
-                .userId(request.getUserId())
-                .alarmSeq(alarmList.getAlarmSeq())
-                .build();
+            AlarmLogJpaEntity alarmLog = AlarmLogJpaEntity.builder()
+                    .userId(request.getUserId())
+                    .alarmSeq(alarmList.getAlarmSeq())
+                    .build();
 
-        alarmLogRepository.save(alarmLog);
+            alarmLogRepository.save(alarmLog);
+        }
 
         return user.isEmpty() || firebaseUtil.sendFcmTo(request, userDevice.get().getDeviceToken());
     }
