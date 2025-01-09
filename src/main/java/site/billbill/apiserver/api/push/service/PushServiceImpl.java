@@ -1,14 +1,23 @@
 package site.billbill.apiserver.api.push.service;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import site.billbill.apiserver.api.push.converter.PushConverter;
 import site.billbill.apiserver.api.push.dto.request.PushRequest;
+import site.billbill.apiserver.api.push.dto.response.PushResponse.GetPushListResponse;
 import site.billbill.apiserver.common.enums.alarm.PushType;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
-import site.billbill.apiserver.common.utils.jwt.JWTUtil;
 import site.billbill.apiserver.exception.CustomException;
 import site.billbill.apiserver.external.firebase.fcm.utils.FirebaseUtil;
 import site.billbill.apiserver.model.alarm.AlarmListJpaEntity;
@@ -37,8 +46,9 @@ public class PushServiceImpl implements PushService {
     public boolean sendPush(PushRequest request) throws IOException {
         Optional<UserDeviceJpaEntity> userDevice = userDeviceRepository.findById(request.getUserId());
         Optional<UserJpaEntity> user = userRepository.findByUserIdAndDmAlarmIsTrue(request.getUserId());
-        if (userDevice.isEmpty())
+        if (userDevice.isEmpty()) {
             throw new CustomException(ErrorCode.NotFound, "User Device 정보가 존재하지 않습니다", HttpStatus.NOT_FOUND);
+        }
 
         if (request.getPushType() != PushType.CHAT) {
             AlarmListJpaEntity alarmList = AlarmListJpaEntity.builder()
@@ -59,5 +69,48 @@ public class PushServiceImpl implements PushService {
         }
 
         return user.isEmpty() || firebaseUtil.sendFcmTo(request, userDevice.get().getDeviceToken());
+    }
+
+    @Transactional
+    @Override
+    public GetPushListResponse getPushList(String beforeTimestampStr, String userId) {
+        //읽음 처리
+        List<AlarmLogJpaEntity> byReadYnIsFalse = alarmLogRepository.findByReadYnIsFalse();
+        for (AlarmLogJpaEntity log : byReadYnIsFalse) {
+            log.changeRead();
+        }
+        //커서 페이징
+        OffsetDateTime beforeTimestamp = null;
+        if (beforeTimestampStr != null && !beforeTimestampStr.isEmpty()) {
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+                beforeTimestamp = OffsetDateTime.parse(beforeTimestampStr, formatter);
+            } catch (DateTimeParseException e) {
+                throw new CustomException(ErrorCode.BadRequest, "잘못된 날짜 형식입니다.", HttpStatus.BAD_REQUEST);
+            }
+        }
+
+        Pageable pageable = PageRequest.of(0, 10);
+        OffsetDateTime oneWeekAgo = OffsetDateTime.now(ZoneOffset.UTC)
+                .minusWeeks(1)
+                .toLocalDate()
+                .atStartOfDay()
+                .atOffset(ZoneOffset.UTC);
+
+        List<Long> alarmSeqs = alarmLogRepository.findAlarmSeqListByUserIdAndBeforeTimestamp(
+                userId,
+                beforeTimestamp,
+                oneWeekAgo,
+                pageable
+        );
+
+        List<AlarmListJpaEntity> alarms = new ArrayList<>();
+        for (Long seq : alarmSeqs) {
+            AlarmListJpaEntity alarmListJpaEntity = alarmListRepository.findById(seq)
+                    .orElseThrow(() -> new CustomException(ErrorCode.NotFound, "알림을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+            alarms.add(alarmListJpaEntity);
+        }
+
+        return PushConverter.toViewPushList(alarms);
     }
 }
