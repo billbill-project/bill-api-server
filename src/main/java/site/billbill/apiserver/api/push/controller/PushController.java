@@ -37,7 +37,8 @@ public class PushController {
     public BaseResponse<Boolean> sendChatFcm(@RequestBody PushRequest request) throws IOException {
         return new BaseResponse<>(pushService.sendPush(request));
     }
-    @Operation(summary = "알림조회", description = "채팅알림 조회")
+    //알림조회 API
+    @Operation(summary = "알림조회", description = "알림을 조회하는 API")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/list")
     public BaseResponse<GetPushListResponse> getPushList(@RequestParam(required = false) String beforeTimestamp) {
