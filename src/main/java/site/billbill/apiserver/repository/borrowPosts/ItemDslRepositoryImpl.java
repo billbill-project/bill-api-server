@@ -8,6 +8,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
 
 import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -17,18 +18,23 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import site.billbill.apiserver.api.borrowPosts.dto.response.PostsResponse;
 import site.billbill.apiserver.api.users.dto.response.BorrowHistoryResponse;
 import site.billbill.apiserver.api.users.dto.response.PostHistoryResponse;
 import site.billbill.apiserver.api.users.dto.response.WishlistResponse;
+import site.billbill.apiserver.common.enums.alarm.PushType;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.posts.ItemHistoryType;
 import site.billbill.apiserver.exception.CustomException;
+import site.billbill.apiserver.model.alarm.QAlarmListJpaEntity;
+import site.billbill.apiserver.model.alarm.QAlarmLogJpaEntity;
 import site.billbill.apiserver.model.chat.QChatChannelJpaEntity;
 import site.billbill.apiserver.model.post.*;
 import site.billbill.apiserver.model.user.QUserJpaEntity;
 import site.billbill.apiserver.model.user.UserJpaEntity;
 
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -313,5 +319,62 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                 .set(qBorrowHist.updatedAt, OffsetDateTime.now())
                 .where(qBorrowHist.borrowSeq.eq(borrowSeq))
                 .execute();
+    }
+    @Override
+    public List<PostsResponse.FindUsersForReviewsResponse> findUsersForReviews(){
+        QBorrowHistJpaEntity qBorrowHistJpa= QBorrowHistJpaEntity.borrowHistJpaEntity;
+        QItemsReviewJpaEntity qItemsReview=QItemsReviewJpaEntity.itemsReviewJpaEntity;
+        QAlarmListJpaEntity qAlarm=QAlarmListJpaEntity.alarmListJpaEntity;
+        QAlarmLogJpaEntity qAlarmLog=QAlarmLogJpaEntity.alarmLogJpaEntity;
+        JPAQuery<PostsResponse.FindUsersForReviewsResponse> result=queryFactory.select(
+                Projections.constructor(
+                        PostsResponse.FindUsersForReviewsResponse.class,
+                        qBorrowHistJpa.item,
+                        qBorrowHistJpa.borrower)
+                )
+                .from(qBorrowHistJpa)
+                .where(
+                        Expressions.numberTemplate(Long.class,"DATEDIFF(CURRENT_DATE, {0})",qBorrowHistJpa.endedAt).gt(1),
+                        JPAExpressions.selectOne()
+                                .from(qItemsReview)
+                                .where(qItemsReview.items.eq(qBorrowHistJpa.item),qItemsReview.user.eq(qBorrowHistJpa.borrower))
+                                .notExists(),
+                        JPAExpressions.selectOne()
+                                .from(qAlarm)
+                                .join(qAlarmLog)
+                                .on(qAlarm.alarmSeq.eq(qAlarmLog.alarmSeq))
+                                .where(
+                                        qAlarm.pushType.eq(PushType.REVIEW), // push_type이 REVIEW
+                                        qAlarm.moveToId.eq(qBorrowHistJpa.item.id), // move_to_id와 item_id가 동일
+                                        qAlarmLog.userId.eq(qBorrowHistJpa.borrower.userId) // 같은 user_id가 alarm_log에 존재
+                                )
+                                .notExists()
+                );
+
+
+       // 결과 반환
+        List<PostsResponse.FindUsersForReviewsResponse> results = result.fetch();
+        return results != null ? results : Collections.emptyList();
+    }
+    @Override
+    public Boolean CheckUsersForReviews(BorrowHistJpaEntity borrowHist){
+        QBorrowHistJpaEntity qBorrowHistJpa= QBorrowHistJpaEntity.borrowHistJpaEntity;
+        QItemsReviewJpaEntity qItemsReview=QItemsReviewJpaEntity.itemsReviewJpaEntity;
+
+        Boolean exits=queryFactory.selectOne()
+                .from(qBorrowHistJpa)
+                .leftJoin(qItemsReview).on(
+                        qItemsReview.items.eq(borrowHist.getItem())
+                                .and(qItemsReview.user.eq(borrowHist.getBorrower()))
+                )
+                .where(
+                        qBorrowHistJpa.item.eq(borrowHist.getItem())
+                                .and(qBorrowHistJpa.borrower.eq(borrowHist.getBorrower())
+                                .and(qBorrowHistJpa.useYn.isTrue()))
+                                .and(qBorrowHistJpa.delYn.isFalse())
+                                .and(qItemsReview.isNotNull())
+                )
+                .fetchFirst()!=null;
+        return exits;
     }
 }

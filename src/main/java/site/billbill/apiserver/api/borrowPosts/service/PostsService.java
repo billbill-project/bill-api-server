@@ -3,6 +3,7 @@ package site.billbill.apiserver.api.borrowPosts.service;
 import org.springframework.data.domain.Sort;
 import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
 import site.billbill.apiserver.api.borrowPosts.dto.response.PostsResponse;
+import site.billbill.apiserver.model.user.UserJpaEntity;
 import site.billbill.apiserver.model.user.UserLocationJpaEntity;
 
 import java.util.List;
@@ -39,4 +40,6 @@ public interface PostsService {
     void dislikePost(String userId, String postId);
 
     void deleteBorrowHistory(String userId, Long borrowSeq);
+    void findUserForReviews();
+
 }
