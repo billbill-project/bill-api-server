@@ -126,6 +126,7 @@ public class PostsServiceImpl implements PostsService {
         UserJpaEntity user = userRepository.findById(userId).orElse(null);
         ItemsLikeId likeId=new ItemsLikeId(postId,userId);
         ItemsLikeJpaEntity itemsLikeJpa= itemsLikeRepository.findByIdAndDelYn(likeId,false);
+        ItemsLocationJpaEntity itemsLocation =itemsLocationRepository.findByItem(item);
         boolean isLike;
         if(itemsLikeJpa==null) {
             isLike = false;
@@ -154,7 +155,7 @@ public class PostsServiceImpl implements PostsService {
                 break;
 
         }
-        return PostsConverter.toViewPost(item, borrowItem, status,isLike);
+        return PostsConverter.toViewPost(item, borrowItem, status,isLike,itemsLocation);
 
     }
 

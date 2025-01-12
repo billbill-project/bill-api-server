@@ -6,6 +6,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -13,8 +15,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import site.billbill.apiserver.api.borrowPosts.converter.PostsConverter;
 import site.billbill.apiserver.api.push.converter.PushConverter;
 import site.billbill.apiserver.api.push.dto.request.PushRequest;
+import site.billbill.apiserver.api.push.dto.response.PushResponse;
 import site.billbill.apiserver.api.push.dto.response.PushResponse.GetPushListResponse;
 import site.billbill.apiserver.common.enums.alarm.PushType;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
@@ -22,10 +26,15 @@ import site.billbill.apiserver.exception.CustomException;
 import site.billbill.apiserver.external.firebase.fcm.utils.FirebaseUtil;
 import site.billbill.apiserver.model.alarm.AlarmListJpaEntity;
 import site.billbill.apiserver.model.alarm.AlarmLogJpaEntity;
+import site.billbill.apiserver.model.post.BorrowHistJpaEntity;
+import site.billbill.apiserver.model.post.ItemsJpaEntity;
+import site.billbill.apiserver.model.post.ReviewAlertJpaEntity;
 import site.billbill.apiserver.model.user.UserDeviceJpaEntity;
 import site.billbill.apiserver.model.user.UserJpaEntity;
 import site.billbill.apiserver.repository.alarm.AlarmListRepository;
 import site.billbill.apiserver.repository.alarm.AlarmLogRepository;
+import site.billbill.apiserver.repository.borrowPosts.BorrowHistRepository;
+import site.billbill.apiserver.repository.borrowPosts.ItemsRepository;
 import site.billbill.apiserver.repository.user.UserDeviceRepository;
 import site.billbill.apiserver.repository.user.UserRepository;
 
@@ -41,7 +50,8 @@ public class PushServiceImpl implements PushService {
     private final AlarmListRepository alarmListRepository;
     private final AlarmLogRepository alarmLogRepository;
     private final FirebaseUtil firebaseUtil;
-
+    private final ItemsRepository itemsRepository;
+    private final BorrowHistRepository borrowHistRepository;
     @Override
     public boolean sendPush(PushRequest request) throws IOException {
         Optional<UserDeviceJpaEntity> userDevice = userDeviceRepository.findById(request.getUserId());
@@ -112,5 +122,21 @@ public class PushServiceImpl implements PushService {
         }
 
         return PushConverter.toViewPushList(alarms);
+    }
+    @Override
+    @Transactional
+    public PushResponse.GetReviewAlertResponse getReviewAlertService(String userId){
+        UserJpaEntity user= userRepository.findById(userId).orElse(null);
+        List<AlarmLogJpaEntity> alarmLogs = alarmLogRepository.findByUserIdAndReadYnIsFalse(userId);
+        List<AlarmListJpaEntity> alarmLists =alarmLogs.stream().map(alarmLog->{
+            alarmLog.setReadYn(true);
+            return alarmListRepository.findByAlarmSeqAndPushType(alarmLog.getAlarmSeq(), PushType.REVIEW);
+        }).toList();
+        if(alarmLists.isEmpty()){
+            return null;
+        }
+        BorrowHistJpaEntity borrowHist =borrowHistRepository.findById(Long.valueOf(alarmLists.get(0).getMoveToId())).orElse(null);
+        return PushConverter.toReviewAlert(borrowHist);
+
     }
 }

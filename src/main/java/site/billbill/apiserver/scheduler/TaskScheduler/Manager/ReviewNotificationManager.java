@@ -2,7 +2,6 @@ package site.billbill.apiserver.scheduler.TaskScheduler.Manager;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.boot.actuate.autoconfigure.wavefront.WavefrontProperties;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
@@ -10,8 +9,6 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
-import site.billbill.apiserver.api.borrowPosts.dto.response.PostsResponse;
 import site.billbill.apiserver.api.push.dto.request.PushRequest;
 import site.billbill.apiserver.api.push.service.PushService;
 import site.billbill.apiserver.common.enums.alarm.PushType;
@@ -23,7 +20,6 @@ import site.billbill.apiserver.repository.borrowPosts.BorrowHistRepository;
 import site.billbill.apiserver.repository.borrowPosts.ReviewAlertRepository;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -58,12 +54,12 @@ public class ReviewNotificationManager {
                 .title("물건을 잘 이용하셨나요?")
                 .pushType(PushType.REVIEW)
                 .content(borrowHist.getBorrower().getNickname()+"님! 이용하신 <"+borrowHist.getItem().getTitle()+"> 는 어떠셨나요? 이용 후기를 남겨주세요!")
-                .moveToId(borrowHist.getItem().getId())
+                .moveToId(String.valueOf(borrowHist.getBorrowSeq()))
                 .build();
          // 작업 스케줄링 및 참조 저장
         ScheduledFuture<?> future = taskScheduler.schedule(
                 () -> SendReviewNotification(request, borrowHist),
-                Date.from(time.atZone(ZoneId.of("Asia/Seoul")).toInstant())
+                Date.from(time.atZone(ZoneId.systemDefault()).toInstant())
         );
         scheduledTasks.put(borrowHist.getBorrowSeq(), future);
         log.info("리뷰 요청 작업이 {}에 예약되었습니다.", time);
@@ -72,7 +68,8 @@ public class ReviewNotificationManager {
     @Transactional
     public void SendReviewNotification(PushRequest request,BorrowHistJpaEntity borrowHist) {
         try {
-                ReviewAlertJpaEntity reviewAlert=reviewAlertRepository.findByBorrowHist(borrowHist);
+                log.info("리뷰 요청 작업이 {}에 시작되었습니다.", LocalDateTime.now());
+                ReviewAlertJpaEntity reviewAlert=reviewAlertRepository.findOneByBorrowHist(borrowHist);
                 if(reviewAlert==null){
                     //해당 스케줄러 백업 등록
                     reviewAlert = ReviewAlertJpaEntity.builder()
@@ -106,7 +103,7 @@ public class ReviewNotificationManager {
             log.info("스케줄러 작업이 취소되었습니다: {}", borrowHist.getBorrowSeq());
         }
         // 2. ReviewAlert 상태 업데이트
-        ReviewAlertJpaEntity reviewAlert = reviewAlertRepository.findByBorrowHist(borrowHist);
+        ReviewAlertJpaEntity reviewAlert = reviewAlertRepository.findOneByBorrowHist(borrowHist);
         if (reviewAlert != null) {
             reviewAlert.setStatus("CANCELED");
             reviewAlertRepository.save(reviewAlert);
