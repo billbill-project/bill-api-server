@@ -72,6 +72,7 @@ public class PostsServiceImpl implements PostsService {
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
     private final PushService pushService;
     private final ReviewNotificationManager reviewNotificationManager;
+    private final ReviewAlertRepository reviewAlertRepository;
 
     public PostsResponse.UploadResponse uploadPostService(PostsRequest.UploadRequest request, String userId) {
         //먼저 item 생성,
@@ -299,9 +300,9 @@ public class PostsServiceImpl implements PostsService {
         if (item == null) {
             throw new CustomException(ErrorCode.BadRequest, "올바른 게시물 아이디가 아닙니다.", HttpStatus.BAD_REQUEST);
         }
-//        if (user != chat.getOwner()){
-//            throw new CustomException(ErrorCode.BadRequest, "해당 채팅방에 대한 권한이 없습니다.", HttpStatus.BAD_REQUEST);
-//        }
+        if (user != chat.getOwner()){
+            throw new CustomException(ErrorCode.BadRequest, "해당 채팅방에 대한 권한이 없습니다.", HttpStatus.BAD_REQUEST);
+        }
         if(chat == null){
             throw new CustomException(ErrorCode.BadRequest, " 올바른 채팅방 정보가 아닙니다.", HttpStatus.BAD_REQUEST);
         }
@@ -317,7 +318,12 @@ public class PostsServiceImpl implements PostsService {
         ItemsBorrowStatusJpaEntity itemsBorrowStatus = PostsConverter.toItemBorrowStatus(item, "Renting", noRentalPeriod);
         itemsBorrowStatusRepository.save(itemsBorrowStatus);
         chat.setChannelState(ChannelState.CONFIRMED);
-
+        //해당 스케줄러 백업 등록
+        ReviewAlertJpaEntity reviewAlert = ReviewAlertJpaEntity.builder()
+                .borrowHist(savedBorrowHist)
+                .status("PENDING")
+                .build();
+        reviewAlertRepository.save(reviewAlert);
         //리뷰 요청 알림 등록
         reviewNotificationManager.ReviewNotification(savedBorrowHist);
 
@@ -345,6 +351,8 @@ public class PostsServiceImpl implements PostsService {
             }
             borrowHist.setUseYn(false);
             chat.setChannelState(ChannelState.CANCELLED);
+
+            reviewNotificationManager.CanceledReviewNotification(borrowHist);
         } catch (Exception e){
             throw new CustomException(ErrorCode.BadRequest, e.getMessage(), HttpStatus.BAD_REQUEST);
         }
