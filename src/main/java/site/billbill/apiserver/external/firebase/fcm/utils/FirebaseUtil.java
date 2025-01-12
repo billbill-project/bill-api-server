@@ -104,6 +104,13 @@ public class FirebaseUtil {
                                 .body(request.getContent())
                                 .image(null)
                                 .build())
+                        )
+                        .data(
+                                FcmMessageDto.Data.builder()
+                                        .title(request.getPushType().toString())
+                                        .body(request.getContent())
+                                        .link(request.getMoveToId())
+                                        .build()
                         ).build())
                 .validateOnly(false).build();
 
