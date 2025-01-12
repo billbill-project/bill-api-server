@@ -17,22 +17,32 @@ import org.springframework.transaction.annotation.Transactional;
 import site.billbill.apiserver.api.borrowPosts.converter.PostsConverter;
 import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
 import site.billbill.apiserver.api.borrowPosts.dto.response.PostsResponse;
+import site.billbill.apiserver.api.push.dto.request.PushRequest;
+import site.billbill.apiserver.api.push.service.PushService;
+import site.billbill.apiserver.common.enums.alarm.PushType;
 import site.billbill.apiserver.common.enums.chat.ChannelState;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.ULID.ULIDUtil;
 import site.billbill.apiserver.exception.CustomException;
+import site.billbill.apiserver.model.alarm.AlarmListJpaEntity;
+import site.billbill.apiserver.model.alarm.AlarmLogJpaEntity;
 import site.billbill.apiserver.model.chat.ChatChannelJpaEntity;
 import site.billbill.apiserver.model.post.*;
 import site.billbill.apiserver.model.post.embeded.ItemsLikeId;
 import site.billbill.apiserver.model.user.UserJpaEntity;
 import site.billbill.apiserver.model.user.UserLocationJpaEntity;
 import site.billbill.apiserver.model.user.UserSearchHistJpaEntity;
+import site.billbill.apiserver.repository.alarm.AlarmListRepository;
+import site.billbill.apiserver.repository.alarm.AlarmLogRepository;
 import site.billbill.apiserver.repository.borrowPosts.*;
 import site.billbill.apiserver.repository.chat.ChatRepository;
 import site.billbill.apiserver.repository.user.UserLocationReposity;
 import site.billbill.apiserver.repository.user.UserRepository;
 import site.billbill.apiserver.repository.user.UserSearchHistRepository;
+import site.billbill.apiserver.scheduler.TaskScheduler.Manager.ReviewNotificationManager;
 
+import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,7 +67,12 @@ public class PostsServiceImpl implements PostsService {
     private final ItemsLocationRepository itemsLocationRepository;
     private final UserLocationReposity userLocationReposity;
     private final ItemsLikeRepository itemsLikeRepository;
+    private final AlarmListRepository alarmListRepository;
+    private final AlarmLogRepository alarmLogRepository;
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+    private final PushService pushService;
+    private final ReviewNotificationManager reviewNotificationManager;
+
     public PostsResponse.UploadResponse uploadPostService(PostsRequest.UploadRequest request, String userId) {
         //먼저 item 생성,
         Optional<UserJpaEntity> isUser = userRepository.findById(userId);
@@ -286,9 +301,9 @@ public class PostsServiceImpl implements PostsService {
         if (item == null) {
             throw new CustomException(ErrorCode.BadRequest, "올바른 게시물 아이디가 아닙니다.", HttpStatus.BAD_REQUEST);
         }
-        if (user != chat.getOwner()){
-            throw new CustomException(ErrorCode.BadRequest, "해당 채팅방에 대한 권한이 없습니다.", HttpStatus.BAD_REQUEST);
-        }
+//        if (user != chat.getOwner()){
+//            throw new CustomException(ErrorCode.BadRequest, "해당 채팅방에 대한 권한이 없습니다.", HttpStatus.BAD_REQUEST);
+//        }
         if(chat == null){
             throw new CustomException(ErrorCode.BadRequest, " 올바른 채팅방 정보가 아닙니다.", HttpStatus.BAD_REQUEST);
         }
@@ -304,6 +319,11 @@ public class PostsServiceImpl implements PostsService {
         ItemsBorrowStatusJpaEntity itemsBorrowStatus = PostsConverter.toItemBorrowStatus(item, "Renting", noRentalPeriod);
         itemsBorrowStatusRepository.save(itemsBorrowStatus);
         chat.setChannelState(ChannelState.CONFIRMED);
+
+        //리뷰 요청 알림 등록
+        reviewNotificationManager.ReviewNotification(savedBorrowHist);
+
+
         return PostsConverter.toBillAcceptResponse(savedBorrowHist.getBorrowSeq());
 
     }
@@ -412,6 +432,34 @@ public class PostsServiceImpl implements PostsService {
     public void deleteBorrowHistory(String userId, Long borrowSeq) {
         itemsRepository.deleteBorrowHistory(userId, borrowSeq);
     }
+
+
+    public void findUserForReviews(){
+        List<PostsResponse.FindUsersForReviewsResponse> results=borrowHistRepository.findUsersForReviews();
+        if(results.isEmpty()){
+            return;
+        }
+        //FCM 알림 및 알림 로그 저장
+        results.stream().map(result->{
+            PushRequest request=PushRequest.builder()
+                    .userId(result.getUser().getUserId())
+                    .title("물건을 잘 이용하셨나요?")
+                    .pushType(PushType.REVIEW)
+                    .content(result.getUser().getNickname()+"님! 이용하신 "+result.getItem().getTitle()+"는 어떠셨나요? 이용 후기를 남겨주세요!")
+                    .moveToId(result.getItem().getId())
+                    .build();
+            try {
+                pushService.sendPush(request);
+            } catch (IOException e) {
+                throw new CustomException(ErrorCode.BadRequest, " 리뷰 관련 알림 오류입니다. 담당자에게 문의해주세요", HttpStatus.BAD_REQUEST);
+            }
+
+            return null;
+        });
+        log.info("현재 시간: "+ LocalDate.now()+"리뷰 요청 체크 작업 완료했습니다.");
+
+    }
+
 
 
     //모듈화 코드
