@@ -5,4 +5,5 @@ import site.billbill.apiserver.model.post.ItemsJpaEntity;
 import site.billbill.apiserver.model.post.ItemsLocationJpaEntity;
 
 public interface ItemsLocationRepository extends JpaRepository<ItemsLocationJpaEntity,String> {
+    ItemsLocationJpaEntity findByItem(ItemsJpaEntity item);
 }
