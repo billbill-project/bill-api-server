@@ -68,7 +68,9 @@ public class PostsServiceImpl implements PostsService {
         if (isUser.isPresent()) {
             user = isUser.get();
         }
-
+        if(request.getLocation()==null){
+            throw new CustomException(ErrorCode.BadRequest, "위치정보가 없습니다.", HttpStatus.BAD_REQUEST);
+        }
         //Item 생성
         ItemsJpaEntity newItem = PostsConverter.toItem(postsId, request, user, category);
         itemsRepository.save(newItem);
