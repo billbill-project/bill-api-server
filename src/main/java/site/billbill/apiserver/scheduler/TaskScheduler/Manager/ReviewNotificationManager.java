@@ -52,7 +52,7 @@ public class ReviewNotificationManager {
         PushRequest request=PushRequest.builder()
                 .userId(borrowHist.getBorrower().getUserId())
                 .title("물건을 잘 이용하셨나요?")
-                .pushType(PushType.REVIEW)
+                .pushType(PushType.REVIEW_ALERT)
                 .content(borrowHist.getBorrower().getNickname()+"님! 이용하신 <"+borrowHist.getItem().getTitle()+"> 는 어떠셨나요? 이용 후기를 남겨주세요!")
                 .moveToId(String.valueOf(borrowHist.getBorrowSeq()))
                 .build();
@@ -102,7 +102,7 @@ public class ReviewNotificationManager {
             scheduledTasks.remove(borrowHist.getBorrowSeq());
             log.info("스케줄러 작업이 취소되었습니다: {}", borrowHist.getBorrowSeq());
         }
-        // 2. ReviewAlert 상태 업데이트
+        //ReviewAlert 상태 업데이트
         ReviewAlertJpaEntity reviewAlert = reviewAlertRepository.findOneByBorrowHist(borrowHist);
         if (reviewAlert != null) {
             reviewAlert.setStatus("CANCELED");
@@ -110,6 +110,6 @@ public class ReviewNotificationManager {
             log.info("ReviewAlert 상태가 CANCELED로 업데이트되었습니다: {}", borrowHist.getBorrowSeq());
         }
     }
-    //거래취소할시 태스크에서 취소하는 로직 짜야함
+
 
 }
