@@ -130,7 +130,7 @@ public class PushServiceImpl implements PushService {
         List<AlarmLogJpaEntity> alarmLogs = alarmLogRepository.findByUserIdAndReadYnIsFalse(userId);
         List<AlarmListJpaEntity> alarmLists =alarmLogs.stream().map(alarmLog->{
             alarmLog.setReadYn(true);
-            return alarmListRepository.findByAlarmSeqAndPushType(alarmLog.getAlarmSeq(), PushType.REVIEW);
+            return alarmListRepository.findByAlarmSeqAndPushType(alarmLog.getAlarmSeq(), PushType.REVIEW_ALERT);
         }).toList();
         if(alarmLists.isEmpty()){
             return null;

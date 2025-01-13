@@ -250,7 +250,7 @@ public class PostsServiceImpl implements PostsService {
         return result;
     }
 
-    public PostsResponse.ReviewIdResponse DoReviewPostService(String postId, String userId, PostsRequest.ReviewRequest request) {
+    public PostsResponse.ReviewIdResponse DoReviewPostService(String postId, String userId, PostsRequest.ReviewRequest request) throws IOException {
         UserJpaEntity user = userRepository.findById(userId).orElse(null);
         ItemsJpaEntity item = itemsRepository.findById(postId).orElse(null);
         BorrowHistJpaEntity borrowHist = borrowHistRepository.findTop1BorrowHistByBorrowerOrderByCreatedAt(user);
@@ -269,7 +269,15 @@ public class PostsServiceImpl implements PostsService {
         }
         ItemsReviewJpaEntity review = PostsConverter.toItemsReview(user, item, request, postsId);
         itemsReivewRepository.save(review);
-
+        PushRequest push= PushRequest.builder()
+                            .userId(userId)
+                            .title("리뷰 등록 알림")
+                            .content(user.getNickname() +"님이 내 제품에 리뷰를 남겼어요")
+                            .moveToId(item.getId())
+                            .pushType(PushType.REVIEW_COMPLETE)
+                            .build();
+        //리뷰 알림
+        pushService.sendPush(push);
         return PostsConverter.toReviewIdResponse(item, review);
     }
 
