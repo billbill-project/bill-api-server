@@ -11,6 +11,7 @@ import org.jboss.logging.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import site.billbill.apiserver.api.push.dto.request.PushRequest;
+import site.billbill.apiserver.api.push.dto.response.PushResponse;
 import site.billbill.apiserver.api.push.dto.response.PushResponse.GetPushListResponse;
 import site.billbill.apiserver.api.push.service.PushService;
 import site.billbill.apiserver.common.response.BaseResponse;
@@ -37,13 +38,22 @@ public class PushController {
     public BaseResponse<Boolean> sendChatFcm(@RequestBody PushRequest request) throws IOException {
         return new BaseResponse<>(pushService.sendPush(request));
     }
-
+    //알림조회 API
+    @Operation(summary = "알림조회", description = "알림을 조회하는 API")
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/list")
     public BaseResponse<GetPushListResponse> getPushList(@RequestParam(required = false) String beforeTimestamp) {
         String userId = MDC.get(JWTUtil.MDC_USER_ID).toString();
         return new BaseResponse<>(pushService.getPushList(beforeTimestamp, userId));
     }
-
+    //리뷰알림 확인 API
+    @Operation(summary = "리뷰 알림 조회",description = "팝업 알림을 띄울께 있는지 조회하는 API")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/review")
+    public BaseResponse<PushResponse.GetReviewAlertResponse> getReviewAlert(){
+        String userId = MDC.get(JWTUtil.MDC_USER_ID).toString();
+        return new BaseResponse<>(pushService.getReviewAlertService(userId));
+    }
 //    @Operation(summary = "채팅목록 조회", description = "채팅목록 조회 API")
 //    @GetMapping("/list")
 //    public BaseResponse<List<ViewChatInfoResponse>> getChatList(@RequestParam(required = false) String beforeTimestamp) {

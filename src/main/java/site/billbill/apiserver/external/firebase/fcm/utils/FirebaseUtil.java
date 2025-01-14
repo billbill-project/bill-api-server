@@ -59,7 +59,7 @@ public class FirebaseUtil {
 
         HttpEntity<String> entity = new HttpEntity<>(message, headers);
 
-        String API_URL = "<https://fcm.googleapis.com/v1/projects/billbill-50fe2/messages:send>";
+        String API_URL = "https://fcm.googleapis.com/v1/projects/billbill-50fe2/messages:send";
         ResponseEntity<String> response = restTemplate.exchange(API_URL, HttpMethod.POST, entity, String.class);
 
         log.info("FCM Push send status : {}", response.getStatusCode());
@@ -104,6 +104,13 @@ public class FirebaseUtil {
                                 .body(request.getContent())
                                 .image(null)
                                 .build())
+                        )
+                        .data(
+                                FcmMessageDto.Data.builder()
+                                        .title(request.getPushType().toString())
+                                        .body(request.getContent())
+                                        .link(request.getMoveToId())
+                                        .build()
                         ).build())
                 .validateOnly(false).build();
 

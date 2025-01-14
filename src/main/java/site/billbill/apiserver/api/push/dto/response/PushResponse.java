@@ -25,4 +25,13 @@ public class PushResponse {
     public static class GetPushListResponse {
         List<GetPushResponse> pushList;
     }
+    @Getter
+    @Builder
+    public static class GetReviewAlertResponse{
+        private String title;
+        private String image;
+        private String itemId;
+        private String startDate;
+        private String endDate;
+    }
 }

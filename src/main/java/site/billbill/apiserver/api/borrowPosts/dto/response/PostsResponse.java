@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import site.billbill.apiserver.common.enums.items.PriceStandard;
+import site.billbill.apiserver.model.post.ItemsJpaEntity;
+import site.billbill.apiserver.model.user.UserJpaEntity;
 
 import java.util.List;
 
@@ -55,6 +57,7 @@ public class PostsResponse {
         private String categoryName;
         private String userId;
         private String userName;
+        private String address;
         private boolean like;
 
     }
@@ -119,5 +122,12 @@ public class PostsResponse {
     @Builder
     public static class ReviewsResponse{
         private List<ReviewResponse> reviews;
+    }
+    @Getter
+    @Setter
+    @Builder
+    public static class FindUsersForReviewsResponse{
+        private UserJpaEntity user;
+        private ItemsJpaEntity item;
     }
 }

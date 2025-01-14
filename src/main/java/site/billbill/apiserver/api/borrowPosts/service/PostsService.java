@@ -3,8 +3,10 @@ package site.billbill.apiserver.api.borrowPosts.service;
 import org.springframework.data.domain.Sort;
 import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
 import site.billbill.apiserver.api.borrowPosts.dto.response.PostsResponse;
+import site.billbill.apiserver.model.user.UserJpaEntity;
 import site.billbill.apiserver.model.user.UserLocationJpaEntity;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface PostsService {
@@ -22,7 +24,7 @@ public interface PostsService {
 
     PostsResponse.saveSearchListResponse findSearchService(String userId);
 
-    PostsResponse.ReviewIdResponse DoReviewPostService(String postId, String userId, PostsRequest.ReviewRequest request);
+    PostsResponse.ReviewIdResponse DoReviewPostService(String postId, String userId, PostsRequest.ReviewRequest request) throws IOException;
 
     List<String> findRecommandService();
 
@@ -39,4 +41,6 @@ public interface PostsService {
     void dislikePost(String userId, String postId);
 
     void deleteBorrowHistory(String userId, Long borrowSeq);
+    void findUserForReviews();
+
 }
