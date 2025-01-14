@@ -17,6 +17,7 @@ import site.billbill.apiserver.api.borrowPosts.service.PostsService;
 import site.billbill.apiserver.common.response.BaseResponse;
 import site.billbill.apiserver.common.utils.jwt.JWTUtil;
 
+import java.io.IOException;
 import java.util.List;
 
 @Slf4j
@@ -146,7 +147,7 @@ public class PostsController {
     @Operation(summary = "리뷰작성", description = "리뷰 작성")
     @PostMapping("/reviews/{postId}")
     public BaseResponse<PostsResponse.ReviewIdResponse> reviewPostController(@PathVariable(value = "postId", required = true) String postId,
-                                                                             @RequestBody @Valid PostsRequest.ReviewRequest request) {
+                                                                             @RequestBody @Valid PostsRequest.ReviewRequest request) throws IOException {
         String userId = "";
         if (MDC.get(JWTUtil.MDC_USER_ID) != null) {
             userId = MDC.get(JWTUtil.MDC_USER_ID);

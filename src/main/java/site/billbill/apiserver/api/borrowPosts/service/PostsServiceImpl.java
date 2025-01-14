@@ -461,7 +461,7 @@ public class PostsServiceImpl implements PostsService {
             PushRequest request=PushRequest.builder()
                     .userId(result.getUser().getUserId())
                     .title("물건을 잘 이용하셨나요?")
-                    .pushType(PushType.REVIEW)
+                    .pushType(PushType.REVIEW_ALERT)
                     .content(result.getUser().getNickname()+"님! 이용하신 "+result.getItem().getTitle()+"는 어떠셨나요? 이용 후기를 남겨주세요!")
                     .moveToId(result.getItem().getId())
                     .build();

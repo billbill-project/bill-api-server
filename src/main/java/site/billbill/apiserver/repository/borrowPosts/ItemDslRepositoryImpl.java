@@ -344,7 +344,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                                 .join(qAlarmLog)
                                 .on(qAlarm.alarmSeq.eq(qAlarmLog.alarmSeq))
                                 .where(
-                                        qAlarm.pushType.eq(PushType.REVIEW), // push_type이 REVIEW
+                                        qAlarm.pushType.eq(PushType.REVIEW_ALERT), // push_type이 REVIEW
                                         qAlarm.moveToId.eq(qBorrowHistJpa.item.id), // move_to_id와 item_id가 동일
                                         qAlarmLog.userId.eq(qBorrowHistJpa.borrower.userId) // 같은 user_id가 alarm_log에 존재
                                 )
