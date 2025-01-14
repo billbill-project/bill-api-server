@@ -75,7 +75,7 @@ public class PushServiceImpl implements PushService {
     @Override
     public GetPushListResponse getPushList(String beforeTimestampStr, String userId) {
         //읽음 처리
-        List<AlarmLogJpaEntity> byReadYnIsFalse = alarmLogRepository.findByReadYnIsFalse();
+        List<AlarmLogJpaEntity> byReadYnIsFalse = alarmLogRepository.findUnreadAlarmExcludingReviewAlert();
         for (AlarmLogJpaEntity log : byReadYnIsFalse) {
             log.changeRead();
         }
