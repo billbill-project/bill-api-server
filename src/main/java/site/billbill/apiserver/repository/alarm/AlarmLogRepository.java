@@ -15,9 +15,12 @@ public interface AlarmLogRepository extends JpaRepository<AlarmLogJpaEntity, Lon
 
     @Query("SELECT a.alarmSeq " +
             "FROM AlarmLogJpaEntity a " +
+            "JOIN AlarmListJpaEntity b " +
+            "ON a.alarmSeq = b.alarmSeq " +
             "WHERE a.userId = :userId " +
             "AND a.createdAt >= :oneWeekAgo " +
             "AND (:beforeTimestamp IS NULL OR a.createdAt < :beforeTimestamp) " +
+            "AND b.pushType != 'REVIEW_ALERT' " +
             "ORDER BY a.createdAt DESC")
     List<Long> findAlarmSeqListByUserIdAndBeforeTimestamp(
             @Param("userId") String userId,
@@ -25,6 +28,14 @@ public interface AlarmLogRepository extends JpaRepository<AlarmLogJpaEntity, Lon
             @Param("oneWeekAgo") OffsetDateTime oneWeekAgo,
             Pageable pageable
     );
+
+    @Query("SELECT a " +
+            "FROM AlarmLogJpaEntity a " +
+            "JOIN AlarmListJpaEntity b " +
+            "ON a.alarmSeq = b.alarmSeq " +
+            "WHERE a.readYn = false " +
+            "AND b.pushType != 'REVIEW_ALERT' ")
+    List<AlarmLogJpaEntity> findUnreadAlarmExcludingReviewAlert();
 
     List<AlarmLogJpaEntity> findByReadYnIsFalse();
     List<AlarmLogJpaEntity> findByUserIdAndReadYnIsFalse(String userId);
