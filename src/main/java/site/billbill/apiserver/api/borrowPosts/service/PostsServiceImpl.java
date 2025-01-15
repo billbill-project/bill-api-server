@@ -199,6 +199,7 @@ public class PostsServiceImpl implements PostsService {
         itemsLocationJpa.setLatitude(request.getLocation().getLatitude());
         itemsLocationJpa.setLongitude(request.getLocation().getLongitude());
         itemsLocationJpa.setCoordinates(coordinates);
+        itemsLocationJpa.setAddress(request.getLocation().getAddress());
         List<ItemsBorrowStatusJpaEntity> existingStatuses = itemsBorrowStatusRepository.findAllByItemIdAndBorrowStatusCode(postId, "RENTAL_NOT_POSSIBLE");
         itemsBorrowStatusRepository.deleteAll(existingStatuses);
         //대여 불가 날짜 새로 배정, 똑같아도 새로 배정되는 느낌
