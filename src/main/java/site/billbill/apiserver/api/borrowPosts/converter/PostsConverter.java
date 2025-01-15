@@ -129,6 +129,8 @@ public class PostsConverter {
                 .userName(item.getOwner().getNickname())
                 .like(isLike)
                 .address(location.getAddress())
+                .latitude(location.getLatitude())
+                .longitude(location.getLongitude())
                 .build();
     }
     public static PostsResponse.NoRentalPeriodResponse toOwnerNoRentalPeriod(ItemsBorrowStatusJpaEntity borrowStatus){
