@@ -181,7 +181,7 @@ public class PostsServiceImpl implements PostsService {
         UserJpaEntity user = userRepository.findById(userId).orElse(null);
         ItemsCategoryJpaEntity category = itemsCategoryRepository.findByName(request.getCategory());
         ItemsBorrowJpaEntity borrowItem = itemsBorrowRepository.findById(postId).orElse(null);
-
+        ItemsLocationJpaEntity itemsLocationJpa = itemsLocationRepository.findByItem(item);
         if (item == null) {
             throw new CustomException(ErrorCode.BadRequest, "올바른 게시물 아이디가 아닙니다.", HttpStatus.BAD_REQUEST);
         } else if (!item.getOwner().equals(user)) {
@@ -195,7 +195,10 @@ public class PostsServiceImpl implements PostsService {
         item.setContent(request.getContent());
         borrowItem.setDeposit(request.getDeposit());
         borrowItem.setPrice(request.getPrice());
-
+        Point coordinates = geometryFactory.createPoint(new Coordinate(request.getLocation().getLongitude(), request.getLocation().getLatitude()));
+        itemsLocationJpa.setLatitude(request.getLocation().getLatitude());
+        itemsLocationJpa.setLongitude(request.getLocation().getLongitude());
+        itemsLocationJpa.setCoordinates(coordinates);
         List<ItemsBorrowStatusJpaEntity> existingStatuses = itemsBorrowStatusRepository.findAllByItemIdAndBorrowStatusCode(postId, "RENTAL_NOT_POSSIBLE");
         itemsBorrowStatusRepository.deleteAll(existingStatuses);
         //대여 불가 날짜 새로 배정, 똑같아도 새로 배정되는 느낌
