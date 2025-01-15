@@ -58,6 +58,8 @@ public class PostsResponse {
         private String userId;
         private String userName;
         private String address;
+        private double latitude;
+        private double longitude;
         private boolean like;
 
     }

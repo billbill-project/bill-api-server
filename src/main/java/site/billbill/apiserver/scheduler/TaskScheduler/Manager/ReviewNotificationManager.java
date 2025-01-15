@@ -65,7 +65,6 @@ public class ReviewNotificationManager {
         log.info("리뷰 요청 작업이 {}에 예약되었습니다.", time);
     }
     @Async
-    @Transactional
     public void SendReviewNotification(PushRequest request,BorrowHistJpaEntity borrowHist) {
         try {
                 log.info("리뷰 요청 작업이 {}에 시작되었습니다.", LocalDateTime.now());
