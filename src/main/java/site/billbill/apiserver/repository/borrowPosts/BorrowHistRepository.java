@@ -11,5 +11,5 @@ import java.util.List;
 public interface BorrowHistRepository extends JpaRepository<BorrowHistJpaEntity,Long>,ItemDslRepository {
     BorrowHistJpaEntity findTop1BorrowHistByBorrowerOrderByCreatedAt(UserJpaEntity borrower);
     List<BorrowHistJpaEntity> findALLBorrowHistByItemAndBorrower(ItemsJpaEntity item, UserJpaEntity borrower);
-    BorrowHistJpaEntity findBorrowHistByItemAndBorrowerAndStartedAtAndEndedAt(ItemsJpaEntity item,UserJpaEntity borrower,  LocalDate startedAt, LocalDate endedAt);
+    BorrowHistJpaEntity findBorrowHistByItemAndOwnerAndStartedAtAndEndedAt(ItemsJpaEntity item,UserJpaEntity borrower,  LocalDate startedAt, LocalDate endedAt);
 }
