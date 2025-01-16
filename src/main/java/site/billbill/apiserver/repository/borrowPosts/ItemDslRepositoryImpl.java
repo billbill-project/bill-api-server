@@ -105,7 +105,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
 
                         } else {
                             // latitude와 longitude가 null일 경우 createdAt 기준 정렬
-
+                            log.info("거리 별 정렬 실패");
                             orderSpecifier = order.isAscending() ? items.createdAt.asc() : items.createdAt.desc();
                         }
                     } catch (Exception e) {
