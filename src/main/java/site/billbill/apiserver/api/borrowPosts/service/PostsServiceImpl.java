@@ -353,7 +353,7 @@ public class PostsServiceImpl implements PostsService {
             UserJpaEntity user = userRepository.findById(userId).orElse(null);
             ChatChannelJpaEntity chat = chatRepository.findById(channelId).orElse(null);
             ItemsJpaEntity item = chat.getItem();
-            BorrowHistJpaEntity borrowHist = borrowHistRepository.findBorrowHistByItemAndOwnerAndStartedAtAndEndedAt(item,user,chat.getStartedAt(), chat.getEndedAt());
+            BorrowHistJpaEntity borrowHist = borrowHistRepository.findBorrowHistByItemAndStartedAtAndEndedAt(item,chat.getStartedAt(), chat.getEndedAt());
 
             if (user != chat.getOwner()) {
                 throw new CustomException(ErrorCode.BadRequest, "해당 채팅방에 대한 권한이 없습니다.", HttpStatus.BAD_REQUEST);
