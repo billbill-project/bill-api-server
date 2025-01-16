@@ -112,8 +112,7 @@ public class PostsServiceImpl implements PostsService {
 
     public PostsResponse.ViewAllResultResponse ViewAllPostService(
             String category, int page, Sort.Direction direction, String orderType, String userId,Double latitude,Double longitude) {
-        latitude=roundToDecimal(latitude);
-        longitude=roundToDecimal(longitude);
+
 
         Pageable pageable = createPageable(page, direction, orderType);
         List<PostsResponse.Post> items = findAndConvertItems(category, pageable, null, latitude,longitude);
@@ -494,6 +493,7 @@ public class PostsServiceImpl implements PostsService {
             case "distance" -> "distance";
             default -> "createdAt"; // 기본 정렬
         };
+
         //정렬 순서
         direction = (direction == null) ? Sort.Direction.DESC : direction;
         //페이지 생성

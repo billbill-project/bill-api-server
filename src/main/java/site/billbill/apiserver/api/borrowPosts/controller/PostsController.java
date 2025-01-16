@@ -62,11 +62,7 @@ public class PostsController {
         if (MDC.get(JWTUtil.MDC_USER_ID) != null) {
             userId = MDC.get(JWTUtil.MDC_USER_ID);
         }
-         // Null 체크 추가
-        if (latitude == null || longitude == null) {
-            log.info("Latitude or Longitude is null. Using default sorting by createdAt.");
-            sortBy = "createdAt"; // 기본 정렬로 변경
-        }
+
         Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
         return new BaseResponse<>(postsService.ViewAllPostService(category, page, direction, sortBy,userId,latitude,longitude));
     }

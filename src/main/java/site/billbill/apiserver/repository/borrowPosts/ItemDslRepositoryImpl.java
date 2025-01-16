@@ -77,6 +77,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
         // 정렬 조건 처리
         pageable.getSort().forEach(order -> {
             OrderSpecifier<?> orderSpecifier = null;
+
             switch (order.getProperty()) {
                 case "price" -> orderSpecifier = order.isAscending() ? borrow.price.asc() : borrow.price.desc();
                 case "createdAt" ->
@@ -87,9 +88,6 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                     try {
                         // null 체크를 먼저 수행
                         if (latitude != null && longitude != null) {
-                            // 디버깅: 입력 값 출력
-
-
                             // 거리 계산식
                             NumberExpression<Double> distanceExpression = Expressions.numberTemplate(
                                 Double.class,
@@ -97,11 +95,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                                 QItemsLocation.latitude, QItemsLocation.longitude, latitude, longitude
                             );
 
-                            // 디버깅: 생성된 Querydsl 표현식 출력
-
-
                             orderSpecifier = order.isAscending() ? distanceExpression.asc() : distanceExpression.desc();
-
 
                         } else {
                             // latitude와 longitude가 null일 경우 createdAt 기준 정렬
