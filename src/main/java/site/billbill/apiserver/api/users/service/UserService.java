@@ -3,6 +3,7 @@ package site.billbill.apiserver.api.users.service;
 import org.springframework.data.domain.Pageable;
 import site.billbill.apiserver.api.auth.dto.request.DeviceRequest;
 import site.billbill.apiserver.api.auth.dto.request.LocationRequest;
+import site.billbill.apiserver.api.users.dto.request.AgreeRequest;
 import site.billbill.apiserver.api.users.dto.request.PasswordRequest;
 import site.billbill.apiserver.api.users.dto.request.ProfileRequest;
 import site.billbill.apiserver.api.users.dto.request.WithdrawRequest;
@@ -42,4 +43,6 @@ public interface UserService {
     List<CodeDetailJpaEntity> getWithdrawCodeList();
 
     void updateProfile(ProfileRequest request);
+
+    void updateAgreement(AgreeRequest request);
 }

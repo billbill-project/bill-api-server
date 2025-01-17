@@ -14,10 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import site.billbill.apiserver.api.auth.dto.request.DeviceRequest;
 import site.billbill.apiserver.api.auth.dto.request.LocationRequest;
-import site.billbill.apiserver.api.users.dto.request.BlacklistRequest;
-import site.billbill.apiserver.api.users.dto.request.PasswordRequest;
-import site.billbill.apiserver.api.users.dto.request.ProfileRequest;
-import site.billbill.apiserver.api.users.dto.request.WithdrawRequest;
+import site.billbill.apiserver.api.users.dto.request.*;
 import site.billbill.apiserver.api.users.dto.response.*;
 import site.billbill.apiserver.api.users.service.UserService;
 import site.billbill.apiserver.common.response.BaseResponse;
@@ -163,7 +160,7 @@ public class UserController {
     @Operation(summary = "비밀번호 변경", description = "비밀번호를 변경하는 API")
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/password")
-    public BaseResponse<String> updatePassword(@RequestBody PasswordRequest request) {
+    public BaseResponse<Void> updatePassword(@RequestBody PasswordRequest request) {
         userService.updatePassword(request);
         return new BaseResponse<>(null);
     }
@@ -178,8 +175,16 @@ public class UserController {
     @Operation(summary = "회원 프로필 수정", description = "내 프로필을 수정하는 API")
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/profile")
-    public BaseResponse<String> updateProfile(@RequestBody ProfileRequest request) {
+    public BaseResponse<Void> updateProfile(@RequestBody ProfileRequest request) {
         userService.updateProfile(request);
+        return new BaseResponse<>(null);
+    }
+
+    @Operation(summary = "선택 동의항목 수정", description = "선택 동의항목들의 동의여부를 수정하는 API")
+    @ResponseStatus(HttpStatus.OK)
+    @PutMapping("/agreement")
+    public BaseResponse<Void> updateAgreement(@RequestBody AgreeRequest request) {
+        userService.updateAgreement(request);
         return new BaseResponse<>(null);
     }
 }
