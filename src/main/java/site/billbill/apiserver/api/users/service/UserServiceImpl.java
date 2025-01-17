@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import site.billbill.apiserver.api.auth.dto.request.DeviceRequest;
 import site.billbill.apiserver.api.auth.dto.request.LocationRequest;
+import site.billbill.apiserver.api.users.dto.request.AgreeRequest;
 import site.billbill.apiserver.api.users.dto.request.PasswordRequest;
 import site.billbill.apiserver.api.users.dto.request.ProfileRequest;
 import site.billbill.apiserver.api.users.dto.request.WithdrawRequest;
@@ -39,6 +40,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserIdentityRepository userIdentityRepository;
     private final UserBlacklistRepository userBlacklistRepository;
+    private final UserAgreeHistRepository userAgreeHistRepository;
     private final ItemsRepository itemsRepository;
     private final JWTUtil jwtUtil;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -233,6 +235,21 @@ public class UserServiceImpl implements UserService {
         userRepository.updateProfileById(userId, request);
     }
 
+    @Override
+    public void updateAgreement(AgreeRequest request) {
+        String userId = MDC.get(JWTUtil.MDC_USER_ID);
+
+        UserAgreeHistJpaEntity agreeHist = userAgreeHistRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorCode.NotFound, "동의항목을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        agreeHist.setMarketingAgreeYn(request.isMarketingAgree());
+        agreeHist.setThirdPartyAgreeYn(request.isThirdPartyAgree());
+        userAgreeHistRepository.save(agreeHist);
+
+        UserJpaEntity user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorCode.NotFound, "회원을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        user.setDmAlarm(request.isPushAgree());
+        user.setLikeAlarm(request.isPushAgree());
+        user.setNotificationAlarm(request.isPushAgree());
+        userRepository.save(user);
+    }
 
     /**
      * Method that check password is right
