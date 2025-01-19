@@ -113,7 +113,7 @@ public class ChatServiceImpl implements ChatService {
             return Collections.emptyList();
         }
 
-        ChatInfoList result = chatServerService.getChatList(activeChatIdsByUserId, beforeTimestamp);
+        ChatInfoList result = chatServerService.getChatList(activeChatIdsByUserId, beforeTimestamp, userId);
         if (result == null || result.getChatInfoList() == null || result.getChatInfoList().isEmpty()) {
             return Collections.emptyList();
         }
