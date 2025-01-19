@@ -16,6 +16,7 @@ public class ChatServerRequest {
         private String lastChat;
         private String lastSender;
         private LocalDateTime updatedAt;
+        private boolean notification;
     }
 
     @Getter
