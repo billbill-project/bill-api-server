@@ -13,26 +13,27 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import site.billbill.apiserver.api.chat.dto.request.WebhookRequest;
+import site.billbill.apiserver.api.chat.dto.request.ChatServerRequest;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.exception.CustomException;
 
 @Slf4j
 @Service
-public class WebhookServiceImpl implements WebhookService {
+public class ChatServerServiceImpl implements ChatServerService {
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
 
     @Autowired
-    public WebhookServiceImpl(@Value("${webhook.url}") String webhookUrl,
-                              WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl(webhookUrl).build();
+    public ChatServerServiceImpl(@Value("${chat-server.url}") String chatServerUrl,
+                                 WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.baseUrl(chatServerUrl).build();
         this.objectMapper = new ObjectMapper();
-        this.objectMapper.registerModule(new JavaTimeModule()); // Java 8 시간 타입 지원
-        this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS); // 배열 대신 ISO-8601 사용
+        this.objectMapper.registerModule(new JavaTimeModule());
+        this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
-    public void sendWebhookForChatRoomCreate(String channelId, String contact, String owner) {
+    @Override
+    public void CreateChannel(String channelId, String contact, String owner) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("channelId", channelId);
         payload.put("contactId", contact);
@@ -46,12 +47,13 @@ public class WebhookServiceImpl implements WebhookService {
                     .bodyToMono(Void.class)
                     .block();
         } catch (Exception e) {
-            log.error("Webhook 호출 실패: {}", e.getMessage());
-            throw new CustomException(ErrorCode.ServerError, "Webhook 호출 실패", HttpStatus.BAD_GATEWAY);
+            log.error("Api 호출 실패: {}", e.getMessage());
+            throw new CustomException(ErrorCode.ServerError, "Api 호출 실패", HttpStatus.BAD_GATEWAY);
         }
     }
 
-    public WebhookRequest.ChatInfoList sendWebhookForChatList(List<String> chatRoomIds, String beforeTimestamp) {
+    @Override
+    public ChatServerRequest.ChatInfoList getChatList(List<String> chatRoomIds, String beforeTimestamp) {
         if (beforeTimestamp == null) {
             beforeTimestamp = "";
         }
@@ -66,11 +68,28 @@ public class WebhookServiceImpl implements WebhookService {
                 .block();
         log.info(jsonResponse.toString());
         try {
-            WebhookRequest.ChatInfoList result = objectMapper.readValue(jsonResponse, WebhookRequest.ChatInfoList.class);
+            ChatServerRequest.ChatInfoList result = objectMapper.readValue(jsonResponse, ChatServerRequest.ChatInfoList.class);
             return result;
         } catch (JsonProcessingException e) {
             throw new RuntimeException("JSON Parsing Error", e);
         }
 
+    }
+
+    @Override
+    public int getUnreadChatCount(List<String> activeChatIdsByUserId, String userId) {
+        log.info(activeChatIdsByUserId.toString());
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("userId", userId);
+        payload.put("chatRoomIds", activeChatIdsByUserId);
+
+        Integer jsonResponse = webClient.post()
+                .uri("/chat/unreadCount")
+                .bodyValue(payload)
+                .retrieve()
+                .bodyToMono(Integer.class)
+                .block();
+
+        return jsonResponse;
     }
 }

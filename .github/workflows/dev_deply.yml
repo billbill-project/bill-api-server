@@ -97,7 +97,7 @@ jobs:
               -e KAKAO_PROVIDER_TOKEN_URI=${{secrets.KAKAO_PROVIDER_TOKEN_URI}} \
               -e KAKAO_PROVIDER_USER_INFO_URI=${{secrets.KAKAO_PROVIDER_USER_INFO_URI}} \
               -e PORTONE_API_SECRET=${{secrets.PORTONE_API_SECRET}} \
-              -e WEBHOOK_URL=${{secrets.WEBHOOK_URL}} \
+              -e CHAT_SERVER_URL=${{secrets.CHAT_SERVER_URL}} \
               -e MAIL_PORT=${{secrets.MAIL_PORT}} \
               -e MAIL_USERNAME=${{secrets.MAIL_USERNAME}} \
               -e MAIL_PASSWORD=${{secrets.MAIL_PASSWORD}} \

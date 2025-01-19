@@ -50,4 +50,10 @@ public class ChatResponse {
         private String opponentProfileUrl;
         private String itemFirstUrl;
     }
+
+    @Getter
+    @Builder
+    public static class ViewUnreadChatCountResponse {
+        private int count;
+    }
 }
