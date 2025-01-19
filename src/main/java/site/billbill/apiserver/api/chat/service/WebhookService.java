@@ -6,4 +6,6 @@ import site.billbill.apiserver.api.chat.dto.request.WebhookRequest;
 public interface WebhookService {
     void sendWebhookForChatRoomCreate(String channelId, String contact, String owner);
     WebhookRequest.ChatInfoList sendWebhookForChatList(List<String> chatRoomIds, String beforeTimestamp);
+
+    int sendForUnreadChatCount(List<String> activeChatIdsByUserId, String userId);
 }

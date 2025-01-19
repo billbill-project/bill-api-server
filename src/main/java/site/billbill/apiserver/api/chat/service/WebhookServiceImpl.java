@@ -24,14 +24,15 @@ public class WebhookServiceImpl implements WebhookService {
     private final ObjectMapper objectMapper;
 
     @Autowired
-    public WebhookServiceImpl(@Value("${webhook.url}") String webhookUrl,
+    public WebhookServiceImpl(@Value("${chat-server.url}") String webhookUrl,
                               WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.baseUrl(webhookUrl).build();
         this.objectMapper = new ObjectMapper();
-        this.objectMapper.registerModule(new JavaTimeModule()); // Java 8 시간 타입 지원
-        this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS); // 배열 대신 ISO-8601 사용
+        this.objectMapper.registerModule(new JavaTimeModule());
+        this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
+    @Override
     public void sendWebhookForChatRoomCreate(String channelId, String contact, String owner) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("channelId", channelId);
@@ -51,6 +52,7 @@ public class WebhookServiceImpl implements WebhookService {
         }
     }
 
+    @Override
     public WebhookRequest.ChatInfoList sendWebhookForChatList(List<String> chatRoomIds, String beforeTimestamp) {
         if (beforeTimestamp == null) {
             beforeTimestamp = "";
@@ -72,5 +74,22 @@ public class WebhookServiceImpl implements WebhookService {
             throw new RuntimeException("JSON Parsing Error", e);
         }
 
+    }
+
+    @Override
+    public int sendForUnreadChatCount(List<String> activeChatIdsByUserId, String userId) {
+        log.info(activeChatIdsByUserId.toString());
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("userId", userId);
+        payload.put("chatRoomIds", activeChatIdsByUserId);
+
+        Integer jsonResponse = webClient.post()
+                .uri("/chat/unreadCount")
+                .bodyValue(payload)
+                .retrieve()
+                .bodyToMono(Integer.class)
+                .block();
+
+        return jsonResponse;
     }
 }

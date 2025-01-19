@@ -70,4 +70,10 @@ public class ChatConverter {
                 .itemFirstUrl(channel.getItem().getImages().get(0))
                 .build();
     }
+
+    public static ChatResponse.ViewUnreadChatCountResponse toViewUnreadChatCount(int count) {
+        return ChatResponse.ViewUnreadChatCountResponse.builder()
+                .count(count)
+                .build();
+    }
 }

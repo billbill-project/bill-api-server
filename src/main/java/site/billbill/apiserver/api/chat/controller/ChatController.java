@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import site.billbill.apiserver.api.chat.dto.request.ChatRequest;
 import site.billbill.apiserver.api.chat.dto.response.ChatResponse;
 import site.billbill.apiserver.api.chat.dto.response.ChatResponse.ViewChatInfoResponse;
+import site.billbill.apiserver.api.chat.dto.response.ChatResponse.ViewUnreadChatCountResponse;
 import site.billbill.apiserver.api.chat.service.ChatService;
 import site.billbill.apiserver.common.response.BaseResponse;
 import site.billbill.apiserver.common.utils.jwt.JWTUtil;
@@ -62,5 +63,12 @@ public class ChatController {
     public BaseResponse<String> changeDate(@PathVariable(value = "channelId") String channelId, @RequestBody ChatRequest.changeDate request) {
         String userId = MDC.get(JWTUtil.MDC_USER_ID).toString();
         return new BaseResponse<>(chatService.changeDate(userId, channelId, request));
+    }
+
+    @Operation(summary = "안 읽은 메세지 수 조회", description = "안 읽은 메세지 수 조회 API")
+    @PatchMapping("/unreadCount")
+    public BaseResponse<ViewUnreadChatCountResponse> getUnreadCount() {
+        String userId = MDC.get(JWTUtil.MDC_USER_ID).toString();
+        return new BaseResponse<>(chatService.getUnreadCount(userId));
     }
 }

@@ -15,6 +15,7 @@ import site.billbill.apiserver.api.chat.dto.request.WebhookRequest.ChatInfo;
 import site.billbill.apiserver.api.chat.dto.request.WebhookRequest.ChatInfoList;
 import site.billbill.apiserver.api.chat.dto.response.ChatResponse.ViewChannelInfoResponse;
 import site.billbill.apiserver.api.chat.dto.response.ChatResponse.ViewChatInfoResponse;
+import site.billbill.apiserver.api.chat.dto.response.ChatResponse.ViewUnreadChatCountResponse;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.ULID.ULIDUtil;
 import site.billbill.apiserver.exception.CustomException;
@@ -146,5 +147,21 @@ public class ChatServiceImpl implements ChatService {
 
         chatChannel.ChangeDate(request.getStartedAt(), request.getEndedAt());
         return "success";
+    }
+
+    @Override
+    public ViewUnreadChatCountResponse getUnreadCount(String userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NotFound, "회원을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
+        List<String> activeChatIdsByUserId = chatRepository.findActiveChatIdsByUserId(userId);
+
+        if (activeChatIdsByUserId == null || activeChatIdsByUserId.isEmpty()) {
+            return ChatConverter.toViewUnreadChatCount(0);
+        }
+
+        int count = webhookService.sendForUnreadChatCount(activeChatIdsByUserId, userId);
+
+        return ChatConverter.toViewUnreadChatCount(count);
     }
 }
