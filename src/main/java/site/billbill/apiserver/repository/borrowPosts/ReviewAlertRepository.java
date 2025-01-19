@@ -7,6 +7,6 @@ import site.billbill.apiserver.model.post.ReviewAlertJpaEntity;
 import java.util.List;
 
 public interface ReviewAlertRepository extends JpaRepository<ReviewAlertJpaEntity,Long> {
-    ReviewAlertJpaEntity findOneByBorrowHist(BorrowHistJpaEntity borrowHist);
-    List<ReviewAlertJpaEntity> findAllByStatus(String status);
+    ReviewAlertJpaEntity findOneByBorrowHistAndType(BorrowHistJpaEntity borrowHist,String type);
+    List<ReviewAlertJpaEntity> findAllByStatusAndType(String status,String type);
 }

@@ -25,6 +25,8 @@ public class ReviewAlertJpaEntity extends BaseTime {
     private BorrowHistJpaEntity borrowHist;
     @Column(name = "status", nullable = false)
     private String status;
+    @Column(name= "type", nullable = false)
+    private String type;
 }
 
 
