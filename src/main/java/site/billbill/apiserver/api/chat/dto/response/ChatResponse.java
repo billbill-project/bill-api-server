@@ -39,6 +39,7 @@ public class ChatResponse {
         LocalDate startedAt;
         @JsonFormat(pattern = "yyyy-MM-dd")
         LocalDate endedAt;
+        private boolean notification;
         private String channelId;
         private int unreadCount;
         private String lastChat;

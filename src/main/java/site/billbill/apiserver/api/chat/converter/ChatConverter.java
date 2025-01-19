@@ -60,6 +60,7 @@ public class ChatConverter {
                 .startedAt(channel.getStartedAt())
                 .endedAt(channel.getEndedAt())
                 .channelId(chatInfo.getChannelId())
+                .notification(chatInfo.isNotification())
                 .lastChat(chatInfo.getLastChat())
                 .lastSender(chatInfo.getLastSender())
                 .updatedAt(chatInfo.getUpdatedAt())
