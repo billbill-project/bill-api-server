@@ -1,7 +1,7 @@
 package site.billbill.apiserver.api.chat.converter;
 
 import java.time.LocalDate;
-import site.billbill.apiserver.api.chat.dto.request.WebhookRequest.ChatInfo;
+import site.billbill.apiserver.api.chat.dto.request.ChatServerRequest.ChatInfo;
 import site.billbill.apiserver.api.chat.dto.response.ChatResponse;
 import site.billbill.apiserver.model.chat.ChatChannelJpaEntity;
 import site.billbill.apiserver.model.post.ItemsJpaEntity;

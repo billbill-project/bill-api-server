@@ -11,8 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import site.billbill.apiserver.api.chat.converter.ChatConverter;
 import site.billbill.apiserver.api.chat.dto.request.ChatRequest.borrowInfo;
 import site.billbill.apiserver.api.chat.dto.request.ChatRequest.changeDate;
-import site.billbill.apiserver.api.chat.dto.request.WebhookRequest.ChatInfo;
-import site.billbill.apiserver.api.chat.dto.request.WebhookRequest.ChatInfoList;
+import site.billbill.apiserver.api.chat.dto.request.ChatServerRequest.ChatInfo;
+import site.billbill.apiserver.api.chat.dto.request.ChatServerRequest.ChatInfoList;
 import site.billbill.apiserver.api.chat.dto.response.ChatResponse.ViewChannelInfoResponse;
 import site.billbill.apiserver.api.chat.dto.response.ChatResponse.ViewChatInfoResponse;
 import site.billbill.apiserver.api.chat.dto.response.ChatResponse.ViewUnreadChatCountResponse;
@@ -36,7 +36,7 @@ public class ChatServiceImpl implements ChatService {
     private final UserRepository userRepository;
     private final ItemsRepository itemsRepository;
     private final ItemsBorrowRepository itemsBorrowRepository;
-    private final WebhookServiceImpl webhookService;
+    private final ChatServerServiceImpl chatServerService;
 
     @Override
     @Transactional
@@ -66,7 +66,7 @@ public class ChatServiceImpl implements ChatService {
             ChatChannelJpaEntity newChatChannel = ChatConverter.toChatChannel(newChannelId, item, item.getOwner(),
                     contact, request.getStartedAt(), request.getEndedAt());
             chatRepository.save(newChatChannel);
-            webhookService.sendWebhookForChatRoomCreate(newChannelId, userId, item.getOwner().getUserId());
+            chatServerService.CreateChannel(newChannelId, userId, item.getOwner().getUserId());
             return newChannelId;
         }
         return chatChannel.get(0).getChannelId();
@@ -113,12 +113,12 @@ public class ChatServiceImpl implements ChatService {
             return Collections.emptyList();
         }
 
-        ChatInfoList webhookResult = webhookService.sendWebhookForChatList(activeChatIdsByUserId, beforeTimestamp);
-        if (webhookResult == null || webhookResult.getChatInfoList() == null || webhookResult.getChatInfoList().isEmpty()) {
+        ChatInfoList result = chatServerService.getChatList(activeChatIdsByUserId, beforeTimestamp);
+        if (result == null || result.getChatInfoList() == null || result.getChatInfoList().isEmpty()) {
             return Collections.emptyList();
         }
 
-        List<ChatInfo> chatInfoList = webhookResult.getChatInfoList();
+        List<ChatInfo> chatInfoList = result.getChatInfoList();
 
         return chatInfoList.stream().map(chatInfo -> {
             ChatChannelJpaEntity chatChannel = chatRepository.findById(chatInfo.getChannelId())
@@ -160,7 +160,7 @@ public class ChatServiceImpl implements ChatService {
             return ChatConverter.toViewUnreadChatCount(0);
         }
 
-        int count = webhookService.sendForUnreadChatCount(activeChatIdsByUserId, userId);
+        int count = chatServerService.getUnreadChatCount(activeChatIdsByUserId, userId);
 
         return ChatConverter.toViewUnreadChatCount(count);
     }
