@@ -53,20 +53,23 @@ public class ChatServerServiceImpl implements ChatServerService {
     }
 
     @Override
-    public ChatServerRequest.ChatInfoList getChatList(List<String> chatRoomIds, String beforeTimestamp) {
+    public ChatServerRequest.ChatInfoList getChatList(List<String> chatRoomIds, String beforeTimestamp, String userId) {
         if (beforeTimestamp == null) {
             beforeTimestamp = "";
         }
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("chatRoomIds", chatRoomIds);
+        payload.put("beforeTimestamp", beforeTimestamp);
+        payload.put("userId", userId);
+
         String jsonResponse = webClient.post()
                 .uri("/chat/list")
-                .bodyValue(Map.of(
-                        "chatRoomIds", chatRoomIds,
-                        "beforeTimestamp", beforeTimestamp
-                ))
+                .bodyValue(payload)
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();
-        log.info(jsonResponse.toString());
+
         try {
             ChatServerRequest.ChatInfoList result = objectMapper.readValue(jsonResponse, ChatServerRequest.ChatInfoList.class);
             return result;
