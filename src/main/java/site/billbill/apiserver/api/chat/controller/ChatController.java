@@ -66,7 +66,7 @@ public class ChatController {
     }
 
     @Operation(summary = "안 읽은 메세지 수 조회", description = "안 읽은 메세지 수 조회 API")
-    @PatchMapping("/unreadCount")
+    @GetMapping("/unreadCount")
     public BaseResponse<ViewUnreadChatCountResponse> getUnreadCount() {
         String userId = MDC.get(JWTUtil.MDC_USER_ID).toString();
         return new BaseResponse<>(chatService.getUnreadCount(userId));
