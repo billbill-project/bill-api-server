@@ -4,6 +4,7 @@ public enum PushType {
     CHAT,
     NOTICE,
     REVIEW_ALERT,
-    REVIEW_COMPLETE
+    REVIEW_COMPLETE,
+    RETURN_ALERT
 
 }

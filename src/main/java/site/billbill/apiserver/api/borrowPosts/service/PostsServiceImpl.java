@@ -6,13 +6,11 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
-import org.springframework.boot.actuate.autoconfigure.observation.ObservationProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.parameters.P;
 import org.springframework.transaction.annotation.Transactional;
 import site.billbill.apiserver.api.borrowPosts.converter.PostsConverter;
 import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
@@ -24,8 +22,6 @@ import site.billbill.apiserver.common.enums.chat.ChannelState;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.ULID.ULIDUtil;
 import site.billbill.apiserver.exception.CustomException;
-import site.billbill.apiserver.model.alarm.AlarmListJpaEntity;
-import site.billbill.apiserver.model.alarm.AlarmLogJpaEntity;
 import site.billbill.apiserver.model.chat.ChatChannelJpaEntity;
 import site.billbill.apiserver.model.post.*;
 import site.billbill.apiserver.model.post.embeded.ItemsLikeId;
@@ -39,7 +35,7 @@ import site.billbill.apiserver.repository.chat.ChatRepository;
 import site.billbill.apiserver.repository.user.UserLocationReposity;
 import site.billbill.apiserver.repository.user.UserRepository;
 import site.billbill.apiserver.repository.user.UserSearchHistRepository;
-import site.billbill.apiserver.scheduler.TaskScheduler.Manager.ReviewNotificationManager;
+import site.billbill.apiserver.scheduler.TaskScheduler.Manager.TaskSchedulerManager;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -71,7 +67,7 @@ public class PostsServiceImpl implements PostsService {
     private final AlarmLogRepository alarmLogRepository;
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
     private final PushService pushService;
-    private final ReviewNotificationManager reviewNotificationManager;
+    private final TaskSchedulerManager notificationManger;
     private final ReviewAlertRepository reviewAlertRepository;
 
     public PostsResponse.UploadResponse uploadPostService(PostsRequest.UploadRequest request, String userId) {
@@ -336,11 +332,21 @@ public class PostsServiceImpl implements PostsService {
         ReviewAlertJpaEntity reviewAlert = ReviewAlertJpaEntity.builder()
                 .borrowHist(savedBorrowHist)
                 .status("PENDING")
+                .type("REVIEW")
                 .build();
+        ReviewAlertJpaEntity returnAlert= ReviewAlertJpaEntity.builder()
+                .borrowHist(savedBorrowHist)
+                .status("PENDING")
+                .type("RETURN")
+                .build();
+
         reviewAlertRepository.save(reviewAlert);
         //리뷰 요청 알림 등록
-        reviewNotificationManager.ReviewNotification(savedBorrowHist);
+        notificationManger.ReviewNotification(savedBorrowHist);
 
+        reviewAlertRepository.save(returnAlert);
+
+        notificationManger.ReturnNotification(savedBorrowHist);
 
         return PostsConverter.toBillAcceptResponse(savedBorrowHist.getBorrowSeq());
 
@@ -366,7 +372,7 @@ public class PostsServiceImpl implements PostsService {
             borrowHist.setUseYn(false);
             chat.setChannelState(ChannelState.CANCELLED);
 
-            reviewNotificationManager.CanceledReviewNotification(borrowHist);
+            notificationManger.CanceledReviewNotification(borrowHist);
         } catch (Exception e){
             throw new CustomException(ErrorCode.BadRequest, e.getMessage(), HttpStatus.BAD_REQUEST);
         }
