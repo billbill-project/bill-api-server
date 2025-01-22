@@ -24,4 +24,8 @@ public class AlarmLogJpaEntity extends BaseTime {
     @Convert(converter = BooleanConverter.class)
     @Column(name = "read_yn", nullable = false)
     private boolean readYn = false;
+
+    public void changeRead() {
+        readYn = true;
+    }
 }

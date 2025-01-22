@@ -6,17 +6,18 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
-import org.springframework.boot.actuate.autoconfigure.observation.ObservationProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.parameters.P;
 import org.springframework.transaction.annotation.Transactional;
 import site.billbill.apiserver.api.borrowPosts.converter.PostsConverter;
 import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
 import site.billbill.apiserver.api.borrowPosts.dto.response.PostsResponse;
+import site.billbill.apiserver.api.push.dto.request.PushRequest;
+import site.billbill.apiserver.api.push.service.PushService;
+import site.billbill.apiserver.common.enums.alarm.PushType;
 import site.billbill.apiserver.common.enums.chat.ChannelState;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.ULID.ULIDUtil;
@@ -27,12 +28,17 @@ import site.billbill.apiserver.model.post.embeded.ItemsLikeId;
 import site.billbill.apiserver.model.user.UserJpaEntity;
 import site.billbill.apiserver.model.user.UserLocationJpaEntity;
 import site.billbill.apiserver.model.user.UserSearchHistJpaEntity;
+import site.billbill.apiserver.repository.alarm.AlarmListRepository;
+import site.billbill.apiserver.repository.alarm.AlarmLogRepository;
 import site.billbill.apiserver.repository.borrowPosts.*;
 import site.billbill.apiserver.repository.chat.ChatRepository;
 import site.billbill.apiserver.repository.user.UserLocationReposity;
 import site.billbill.apiserver.repository.user.UserRepository;
 import site.billbill.apiserver.repository.user.UserSearchHistRepository;
+import site.billbill.apiserver.scheduler.TaskScheduler.Manager.TaskSchedulerManager;
 
+import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,7 +63,13 @@ public class PostsServiceImpl implements PostsService {
     private final ItemsLocationRepository itemsLocationRepository;
     private final UserLocationReposity userLocationReposity;
     private final ItemsLikeRepository itemsLikeRepository;
+    private final AlarmListRepository alarmListRepository;
+    private final AlarmLogRepository alarmLogRepository;
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+    private final PushService pushService;
+    private final TaskSchedulerManager notificationManger;
+    private final ReviewAlertRepository reviewAlertRepository;
+
     public PostsResponse.UploadResponse uploadPostService(PostsRequest.UploadRequest request, String userId) {
         //먼저 item 생성,
         Optional<UserJpaEntity> isUser = userRepository.findById(userId);
@@ -68,7 +80,9 @@ public class PostsServiceImpl implements PostsService {
         if (isUser.isPresent()) {
             user = isUser.get();
         }
-
+        if(request.getLocation()==null){
+            throw new CustomException(ErrorCode.BadRequest, "위치정보가 없습니다.", HttpStatus.BAD_REQUEST);
+        }
         //Item 생성
         ItemsJpaEntity newItem = PostsConverter.toItem(postsId, request, user, category);
         itemsRepository.save(newItem);
@@ -94,8 +108,7 @@ public class PostsServiceImpl implements PostsService {
 
     public PostsResponse.ViewAllResultResponse ViewAllPostService(
             String category, int page, Sort.Direction direction, String orderType, String userId,Double latitude,Double longitude) {
-        latitude=roundToDecimal(latitude);
-        longitude=roundToDecimal(longitude);
+
 
         Pageable pageable = createPageable(page, direction, orderType);
         List<PostsResponse.Post> items = findAndConvertItems(category, pageable, null, latitude,longitude);
@@ -108,6 +121,7 @@ public class PostsServiceImpl implements PostsService {
         UserJpaEntity user = userRepository.findById(userId).orElse(null);
         ItemsLikeId likeId=new ItemsLikeId(postId,userId);
         ItemsLikeJpaEntity itemsLikeJpa= itemsLikeRepository.findByIdAndDelYn(likeId,false);
+        ItemsLocationJpaEntity itemsLocation =itemsLocationRepository.findByItem(item);
         boolean isLike;
         if(itemsLikeJpa==null) {
             isLike = false;
@@ -136,7 +150,7 @@ public class PostsServiceImpl implements PostsService {
                 break;
 
         }
-        return PostsConverter.toViewPost(item, borrowItem, status,isLike);
+        return PostsConverter.toViewPost(item, borrowItem, status,isLike,itemsLocation);
 
     }
 
@@ -162,7 +176,7 @@ public class PostsServiceImpl implements PostsService {
         UserJpaEntity user = userRepository.findById(userId).orElse(null);
         ItemsCategoryJpaEntity category = itemsCategoryRepository.findByName(request.getCategory());
         ItemsBorrowJpaEntity borrowItem = itemsBorrowRepository.findById(postId).orElse(null);
-
+        ItemsLocationJpaEntity itemsLocationJpa = itemsLocationRepository.findByItem(item);
         if (item == null) {
             throw new CustomException(ErrorCode.BadRequest, "올바른 게시물 아이디가 아닙니다.", HttpStatus.BAD_REQUEST);
         } else if (!item.getOwner().equals(user)) {
@@ -176,7 +190,11 @@ public class PostsServiceImpl implements PostsService {
         item.setContent(request.getContent());
         borrowItem.setDeposit(request.getDeposit());
         borrowItem.setPrice(request.getPrice());
-
+        Point coordinates = geometryFactory.createPoint(new Coordinate(request.getLocation().getLongitude(), request.getLocation().getLatitude()));
+        itemsLocationJpa.setLatitude(request.getLocation().getLatitude());
+        itemsLocationJpa.setLongitude(request.getLocation().getLongitude());
+        itemsLocationJpa.setCoordinates(coordinates);
+        itemsLocationJpa.setAddress(request.getLocation().getAddress());
         List<ItemsBorrowStatusJpaEntity> existingStatuses = itemsBorrowStatusRepository.findAllByItemIdAndBorrowStatusCode(postId, "RENTAL_NOT_POSSIBLE");
         itemsBorrowStatusRepository.deleteAll(existingStatuses);
         //대여 불가 날짜 새로 배정, 똑같아도 새로 배정되는 느낌
@@ -231,7 +249,7 @@ public class PostsServiceImpl implements PostsService {
         return result;
     }
 
-    public PostsResponse.ReviewIdResponse DoReviewPostService(String postId, String userId, PostsRequest.ReviewRequest request) {
+    public PostsResponse.ReviewIdResponse DoReviewPostService(String postId, String userId, PostsRequest.ReviewRequest request) throws IOException {
         UserJpaEntity user = userRepository.findById(userId).orElse(null);
         ItemsJpaEntity item = itemsRepository.findById(postId).orElse(null);
         BorrowHistJpaEntity borrowHist = borrowHistRepository.findTop1BorrowHistByBorrowerOrderByCreatedAt(user);
@@ -250,7 +268,15 @@ public class PostsServiceImpl implements PostsService {
         }
         ItemsReviewJpaEntity review = PostsConverter.toItemsReview(user, item, request, postsId);
         itemsReivewRepository.save(review);
-
+        PushRequest push= PushRequest.builder()
+                            .userId(userId)
+                            .title("리뷰 등록 알림")
+                            .content(user.getNickname() +"님이 내 제품에 리뷰를 남겼어요")
+                            .moveToId(item.getId())
+                            .pushType(PushType.REVIEW_COMPLETE)
+                            .build();
+        //리뷰 알림
+        pushService.sendPush(push);
         return PostsConverter.toReviewIdResponse(item, review);
     }
 
@@ -302,6 +328,26 @@ public class PostsServiceImpl implements PostsService {
         ItemsBorrowStatusJpaEntity itemsBorrowStatus = PostsConverter.toItemBorrowStatus(item, "Renting", noRentalPeriod);
         itemsBorrowStatusRepository.save(itemsBorrowStatus);
         chat.setChannelState(ChannelState.CONFIRMED);
+        //해당 스케줄러 백업 등록
+        ReviewAlertJpaEntity reviewAlert = ReviewAlertJpaEntity.builder()
+                .borrowHist(savedBorrowHist)
+                .status("PENDING")
+                .type("REVIEW")
+                .build();
+        ReviewAlertJpaEntity returnAlert= ReviewAlertJpaEntity.builder()
+                .borrowHist(savedBorrowHist)
+                .status("PENDING")
+                .type("RETURN")
+                .build();
+
+        reviewAlertRepository.save(reviewAlert);
+        //리뷰 요청 알림 등록
+        notificationManger.ReviewNotification(savedBorrowHist);
+
+        reviewAlertRepository.save(returnAlert);
+
+        notificationManger.ReturnNotification(savedBorrowHist);
+
         return PostsConverter.toBillAcceptResponse(savedBorrowHist.getBorrowSeq());
 
     }
@@ -312,7 +358,7 @@ public class PostsServiceImpl implements PostsService {
             UserJpaEntity user = userRepository.findById(userId).orElse(null);
             ChatChannelJpaEntity chat = chatRepository.findById(channelId).orElse(null);
             ItemsJpaEntity item = chat.getItem();
-            BorrowHistJpaEntity borrowHist = borrowHistRepository.findBorrowHistByItemAndBorrowerAndStartedAtAndEndedAt(item,user,chat.getStartedAt(), chat.getEndedAt());
+            BorrowHistJpaEntity borrowHist = borrowHistRepository.findBorrowHistByItemAndStartedAtAndEndedAt(item,chat.getStartedAt(), chat.getEndedAt());
 
             if (user != chat.getOwner()) {
                 throw new CustomException(ErrorCode.BadRequest, "해당 채팅방에 대한 권한이 없습니다.", HttpStatus.BAD_REQUEST);
@@ -325,6 +371,8 @@ public class PostsServiceImpl implements PostsService {
             }
             borrowHist.setUseYn(false);
             chat.setChannelState(ChannelState.CANCELLED);
+
+            notificationManger.CanceledReviewNotification(borrowHist);
         } catch (Exception e){
             throw new CustomException(ErrorCode.BadRequest, e.getMessage(), HttpStatus.BAD_REQUEST);
         }
@@ -412,6 +460,34 @@ public class PostsServiceImpl implements PostsService {
     }
 
 
+    public void findUserForReviews(){
+        List<PostsResponse.FindUsersForReviewsResponse> results=borrowHistRepository.findUsersForReviews();
+        if(results.isEmpty()){
+            return;
+        }
+        //FCM 알림 및 알림 로그 저장
+        results.stream().map(result->{
+            PushRequest request=PushRequest.builder()
+                    .userId(result.getUser().getUserId())
+                    .title("물건을 잘 이용하셨나요?")
+                    .pushType(PushType.REVIEW_ALERT)
+                    .content(result.getUser().getNickname()+"님! 이용하신 "+result.getItem().getTitle()+"는 어떠셨나요? 이용 후기를 남겨주세요!")
+                    .moveToId(result.getItem().getId())
+                    .build();
+            try {
+                pushService.sendPush(request);
+            } catch (IOException e) {
+                throw new CustomException(ErrorCode.BadRequest, " 리뷰 관련 알림 오류입니다. 담당자에게 문의해주세요", HttpStatus.BAD_REQUEST);
+            }
+
+            return null;
+        });
+        log.info("현재 시간: "+ LocalDate.now()+"리뷰 요청 체크 작업 완료했습니다.");
+
+    }
+
+
+
     //모듈화 코드
 
     private Pageable createPageable(int page, Sort.Direction direction, String orderType) {
@@ -423,6 +499,7 @@ public class PostsServiceImpl implements PostsService {
             case "distance" -> "distance";
             default -> "createdAt"; // 기본 정렬
         };
+
         //정렬 순서
         direction = (direction == null) ? Sort.Direction.DESC : direction;
         //페이지 생성

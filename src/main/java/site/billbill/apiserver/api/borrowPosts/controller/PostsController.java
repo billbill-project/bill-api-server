@@ -17,6 +17,7 @@ import site.billbill.apiserver.api.borrowPosts.service.PostsService;
 import site.billbill.apiserver.common.response.BaseResponse;
 import site.billbill.apiserver.common.utils.jwt.JWTUtil;
 
+import java.io.IOException;
 import java.util.List;
 
 @Slf4j
@@ -61,11 +62,7 @@ public class PostsController {
         if (MDC.get(JWTUtil.MDC_USER_ID) != null) {
             userId = MDC.get(JWTUtil.MDC_USER_ID);
         }
-         // Null 체크 추가
-        if (latitude == null || longitude == null) {
-            log.info("Latitude or Longitude is null. Using default sorting by createdAt.");
-            sortBy = "createdAt"; // 기본 정렬로 변경
-        }
+
         Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
         return new BaseResponse<>(postsService.ViewAllPostService(category, page, direction, sortBy,userId,latitude,longitude));
     }
@@ -146,7 +143,7 @@ public class PostsController {
     @Operation(summary = "리뷰작성", description = "리뷰 작성")
     @PostMapping("/reviews/{postId}")
     public BaseResponse<PostsResponse.ReviewIdResponse> reviewPostController(@PathVariable(value = "postId", required = true) String postId,
-                                                                             @RequestBody @Valid PostsRequest.ReviewRequest request) {
+                                                                             @RequestBody @Valid PostsRequest.ReviewRequest request) throws IOException {
         String userId = "";
         if (MDC.get(JWTUtil.MDC_USER_ID) != null) {
             userId = MDC.get(JWTUtil.MDC_USER_ID);
