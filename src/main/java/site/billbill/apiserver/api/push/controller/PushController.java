@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import site.billbill.apiserver.api.push.dto.request.PushRequest;
+import site.billbill.apiserver.api.push.dto.request.PushRequest.SendChatPushRequest;
+import site.billbill.apiserver.api.push.dto.request.PushRequest.SendPushRequest;
 import site.billbill.apiserver.api.push.service.PushService;
 import site.billbill.apiserver.common.response.BaseResponse;
 
@@ -28,10 +30,18 @@ import java.io.IOException;
 public class PushController {
     private final PushService pushService;
 
-    @Operation(summary = "push 발송 API", description = "상대에게 채팅 push를 발송하는 API")
+    @Operation(summary = "push 발송 API", description = "상대에게 push를 발송하는 API")
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("")
-    public BaseResponse<Boolean> sendChatFcm(@RequestBody PushRequest request) throws IOException {
+    public BaseResponse<Boolean> sendFcm(@RequestBody PushRequest.SendPushRequest request) throws IOException {
         return new BaseResponse<>(pushService.sendPush(request));
+    }
+
+    @Operation(summary = "chat push 발송 API", description = "상대에게 채팅 push를 발송하는 API")
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/chat")
+    public BaseResponse<Boolean> sendChatFcm(@RequestBody SendChatPushRequest request) throws IOException {
+        SendPushRequest sendPushRequest = pushService.sendChatPush(request);
+        return new BaseResponse<>(pushService.sendPush(sendPushRequest));
     }
 }

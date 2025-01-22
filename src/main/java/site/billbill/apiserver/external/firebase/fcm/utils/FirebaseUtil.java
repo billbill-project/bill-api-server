@@ -45,7 +45,7 @@ public class FirebaseUtil {
     @Value("${firebase.universe_domain}")
     private String universeDomain;
 
-    public boolean sendFcmTo(PushRequest request, String deviceToken) throws IOException {
+    public boolean sendFcmTo(PushRequest.SendPushRequest request, String deviceToken) throws IOException {
         String message = makeMessage(request, deviceToken);
         RestTemplate restTemplate = new RestTemplate();
 
@@ -94,7 +94,7 @@ public class FirebaseUtil {
         return googleCredentials.getAccessToken().getTokenValue();
     }
 
-    private String makeMessage(PushRequest request, String deviceToken) throws JsonProcessingException {
+    private String makeMessage(PushRequest.SendPushRequest request, String deviceToken) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         FcmMessageDto fcmMessageDto = FcmMessageDto.builder()
                 .message(FcmMessageDto.Message.builder()
