@@ -10,12 +10,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.jboss.logging.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import site.billbill.apiserver.api.push.dto.request.PushRequest;
+import site.billbill.apiserver.api.push.dto.request.PushRequest.SendChatPushRequest;
+import site.billbill.apiserver.api.push.dto.request.PushRequest.SendPushRequest;
 import site.billbill.apiserver.api.push.dto.response.PushResponse;
 import site.billbill.apiserver.api.push.dto.response.PushResponse.GetPushListResponse;
 import site.billbill.apiserver.api.push.service.PushService;
 import site.billbill.apiserver.common.response.BaseResponse;
-
 import java.io.IOException;
 import site.billbill.apiserver.common.utils.jwt.JWTUtil;
 
@@ -32,11 +32,19 @@ import site.billbill.apiserver.common.utils.jwt.JWTUtil;
 public class PushController {
     private final PushService pushService;
 
-    @Operation(summary = "push 발송 API", description = "상대에게 채팅 push를 발송하는 API")
+    @Operation(summary = "push 발송 API", description = "상대에게 push를 발송하는 API")
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("")
-    public BaseResponse<Boolean> sendChatFcm(@RequestBody PushRequest request) throws IOException {
+    public BaseResponse<Boolean> sendFcm(@RequestBody SendPushRequest request) throws IOException {
         return new BaseResponse<>(pushService.sendPush(request));
+    }
+
+    @Operation(summary = "chat push 발송 API", description = "상대에게 채팅 push를 발송하는 API")
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/chat")
+    public BaseResponse<Boolean> sendChatFcm(@RequestBody SendChatPushRequest request) throws IOException {
+        SendPushRequest sendPushRequest = pushService.sendChatPush(request);
+        return new BaseResponse<>(pushService.sendPush(sendPushRequest));
     }
     //알림조회 API
     @Operation(summary = "알림조회", description = "알림을 조회하는 API")
@@ -54,10 +62,4 @@ public class PushController {
         String userId = MDC.get(JWTUtil.MDC_USER_ID).toString();
         return new BaseResponse<>(pushService.getReviewAlertService(userId));
     }
-//    @Operation(summary = "채팅목록 조회", description = "채팅목록 조회 API")
-//    @GetMapping("/list")
-//    public BaseResponse<List<ViewChatInfoResponse>> getChatList(@RequestParam(required = false) String beforeTimestamp) {
-//        String userId = MDC.get(JWTUtil.MDC_USER_ID).toString();
-//        return new BaseResponse<>(chatService.getChatList(beforeTimestamp, userId));
-//    }
 }

@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import site.billbill.apiserver.api.borrowPosts.converter.PostsConverter;
 import site.billbill.apiserver.api.push.converter.PushConverter;
 import site.billbill.apiserver.api.push.dto.request.PushRequest;
+import site.billbill.apiserver.api.push.dto.request.PushRequest.SendChatPushRequest;
+import site.billbill.apiserver.api.push.dto.request.PushRequest.SendPushRequest;
 import site.billbill.apiserver.api.push.dto.response.PushResponse;
 import site.billbill.apiserver.api.push.dto.response.PushResponse.GetPushListResponse;
 import site.billbill.apiserver.common.enums.alarm.PushType;
@@ -26,6 +28,7 @@ import site.billbill.apiserver.exception.CustomException;
 import site.billbill.apiserver.external.firebase.fcm.utils.FirebaseUtil;
 import site.billbill.apiserver.model.alarm.AlarmListJpaEntity;
 import site.billbill.apiserver.model.alarm.AlarmLogJpaEntity;
+import site.billbill.apiserver.model.chat.ChatChannelJpaEntity;
 import site.billbill.apiserver.model.post.BorrowHistJpaEntity;
 import site.billbill.apiserver.model.post.ItemsJpaEntity;
 import site.billbill.apiserver.model.post.ReviewAlertJpaEntity;
@@ -33,6 +36,7 @@ import site.billbill.apiserver.model.user.UserDeviceJpaEntity;
 import site.billbill.apiserver.model.user.UserJpaEntity;
 import site.billbill.apiserver.repository.alarm.AlarmListRepository;
 import site.billbill.apiserver.repository.alarm.AlarmLogRepository;
+import site.billbill.apiserver.repository.chat.ChatRepository;
 import site.billbill.apiserver.repository.borrowPosts.BorrowHistRepository;
 import site.billbill.apiserver.repository.borrowPosts.ItemsRepository;
 import site.billbill.apiserver.repository.user.UserDeviceRepository;
@@ -50,10 +54,12 @@ public class PushServiceImpl implements PushService {
     private final AlarmListRepository alarmListRepository;
     private final AlarmLogRepository alarmLogRepository;
     private final FirebaseUtil firebaseUtil;
+    private final ChatRepository chatRepository;
     private final ItemsRepository itemsRepository;
     private final BorrowHistRepository borrowHistRepository;
+
     @Override
-    public boolean sendPush(PushRequest request) throws IOException {
+    public boolean sendPush(PushRequest.SendPushRequest request) throws IOException {
         Optional<UserDeviceJpaEntity> userDevice = userDeviceRepository.findById(request.getUserId());
         Optional<UserJpaEntity> user = userRepository.findByUserIdAndDmAlarmIsTrue(request.getUserId());
         if (userDevice.isEmpty()) {
@@ -81,6 +87,27 @@ public class PushServiceImpl implements PushService {
         return user.isEmpty() || firebaseUtil.sendFcmTo(request, userDevice.get().getDeviceToken());
     }
 
+    @Override
+    public SendPushRequest sendChatPush(SendChatPushRequest request) {
+        ChatChannelJpaEntity chatChannel = chatRepository.findById(request.getChannelId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NotFound, "채널을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        String preTitle = chatChannel.getItem().getTitle();
+
+        UserJpaEntity sender = userRepository.findById(request.getSenderId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NotFound, "유저를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        String postTitle = sender.getNickname();
+
+        String title = preTitle + " " + postTitle;
+
+        return SendPushRequest.builder()
+                .userId(request.getUserId())
+                .title(title)
+                .content(request.getLastContent())
+                .pushType(PushType.CHAT)
+                .moveToId(request.getChannelId())
+                .build();
+    }
+  
     @Transactional
     @Override
     public GetPushListResponse getPushList(String beforeTimestampStr, String userId) {
