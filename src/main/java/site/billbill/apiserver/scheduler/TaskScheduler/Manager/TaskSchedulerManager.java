@@ -106,7 +106,7 @@ public class TaskSchedulerManager {
 
     //모듈화 코드
     public void ScheduleNotification(BorrowHistJpaEntity borrowHist, String alertType, String title, String content, LocalDateTime time, PushType pushType) {
-        PushRequest request = PushRequest.builder()
+        PushRequest.SendPushRequest request = PushRequest.SendPushRequest.builder()
                 .userId(borrowHist.getBorrower().getUserId())
                 .title(title)
                 .pushType(pushType)
@@ -124,7 +124,7 @@ public class TaskSchedulerManager {
         }
 
     @Async
-    public void SendNotification(PushRequest request, BorrowHistJpaEntity borrowHist, String alertType) {
+    public void SendNotification(PushRequest.SendPushRequest request, BorrowHistJpaEntity borrowHist, String alertType) {
         try {
             log.info("{} 작업이 {}에 시작되었습니다.", alertType, LocalDateTime.now());
             ReviewAlertJpaEntity alert = reviewAlertRepository.findOneByBorrowHistAndType(borrowHist, alertType);

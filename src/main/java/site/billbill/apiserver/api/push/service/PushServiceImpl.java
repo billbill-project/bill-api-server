@@ -7,7 +7,6 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -15,9 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import site.billbill.apiserver.api.borrowPosts.converter.PostsConverter;
 import site.billbill.apiserver.api.push.converter.PushConverter;
-import site.billbill.apiserver.api.push.dto.request.PushRequest;
 import site.billbill.apiserver.api.push.dto.request.PushRequest.SendChatPushRequest;
 import site.billbill.apiserver.api.push.dto.request.PushRequest.SendPushRequest;
 import site.billbill.apiserver.api.push.dto.response.PushResponse;
@@ -30,18 +27,14 @@ import site.billbill.apiserver.model.alarm.AlarmListJpaEntity;
 import site.billbill.apiserver.model.alarm.AlarmLogJpaEntity;
 import site.billbill.apiserver.model.chat.ChatChannelJpaEntity;
 import site.billbill.apiserver.model.post.BorrowHistJpaEntity;
-import site.billbill.apiserver.model.post.ItemsJpaEntity;
-import site.billbill.apiserver.model.post.ReviewAlertJpaEntity;
 import site.billbill.apiserver.model.user.UserDeviceJpaEntity;
 import site.billbill.apiserver.model.user.UserJpaEntity;
 import site.billbill.apiserver.repository.alarm.AlarmListRepository;
 import site.billbill.apiserver.repository.alarm.AlarmLogRepository;
 import site.billbill.apiserver.repository.chat.ChatRepository;
 import site.billbill.apiserver.repository.borrowPosts.BorrowHistRepository;
-import site.billbill.apiserver.repository.borrowPosts.ItemsRepository;
 import site.billbill.apiserver.repository.user.UserDeviceRepository;
 import site.billbill.apiserver.repository.user.UserRepository;
-
 import java.io.IOException;
 import java.util.Optional;
 
@@ -55,11 +48,10 @@ public class PushServiceImpl implements PushService {
     private final AlarmLogRepository alarmLogRepository;
     private final FirebaseUtil firebaseUtil;
     private final ChatRepository chatRepository;
-    private final ItemsRepository itemsRepository;
     private final BorrowHistRepository borrowHistRepository;
 
     @Override
-    public boolean sendPush(PushRequest.SendPushRequest request) throws IOException {
+    public boolean sendPush(SendPushRequest request) throws IOException {
         Optional<UserDeviceJpaEntity> userDevice = userDeviceRepository.findById(request.getUserId());
         Optional<UserJpaEntity> user = userRepository.findByUserIdAndDmAlarmIsTrue(request.getUserId());
         if (userDevice.isEmpty()) {
@@ -107,7 +99,7 @@ public class PushServiceImpl implements PushService {
                 .moveToId(request.getChannelId())
                 .build();
     }
-  
+
     @Transactional
     @Override
     public GetPushListResponse getPushList(String beforeTimestampStr, String userId) {

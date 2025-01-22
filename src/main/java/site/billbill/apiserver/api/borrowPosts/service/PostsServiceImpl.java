@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import site.billbill.apiserver.api.borrowPosts.converter.PostsConverter;
 import site.billbill.apiserver.api.borrowPosts.dto.request.PostsRequest;
 import site.billbill.apiserver.api.borrowPosts.dto.response.PostsResponse;
-import site.billbill.apiserver.api.push.dto.request.PushRequest;
+import site.billbill.apiserver.api.push.dto.request.PushRequest.SendPushRequest;
 import site.billbill.apiserver.api.push.service.PushService;
 import site.billbill.apiserver.common.enums.alarm.PushType;
 import site.billbill.apiserver.common.enums.chat.ChannelState;
@@ -42,11 +42,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-
-
 @org.springframework.stereotype.Service
 @RequiredArgsConstructor
-
 @Slf4j
 public class PostsServiceImpl implements PostsService {
 
@@ -268,7 +265,7 @@ public class PostsServiceImpl implements PostsService {
         }
         ItemsReviewJpaEntity review = PostsConverter.toItemsReview(user, item, request, postsId);
         itemsReivewRepository.save(review);
-        PushRequest push= PushRequest.builder()
+        SendPushRequest push= SendPushRequest.builder()
                             .userId(userId)
                             .title("리뷰 등록 알림")
                             .content(user.getNickname() +"님이 내 제품에 리뷰를 남겼어요")
@@ -467,7 +464,7 @@ public class PostsServiceImpl implements PostsService {
         }
         //FCM 알림 및 알림 로그 저장
         results.stream().map(result->{
-            PushRequest request=PushRequest.builder()
+            SendPushRequest request=SendPushRequest.builder()
                     .userId(result.getUser().getUserId())
                     .title("물건을 잘 이용하셨나요?")
                     .pushType(PushType.REVIEW_ALERT)
