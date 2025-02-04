@@ -368,6 +368,7 @@ public class PostsServiceImpl implements PostsService {
             }
             borrowHist.setUseYn(false);
             chat.setChannelState(ChannelState.CANCELLED);
+            chat.setCloYn(true);
 
             notificationManger.CanceledReviewNotification(borrowHist);
         } catch (Exception e){
