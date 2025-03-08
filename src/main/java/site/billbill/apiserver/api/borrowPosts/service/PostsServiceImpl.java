@@ -326,24 +326,24 @@ public class PostsServiceImpl implements PostsService {
         itemsBorrowStatusRepository.save(itemsBorrowStatus);
         chat.setChannelState(ChannelState.CONFIRMED);
         //해당 스케줄러 백업 등록
-        ReviewAlertJpaEntity reviewAlert = ReviewAlertJpaEntity.builder()
-                .borrowHist(savedBorrowHist)
-                .status("PENDING")
-                .type("REVIEW")
-                .build();
-        ReviewAlertJpaEntity returnAlert= ReviewAlertJpaEntity.builder()
-                .borrowHist(savedBorrowHist)
-                .status("PENDING")
-                .type("RETURN")
-                .build();
+//        ReviewAlertJpaEntity reviewAlert = ReviewAlertJpaEntity.builder()
+//                .borrowHist(savedBorrowHist)
+//                .status("PENDING")
+//                .type("REVIEW")
+//                .build();
+//        ReviewAlertJpaEntity returnAlert= ReviewAlertJpaEntity.builder()
+//                .borrowHist(savedBorrowHist)
+//                .status("PENDING")
+//                .type("RETURN")
+//                .build();
 
-        reviewAlertRepository.save(reviewAlert);
-        //리뷰 요청 알림 등록
-        notificationManger.ReviewNotification(savedBorrowHist);
-
-        reviewAlertRepository.save(returnAlert);
-
-        notificationManger.ReturnNotification(savedBorrowHist);
+//        reviewAlertRepository.save(reviewAlert);
+//        //리뷰 요청 알림 등록
+//        notificationManger.ReviewNotification(savedBorrowHist);
+//
+//        reviewAlertRepository.save(returnAlert);
+//
+//        notificationManger.ReturnNotification(savedBorrowHist);
 
         return PostsConverter.toBillAcceptResponse(savedBorrowHist.getBorrowSeq());
 
