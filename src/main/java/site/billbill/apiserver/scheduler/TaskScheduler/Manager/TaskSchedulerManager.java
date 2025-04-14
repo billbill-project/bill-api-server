@@ -39,8 +39,10 @@ public class TaskSchedulerManager {
 
      // 작업 참조를 저장하는 Map
     private final Map<String, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
+
     @EventListener(ApplicationReadyEvent.class)
     public void InitializeScheduler() {
+        //서버가 켜질때마다, 스케줄러 작업할게 있는지 찾음
         List<ReviewAlertJpaEntity> reviewAlerts = reviewAlertRepository.findAllByStatusAndType("PENDING","REVIEW");
         List<ReviewAlertJpaEntity> returnAlerts = reviewAlertRepository.findAllByStatusAndType("PENDING","RETURN");
         // 스케줄러 재등록
@@ -149,7 +151,8 @@ public class TaskSchedulerManager {
             } else if ("RETURN".equals(alertType)) {
                 pushService.sendPush(request);
             }
-
+        scheduledTasks.remove(borrowHist.getBorrowSeq() + "_" + alertType);
+        log.info("{} 작업이 완료되어 scheduledTasks에서 제거되었습니다.", alertType);
         } catch (IOException e) {
             throw new CustomException(ErrorCode.BadRequest, alertType + " 관련 알림 오류입니다. 담당자에게 문의해주세요", HttpStatus.BAD_REQUEST);
         }
