@@ -38,10 +38,6 @@ public class BillApiInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        if ("/api/v1/push/chat".equals(requestURI)) {
-            return true;
-        }
-
         // 메서드 정보를 로깅 처리 하기 위해 추가
         HandlerMethod hd = null;
         if (handler instanceof HandlerMethod) {
