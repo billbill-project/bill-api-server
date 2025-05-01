@@ -1,6 +1,5 @@
 package site.billbill.apiserver.api.chat.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -22,6 +21,8 @@ import site.billbill.apiserver.exception.CustomException;
 public class ChatServerServiceImpl implements ChatServerService {
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
+    @Value("${internal.chat-secret}")
+    private String secretKey;
 
     @Autowired
     public ChatServerServiceImpl(@Value("${chat-server.url}") String chatServerUrl,
@@ -43,6 +44,7 @@ public class ChatServerServiceImpl implements ChatServerService {
             webClient.post()
                     .uri("/channel")
                     .bodyValue(payload)
+                    .header("secretKey", secretKey)
                     .retrieve()
                     .bodyToMono(Void.class)
                     .block();
@@ -63,20 +65,20 @@ public class ChatServerServiceImpl implements ChatServerService {
         payload.put("beforeTimestamp", beforeTimestamp);
         payload.put("userId", userId);
 
-        String jsonResponse = webClient.post()
-                .uri("/chat/list")
-                .bodyValue(payload)
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
-
         try {
+            String jsonResponse = webClient.post()
+                    .uri("/chat/list")
+                    .bodyValue(payload)
+                    .header("secretKey", secretKey)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
             ChatServerRequest.ChatInfoList result = objectMapper.readValue(jsonResponse, ChatServerRequest.ChatInfoList.class);
             return result;
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("JSON Parsing Error", e);
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.ServerError, "Api 호출 실패", HttpStatus.BAD_GATEWAY);
         }
-
     }
 
     @Override
@@ -86,13 +88,18 @@ public class ChatServerServiceImpl implements ChatServerService {
         payload.put("userId", userId);
         payload.put("chatRoomIds", activeChatIdsByUserId);
 
-        Integer jsonResponse = webClient.post()
-                .uri("/chat/unreadCount")
-                .bodyValue(payload)
-                .retrieve()
-                .bodyToMono(Integer.class)
-                .block();
+        try {
+            Integer jsonResponse = webClient.post()
+                    .uri("/chat/unreadCount")
+                    .bodyValue(payload)
+                    .header("secretKey", secretKey)
+                    .retrieve()
+                    .bodyToMono(Integer.class)
+                    .block();
 
-        return jsonResponse;
+            return jsonResponse;
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.ServerError, "Api 호출 실패", HttpStatus.BAD_GATEWAY);
+        }
     }
 }
