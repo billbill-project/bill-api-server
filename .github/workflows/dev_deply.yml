@@ -2,9 +2,12 @@ name: Java CI/CD
 
 # 동작 조건 설정 : Pull_request가 closed 됐을경우
 on:
+  push:
+    branches:
+      - main
   pull_request:
-    types: [closed] #pull_request closed 됐을 경우
-  workflow_dispatch: # 수동실행도 가능하도록
+    types: [closed]
+  workflow_dispatch:
 
 
 jobs:
@@ -12,7 +15,13 @@ jobs:
   build-docker-image:
     runs-on: ubuntu-latest
     #만약 머지가 됬을 경우, 또 base ref가 main일경우 실행
-    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    if: |
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.merged == true &&
+       github.event.pull_request.base.ref == 'main') ||
+      (github.event_name == 'push' &&
+       github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch')
     steps:
       - name: Checkout
         uses: actions/checkout@v3
