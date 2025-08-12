@@ -76,6 +76,10 @@ jobs:
             sudo docker run --name bill-api -d -p 80:8080 \
               -e INTERNAL_CHAT_SECRET=${{ secrets.INTERNAL_CHAT_SECRET }} \
               -e INTERNAL_API_SECRET=${{ secrets.INTERNAL_API_SECRET }} \
+              -e SPRING_RABBITMQ_HOST=${{ secrets.SPRING_RABBITMQ_HOST }} \
+              -e SPRING_RABBITMQ_PORT=${{ secrets.SPRING_RABBITMQ_PORT }} \
+              -e SPRING_RABBITMQ_USERNAME=${{ secrets.SPRING_RABBITMQ_USERNAME }} \
+              -e SPRING_RABBITMQ_PASSWORD=${{ secrets.SPRING_RABBITMQ_PASSWORD }} \
               -e SPRING_DATASOURCE_DRIVER_CLASS_NAME=${{ secrets.SPRING_DATASOURCE_DRIVER_CLASS_NAME }} \
               -e SPRING_DATASOURCE_URL="${{secrets.SPRING_DATASOURCE_URL}}" \
               -e SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }} \

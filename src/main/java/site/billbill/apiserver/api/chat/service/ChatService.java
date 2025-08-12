@@ -6,6 +6,7 @@ import site.billbill.apiserver.api.chat.dto.request.ChatRequest.changeDate;
 import site.billbill.apiserver.api.chat.dto.response.ChatResponse.ViewChannelInfoResponse;
 import site.billbill.apiserver.api.chat.dto.response.ChatResponse.ViewChatInfoResponse;
 import site.billbill.apiserver.api.chat.dto.response.ChatResponse.ViewUnreadChatCountResponse;
+import site.billbill.apiserver.api.push.dto.request.PushRequest.SendChatPushRequest;
 
 public interface ChatService {
     String leaveChatChannel(String postId, String userId);
@@ -19,4 +20,6 @@ public interface ChatService {
     String changeDate(String userId, String channelId, changeDate request);
 
     ViewUnreadChatCountResponse getUnreadCount(String userId);
+
+    void receivePushRequest(SendChatPushRequest request);
 }
