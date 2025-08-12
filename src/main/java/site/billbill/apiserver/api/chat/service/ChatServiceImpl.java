@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,8 @@ import site.billbill.apiserver.api.chat.dto.request.ChatServerRequest.ChatInfoLi
 import site.billbill.apiserver.api.chat.dto.response.ChatResponse.ViewChannelInfoResponse;
 import site.billbill.apiserver.api.chat.dto.response.ChatResponse.ViewChatInfoResponse;
 import site.billbill.apiserver.api.chat.dto.response.ChatResponse.ViewUnreadChatCountResponse;
+import site.billbill.apiserver.api.push.dto.request.PushRequest.SendChatPushRequest;
+import site.billbill.apiserver.api.push.service.PushService;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.ULID.ULIDUtil;
 import site.billbill.apiserver.exception.CustomException;
@@ -31,12 +35,14 @@ import site.billbill.apiserver.repository.user.UserRepository;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class ChatServiceImpl implements ChatService {
     private final ChatRepository chatRepository;
     private final UserRepository userRepository;
     private final ItemsRepository itemsRepository;
     private final ItemsBorrowRepository itemsBorrowRepository;
     private final ChatServerServiceImpl chatServerService;
+    private final PushService pushService;
 
     @Override
     @Transactional
@@ -163,5 +169,12 @@ public class ChatServiceImpl implements ChatService {
         int count = chatServerService.getUnreadChatCount(activeChatIdsByUserId, userId);
 
         return ChatConverter.toViewUnreadChatCount(count);
+    }
+
+    @Override
+    @RabbitListener(queues = "push.queue")
+    public void receivePushRequest(SendChatPushRequest request) {
+        log.info("Push 요청 수신 성공: {}", request);
+        pushService.sendChatPush(request);
     }
 }

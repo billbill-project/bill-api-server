@@ -27,6 +27,9 @@ public class PushRequest {
 
     @Getter
     @Setter
+    @ToString
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class SendChatPushRequest {
         private String userId;
         private String senderId;
