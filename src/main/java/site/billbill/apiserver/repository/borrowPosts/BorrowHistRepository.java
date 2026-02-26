@@ -8,8 +8,13 @@ import site.billbill.apiserver.model.user.UserJpaEntity;
 import java.time.LocalDate;
 import java.util.List;
 
-public interface BorrowHistRepository extends JpaRepository<BorrowHistJpaEntity,Long>,ItemDslRepository {
+public interface BorrowHistRepository extends JpaRepository<BorrowHistJpaEntity, Long>, ItemDslRepository {
     BorrowHistJpaEntity findTop1BorrowHistByBorrowerOrderByCreatedAt(UserJpaEntity borrower);
+
     List<BorrowHistJpaEntity> findALLBorrowHistByItemAndBorrower(ItemsJpaEntity item, UserJpaEntity borrower);
-    BorrowHistJpaEntity findBorrowHistByItemAndStartedAtAndEndedAt(ItemsJpaEntity item, LocalDate startedAt, LocalDate endedAt);
+
+    List<BorrowHistJpaEntity> findAllByItemAndBorrowerIn(ItemsJpaEntity item, List<UserJpaEntity> borrowers);
+
+    BorrowHistJpaEntity findBorrowHistByItemAndStartedAtAndEndedAt(ItemsJpaEntity item, LocalDate startedAt,
+            LocalDate endedAt);
 }

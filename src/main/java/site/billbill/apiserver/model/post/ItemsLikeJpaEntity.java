@@ -20,12 +20,12 @@ public class ItemsLikeJpaEntity extends BaseTime {
     @EmbeddedId
     private ItemsLikeId id;
 
-//    @ManyToOne
+//    @ManyToOne(fetch = FetchType.LAZY)
 //    @MapsId
 //    @JoinColumn(name="item_id")
 //    private ItemsJpaEntity items;
 //
-//    @ManyToOne
+//    @ManyToOne(fetch = FetchType.LAZY)
 //    @MapsId
 //    @JoinColumn(name="user_id")
 //    private UserJpaEntity user;

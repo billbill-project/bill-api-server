@@ -19,10 +19,10 @@ public class ItemsReviewJpaEntity extends BaseTime {
     @Id
     @Column(name="review_id")
     private String id;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="item_id")
     private ItemsJpaEntity items;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id")
     private UserJpaEntity user;
 

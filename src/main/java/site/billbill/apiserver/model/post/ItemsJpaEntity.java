@@ -22,7 +22,7 @@ public class ItemsJpaEntity extends BaseTime {
     @Id
     @Column(name = "item_id", nullable = false)
     private String id;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="owner_id")
     private UserJpaEntity owner;
     @Convert(converter = StringListConverter.class)
@@ -41,7 +41,7 @@ public class ItemsJpaEntity extends BaseTime {
     private boolean delYn;
     @Column(name="item_status",nullable = false)
     private int itemStatus;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="category_id")
     private ItemsCategoryJpaEntity category;
 

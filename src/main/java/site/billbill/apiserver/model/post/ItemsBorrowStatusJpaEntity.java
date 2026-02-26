@@ -19,7 +19,7 @@ public class ItemsBorrowStatusJpaEntity extends BaseTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="status_seq")
     private String id;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="item_id")
     private ItemsJpaEntity item;
     @Column(name="start_date",nullable = false)

@@ -43,7 +43,8 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<ItemsJpaEntity> findItemsWithConditions(String category, Pageable pageable, String sortField, String keyword, Double latitude, Double longitude) {
+    public Page<ItemsJpaEntity> findItemsWithConditions(String category, Pageable pageable, String sortField,
+            String keyword, Double latitude, Double longitude) {
         QItemsJpaEntity items = QItemsJpaEntity.itemsJpaEntity;
         QItemsBorrowJpaEntity borrow = QItemsBorrowJpaEntity.itemsBorrowJpaEntity;
         QItemsCategoryJpaEntity categoryEntity = QItemsCategoryJpaEntity.itemsCategoryJpaEntity;
@@ -51,6 +52,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
 
         JPAQuery<ItemsJpaEntity> query = queryFactory.selectFrom(items)
                 .leftJoin(items.category, categoryEntity).fetchJoin() // 명시적 Fetch Join
+                .leftJoin(items.owner, QUserJpaEntity.userJpaEntity).fetchJoin() // 작성자 Fetch Join 추가
                 .leftJoin(borrow).on(items.id.eq(borrow.item.id))
                 .where(items.delYn.isFalse());
         query.leftJoin(items.location, QItemsLocationJpaEntity.itemsLocationJpaEntity).fetchJoin();
@@ -69,7 +71,7 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
             query.where(items.category.eq(fetchedCategory));
         }
 
-        //키워드 필터링
+        // 키워드 필터링
         if (keyword != null && !keyword.isEmpty()) {
             query.where(applyKeywordFilter(items, keyword));
         }
@@ -81,19 +83,18 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
             switch (order.getProperty()) {
                 case "price" -> orderSpecifier = order.isAscending() ? borrow.price.asc() : borrow.price.desc();
                 case "createdAt" ->
-                        orderSpecifier = order.isAscending() ? items.createdAt.asc() : items.createdAt.desc();
+                    orderSpecifier = order.isAscending() ? items.createdAt.asc() : items.createdAt.desc();
                 case "likeCount" ->
-                        orderSpecifier = order.isAscending() ? items.likeCount.asc() : items.likeCount.desc();
+                    orderSpecifier = order.isAscending() ? items.likeCount.asc() : items.likeCount.desc();
                 case "distance" -> {
                     try {
                         // null 체크를 먼저 수행
                         if (latitude != null && longitude != null) {
                             // 거리 계산식
                             NumberExpression<Double> distanceExpression = Expressions.numberTemplate(
-                                Double.class,
-                                "6371 * acos(cos(radians({0})) * cos(radians({2})) * cos(radians({3}) - radians({1})) + sin(radians({0})) * sin(radians({2})))",
-                                QItemsLocation.latitude, QItemsLocation.longitude, latitude, longitude
-                            );
+                                    Double.class,
+                                    "6371 * acos(cos(radians({0})) * cos(radians({2})) * cos(radians({3}) - radians({1})) + sin(radians({0})) * sin(radians({2})))",
+                                    QItemsLocation.latitude, QItemsLocation.longitude, latitude, longitude);
 
                             orderSpecifier = order.isAscending() ? distanceExpression.asc() : distanceExpression.desc();
 
@@ -115,7 +116,6 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
 
             query.orderBy(orderSpecifier);
         });
-
 
         // 페이징 처리
         List<ItemsJpaEntity> content = query.offset(pageable.getOffset())
@@ -189,27 +189,25 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
         QChatChannelJpaEntity qChatChannel = QChatChannelJpaEntity.chatChannelJpaEntity;
 
         JPAQuery<PostHistoryResponse> qb = queryFactory.select(
-                        Projections.constructor(
-                                PostHistoryResponse.class,
-                                qItems.id,
-                                qItems.images,
-                                qBorrow.price,
-                                qItems.title,
-                                qItems.itemStatus,
-                                qLike.countDistinct().as("likeCount"),
-                                qChatChannel.countDistinct().as("chatCount"),
-                                qItems.viewCount,
-                                qItems.createdAt,
-                                qItems.updatedAt
-                        )
-                )
+                Projections.constructor(
+                        PostHistoryResponse.class,
+                        qItems.id,
+                        qItems.images,
+                        qBorrow.price,
+                        qItems.title,
+                        qItems.itemStatus,
+                        qLike.countDistinct().as("likeCount"),
+                        qChatChannel.countDistinct().as("chatCount"),
+                        qItems.viewCount,
+                        qItems.createdAt,
+                        qItems.updatedAt))
                 .from(qItems)
                 .leftJoin(qBorrow).on(qItems.id.eq(qBorrow.id))
                 .leftJoin(qLike).on(qItems.id.eq(qLike.id.itemId).and(qLike.delYn.isFalse()))
                 .leftJoin(qChatChannel).on(qItems.id.eq(qChatChannel.item.id).and(qChatChannel.delYn.isFalse()))
                 .where(qItems.owner.userId.eq(userId)
                         .and(qItems.delYn.isFalse()))
-                .groupBy(qItems.id)  // 그룹핑 필요
+                .groupBy(qItems.id) // 그룹핑 필요
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize());
 
@@ -225,25 +223,23 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
         QBorrowHistJpaEntity qBorrowHist = QBorrowHistJpaEntity.borrowHistJpaEntity;
 
         JPAQuery<BorrowHistoryResponse> qb = queryFactory.select(
-                        Projections.constructor(
-                                BorrowHistoryResponse.class,
-                                qBorrowHist.borrowSeq,
-                                qItems.id,
-                                qItems.owner.userId.as("borrowerId"),
-                                Expressions.constant(type),
-                                qItems.images,
-                                qBorrow.price,
-                                qItems.title,
-                                qBorrowHist.startedAt.as("startedAt"),
-                                qBorrowHist.endedAt.as("endedAt"),
-                                qItems.itemStatus,
-                                qLike.countDistinct().as("likeCount"),
-                                qChatChannel.countDistinct().as("chatCount"),
-                                qItems.viewCount,
-                                qItems.createdAt,
-                                qItems.updatedAt
-                        )
-                )
+                Projections.constructor(
+                        BorrowHistoryResponse.class,
+                        qBorrowHist.borrowSeq,
+                        qItems.id,
+                        qItems.owner.userId.as("borrowerId"),
+                        Expressions.constant(type),
+                        qItems.images,
+                        qBorrow.price,
+                        qItems.title,
+                        qBorrowHist.startedAt.as("startedAt"),
+                        qBorrowHist.endedAt.as("endedAt"),
+                        qItems.itemStatus,
+                        qLike.countDistinct().as("likeCount"),
+                        qChatChannel.countDistinct().as("chatCount"),
+                        qItems.viewCount,
+                        qItems.createdAt,
+                        qItems.updatedAt))
                 .from(qItems)
                 .leftJoin(qBorrow).on(qItems.id.eq(qBorrow.id))
                 .leftJoin(qLike).on(qItems.id.eq(qLike.id.itemId).and(qLike.delYn.isFalse()))
@@ -253,7 +249,8 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
         switch (type) {
             case BORROWING -> qb.where(qItems.owner.userId.eq(userId).and(qItems.id.eq(qBorrowHist.item.id)));
             case BORROWED -> qb.where(qBorrowHist.borrower.userId.eq(userId));
-            case EXCHANGE -> {}
+            case EXCHANGE -> {
+            }
             default -> throw new IllegalStateException("Unexpected value: " + type);
         }
 
@@ -272,28 +269,26 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
         QChatChannelJpaEntity qChatChannel = QChatChannelJpaEntity.chatChannelJpaEntity;
 
         JPAQuery<WishlistResponse> qb = queryFactory.select(
-                        Projections.constructor(
-                                WishlistResponse.class,
-                                qItems.id,
-                                qItems.owner.userId,
-                                qItems.images,
-                                qBorrow.price,
-                                qItems.title,
-                                qItems.itemStatus,
-                                qLike.countDistinct().as("likeCount"),
-                                qChatChannel.countDistinct().as("chatCount"),
-                                qItems.viewCount,
-                                qItems.createdAt,
-                                qItems.updatedAt
-                        )
-                )
+                Projections.constructor(
+                        WishlistResponse.class,
+                        qItems.id,
+                        qItems.owner.userId,
+                        qItems.images,
+                        qBorrow.price,
+                        qItems.title,
+                        qItems.itemStatus,
+                        qLike.countDistinct().as("likeCount"),
+                        qChatChannel.countDistinct().as("chatCount"),
+                        qItems.viewCount,
+                        qItems.createdAt,
+                        qItems.updatedAt))
                 .from(qItems)
                 .leftJoin(qBorrow).on(qItems.id.eq(qBorrow.id))
                 .leftJoin(qLike).on(qItems.id.eq(qLike.id.itemId).and(qLike.delYn.isFalse()))
                 .leftJoin(qChatChannel).on(qItems.id.eq(qChatChannel.item.id).and(qChatChannel.delYn.isFalse()))
                 .where(qLike.id.userId.eq(userId)
                         .and(qItems.delYn.isFalse()))
-                .groupBy(qItems.id)  // 그룹핑 필요
+                .groupBy(qItems.id) // 그룹핑 필요
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize());
 
@@ -306,7 +301,8 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
         QUserJpaEntity qUser = QUserJpaEntity.userJpaEntity;
 
         UserJpaEntity user = queryFactory.selectFrom(qUser).where(qUser.userId.eq(userId)).fetchOne();
-        if(user == null) throw new CustomException(ErrorCode.NotFound, "회원 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+        if (user == null)
+            throw new CustomException(ErrorCode.NotFound, "회원 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
 
         queryFactory.update(qBorrowHist)
                 .set(qBorrowHist.delYn, true)
@@ -314,24 +310,26 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                 .where(qBorrowHist.borrowSeq.eq(borrowSeq))
                 .execute();
     }
+
     @Override
-    public List<PostsResponse.FindUsersForReviewsResponse> findUsersForReviews(){
-        QBorrowHistJpaEntity qBorrowHistJpa= QBorrowHistJpaEntity.borrowHistJpaEntity;
-        QItemsReviewJpaEntity qItemsReview=QItemsReviewJpaEntity.itemsReviewJpaEntity;
-        QAlarmListJpaEntity qAlarm=QAlarmListJpaEntity.alarmListJpaEntity;
-        QAlarmLogJpaEntity qAlarmLog=QAlarmLogJpaEntity.alarmLogJpaEntity;
-        JPAQuery<PostsResponse.FindUsersForReviewsResponse> result=queryFactory.select(
+    public List<PostsResponse.FindUsersForReviewsResponse> findUsersForReviews() {
+        QBorrowHistJpaEntity qBorrowHistJpa = QBorrowHistJpaEntity.borrowHistJpaEntity;
+        QItemsReviewJpaEntity qItemsReview = QItemsReviewJpaEntity.itemsReviewJpaEntity;
+        QAlarmListJpaEntity qAlarm = QAlarmListJpaEntity.alarmListJpaEntity;
+        QAlarmLogJpaEntity qAlarmLog = QAlarmLogJpaEntity.alarmLogJpaEntity;
+        JPAQuery<PostsResponse.FindUsersForReviewsResponse> result = queryFactory.select(
                 Projections.constructor(
                         PostsResponse.FindUsersForReviewsResponse.class,
                         qBorrowHistJpa.item,
-                        qBorrowHistJpa.borrower)
-                )
+                        qBorrowHistJpa.borrower))
                 .from(qBorrowHistJpa)
                 .where(
-                        Expressions.numberTemplate(Long.class,"DATEDIFF(CURRENT_DATE, {0})",qBorrowHistJpa.endedAt).gt(1),
+                        Expressions.numberTemplate(Long.class, "DATEDIFF(CURRENT_DATE, {0})", qBorrowHistJpa.endedAt)
+                                .gt(1),
                         JPAExpressions.selectOne()
                                 .from(qItemsReview)
-                                .where(qItemsReview.items.eq(qBorrowHistJpa.item),qItemsReview.user.eq(qBorrowHistJpa.borrower))
+                                .where(qItemsReview.items.eq(qBorrowHistJpa.item),
+                                        qItemsReview.user.eq(qBorrowHistJpa.borrower))
                                 .notExists(),
                         JPAExpressions.selectOne()
                                 .from(qAlarm)
@@ -342,33 +340,30 @@ public class ItemDslRepositoryImpl implements ItemDslRepository {
                                         qAlarm.moveToId.eq(qBorrowHistJpa.item.id), // move_to_id와 item_id가 동일
                                         qAlarmLog.userId.eq(qBorrowHistJpa.borrower.userId) // 같은 user_id가 alarm_log에 존재
                                 )
-                                .notExists()
-                );
+                                .notExists());
 
-
-       // 결과 반환
+        // 결과 반환
         List<PostsResponse.FindUsersForReviewsResponse> results = result.fetch();
         return results != null ? results : Collections.emptyList();
     }
-    @Override
-    public Boolean CheckUsersForReviews(BorrowHistJpaEntity borrowHist){
-        QBorrowHistJpaEntity qBorrowHistJpa= QBorrowHistJpaEntity.borrowHistJpaEntity;
-        QItemsReviewJpaEntity qItemsReview=QItemsReviewJpaEntity.itemsReviewJpaEntity;
 
-        Boolean exits=queryFactory.selectOne()
+    @Override
+    public Boolean CheckUsersForReviews(BorrowHistJpaEntity borrowHist) {
+        QBorrowHistJpaEntity qBorrowHistJpa = QBorrowHistJpaEntity.borrowHistJpaEntity;
+        QItemsReviewJpaEntity qItemsReview = QItemsReviewJpaEntity.itemsReviewJpaEntity;
+
+        Boolean exits = queryFactory.selectOne()
                 .from(qBorrowHistJpa)
                 .leftJoin(qItemsReview).on(
                         qItemsReview.items.eq(borrowHist.getItem())
-                                .and(qItemsReview.user.eq(borrowHist.getBorrower()))
-                )
+                                .and(qItemsReview.user.eq(borrowHist.getBorrower())))
                 .where(
                         qBorrowHistJpa.item.eq(borrowHist.getItem())
                                 .and(qBorrowHistJpa.borrower.eq(borrowHist.getBorrower())
-                                .and(qBorrowHistJpa.useYn.isTrue()))
+                                        .and(qBorrowHistJpa.useYn.isTrue()))
                                 .and(qBorrowHistJpa.delYn.isFalse())
-                                .and(qItemsReview.isNotNull())
-                )
-                .fetchFirst()!=null;
+                                .and(qItemsReview.isNotNull()))
+                .fetchFirst() != null;
         return exits;
     }
 }
