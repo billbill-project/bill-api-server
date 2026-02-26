@@ -23,7 +23,7 @@ public class UserSearchHistJpaEntity extends BaseTime {
     @Column(name = "del_yn", nullable = false)
     @Convert(converter = BooleanConverter.class)
     private boolean delYn;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id")
     private UserJpaEntity user;
 

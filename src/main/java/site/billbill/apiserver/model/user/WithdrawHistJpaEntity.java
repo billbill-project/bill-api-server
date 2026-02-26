@@ -19,7 +19,7 @@ public class WithdrawHistJpaEntity extends BaseTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "withdraw_seq", nullable = false)
     private Long withdrawSeq;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UserJpaEntity user;
     @Convert(converter = StringListConverter.class)

@@ -20,13 +20,13 @@ public class ChatChannelJpaEntity extends BaseTime {
     @Id
     @Column(name = "channel_id", nullable = false)
     private String channelId;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="item_id")
     private ItemsJpaEntity item;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="owner_id")
     private UserJpaEntity owner;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="contact_id")
     private UserJpaEntity contact;
     @Column(name = "owner_left", nullable = false)

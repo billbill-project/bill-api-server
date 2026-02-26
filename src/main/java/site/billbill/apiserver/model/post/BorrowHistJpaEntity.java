@@ -19,10 +19,10 @@ public class BorrowHistJpaEntity extends BaseTime {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "borrow_seq", nullable = false)
     private long borrowSeq;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id", nullable = false)
     private ItemsJpaEntity item;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "borrower_id", nullable = false)
     private UserJpaEntity borrower;
     @Column(name = "started_at", nullable = false)

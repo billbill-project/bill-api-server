@@ -19,7 +19,7 @@ public class ItemsExchangeJpaEntity extends BaseTime {
     @Column(name="item_id")
     private String item_id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId
     @JoinColumn(name="item_id")
     private ItemsJpaEntity item;

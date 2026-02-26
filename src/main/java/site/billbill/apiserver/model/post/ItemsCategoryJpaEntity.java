@@ -18,7 +18,7 @@ public class ItemsCategoryJpaEntity {
     @Column(name ="category_id")
     private String id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="upper_cat_id",nullable = false)
     private ItemsCategoryJpaEntity upperCategory;
 

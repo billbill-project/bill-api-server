@@ -37,40 +37,36 @@ public class TaskSchedulerManager {
     private final BorrowHistRepository borrowHistRepository;
     private final ReviewAlertRepository reviewAlertRepository;
 
-     // 작업 참조를 저장하는 Map
+    // 작업 참조를 저장하는 Map
     private final Map<String, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
 
     @EventListener(ApplicationReadyEvent.class)
     public void InitializeScheduler() {
-        //서버가 켜질때마다, 스케줄러 작업할게 있는지 찾음
-        List<ReviewAlertJpaEntity> reviewAlerts = reviewAlertRepository.findAllByStatusAndType("PENDING","REVIEW");
-        List<ReviewAlertJpaEntity> returnAlerts = reviewAlertRepository.findAllByStatusAndType("PENDING","RETURN");
+        // 서버가 켜질때마다, 스케줄러 작업할게 있는지 찾음
+        List<ReviewAlertJpaEntity> reviewAlerts = reviewAlertRepository.findAllByStatusAndType("PENDING", "REVIEW");
+        List<ReviewAlertJpaEntity> returnAlerts = reviewAlertRepository.findAllByStatusAndType("PENDING", "RETURN");
         // 스케줄러 재등록
         reviewAlerts.forEach(reviewAlert -> ReviewNotification(reviewAlert.getBorrowHist()));
         returnAlerts.forEach(returnAlert -> ReturnNotification(returnAlert.getBorrowHist()));
     }
 
-
-
     public void ReturnNotification(BorrowHistJpaEntity borrowHist) {
         LocalDateTime time = borrowHist.getEndedAt().minusDays(1).atStartOfDay().plusHours(6);
-        String content = borrowHist.getBorrower().getNickname() + "님! <" + borrowHist.getItem().getTitle() + ">의 반납일이 하루 남았습니다!";
+        String content = borrowHist.getBorrower().getNickname() + "님! <" + borrowHist.getItem().getTitle()
+                + ">의 반납일이 하루 남았습니다!";
         ScheduleNotification(borrowHist, "RETURN", "물건을 잘 이용하고 계신가요?", content, time, PushType.RETURN_ALERT);
     }
 
     public void ReviewNotification(BorrowHistJpaEntity borrowHist) {
         LocalDateTime time = borrowHist.getEndedAt().plusDays(1).atStartOfDay().plusHours(9);
-        String content = borrowHist.getBorrower().getNickname() + "님! 이용하신 <" + borrowHist.getItem().getTitle() + "> 는 어떠셨나요? 이용 후기를 남겨주세요!";
+        String content = borrowHist.getBorrower().getNickname() + "님! 이용하신 <" + borrowHist.getItem().getTitle()
+                + "> 는 어떠셨나요? 이용 후기를 남겨주세요!";
         ScheduleNotification(borrowHist, "REVIEW", "물건을 잘 이용하셨나요?", content, time, PushType.REVIEW_ALERT);
     }
 
-
-
-
-
     @Transactional
     public void CanceledReviewNotification(BorrowHistJpaEntity borrowHist) {
-         // 리뷰 작업 취소
+        // 리뷰 작업 취소
         String reviewTaskKey = borrowHist.getBorrowSeq() + "_REVIEW";
         ScheduledFuture<?> reviewFuture = scheduledTasks.get(reviewTaskKey);
         if (reviewFuture != null) {
@@ -105,9 +101,9 @@ public class TaskSchedulerManager {
         }
     }
 
-
-    //모듈화 코드
-    public void ScheduleNotification(BorrowHistJpaEntity borrowHist, String alertType, String title, String content, LocalDateTime time, PushType pushType) {
+    // 모듈화 코드
+    public void ScheduleNotification(BorrowHistJpaEntity borrowHist, String alertType, String title, String content,
+            LocalDateTime time, PushType pushType) {
         PushRequest.SendPushRequest request = PushRequest.SendPushRequest.builder()
                 .userId(borrowHist.getBorrower().getUserId())
                 .title(title)
@@ -119,14 +115,14 @@ public class TaskSchedulerManager {
         // 작업 스케줄링 및 참조 저장
         ScheduledFuture<?> future = taskScheduler.schedule(
                 () -> SendNotification(request, borrowHist, alertType),
-                Date.from(time.atZone(ZoneId.systemDefault()).toInstant())
-        );
-            scheduledTasks.put(taskKey, future);
-            log.info("{} 작업이 {}에 예약되었습니다.", alertType, time);
-        }
+                Date.from(time.atZone(ZoneId.systemDefault()).toInstant()));
+        scheduledTasks.put(taskKey, future);
+        log.info("{} 작업이 {}에 예약되었습니다.", alertType, time);
+    }
 
     @Async
-    public void SendNotification(PushRequest.SendPushRequest request, BorrowHistJpaEntity borrowHist, String alertType) {
+    public void SendNotification(PushRequest.SendPushRequest request, BorrowHistJpaEntity borrowHist,
+            String alertType) {
         try {
             log.info("{} 작업이 {}에 시작되었습니다.", alertType, LocalDateTime.now());
             ReviewAlertJpaEntity alert = reviewAlertRepository.findOneByBorrowHistAndType(borrowHist, alertType);
@@ -151,104 +147,115 @@ public class TaskSchedulerManager {
             } else if ("RETURN".equals(alertType)) {
                 pushService.sendPush(request);
             }
-        scheduledTasks.remove(borrowHist.getBorrowSeq() + "_" + alertType);
-        log.info("{} 작업이 완료되어 scheduledTasks에서 제거되었습니다.", alertType);
+            scheduledTasks.remove(borrowHist.getBorrowSeq() + "_" + alertType);
+            log.info("{} 작업이 완료되어 scheduledTasks에서 제거되었습니다.", alertType);
         } catch (IOException e) {
-            throw new CustomException(ErrorCode.BadRequest, alertType + " 관련 알림 오류입니다. 담당자에게 문의해주세요", HttpStatus.BAD_REQUEST);
+            throw new CustomException(ErrorCode.BadRequest, alertType + " 관련 알림 오류입니다. 담당자에게 문의해주세요",
+                    HttpStatus.BAD_REQUEST);
         }
     }
 
-
 }
 
+// 모듈화 전 코드
 
-//모듈화 전 코드
+// public void ReturnNotification(BorrowHistJpaEntity borrowHist) {
+// LocalDateTime time
+// =borrowHist.getEndedAt().minusDays(1).atStartOfDay().plusHours(6);
+//
+// PushRequest request=PushRequest.builder()
+// .userId(borrowHist.getBorrower().getUserId())
+// .title("물건을 잘 이용하고 계신가요?")
+// .pushType(PushType.RETURN_ALERT)
+// .content(borrowHist.getBorrower().getNickname()+"님!
+// <"+borrowHist.getItem().getTitle()+">의 반납일이 하루 남았습니다!")
+// .moveToId(String.valueOf(borrowHist.getBorrowSeq()))
+// .build();
+// // 작업 스케줄링 및 참조 저장
+// ScheduledFuture<?> future = taskScheduler.schedule(
+// () -> SendReturnNotification(request,borrowHist),
+// Date.from(time.atZone(ZoneId.systemDefault()).toInstant())
+// );
+// scheduledTasks.put(borrowHist.getBorrowSeq(), future);
+// log.info("반납 요청 작업이 {}에 예약되었습니다.", time);
+// }
 
-//    public void ReturnNotification(BorrowHistJpaEntity borrowHist) {
-//        LocalDateTime time =borrowHist.getEndedAt().minusDays(1).atStartOfDay().plusHours(6);
+// public void ReviewNotification(BorrowHistJpaEntity borrowHist) {
 //
-//        PushRequest request=PushRequest.builder()
-//                .userId(borrowHist.getBorrower().getUserId())
-//                .title("물건을 잘 이용하고 계신가요?")
-//                .pushType(PushType.RETURN_ALERT)
-//                .content(borrowHist.getBorrower().getNickname()+"님! <"+borrowHist.getItem().getTitle()+">의 반납일이 하루 남았습니다!")
-//                .moveToId(String.valueOf(borrowHist.getBorrowSeq()))
-//                .build();
-//         // 작업 스케줄링 및 참조 저장
-//        ScheduledFuture<?> future = taskScheduler.schedule(
-//                () -> SendReturnNotification(request,borrowHist),
-//                Date.from(time.atZone(ZoneId.systemDefault()).toInstant())
-//        );
-//        scheduledTasks.put(borrowHist.getBorrowSeq(), future);
-//        log.info("반납 요청 작업이 {}에 예약되었습니다.", time);
-//    }
-
-//    public void ReviewNotification(BorrowHistJpaEntity borrowHist) {
+// LocalDateTime time =
+// borrowHist.getEndedAt().plusDays(1).atStartOfDay().plusHours(9);
+// PushRequest request=PushRequest.builder()
+// .userId(borrowHist.getBorrower().getUserId())
+// .title("물건을 잘 이용하셨나요?")
+// .pushType(PushType.REVIEW_ALERT)
+// .content(borrowHist.getBorrower().getNickname()+"님! 이용하신
+// <"+borrowHist.getItem().getTitle()+"> 는 어떠셨나요? 이용 후기를 남겨주세요!")
+// .moveToId(String.valueOf(borrowHist.getBorrowSeq()))
+// .build();
+// // 작업 스케줄링 및 참조 저장
+// ScheduledFuture<?> future = taskScheduler.schedule(
+// () -> SendReviewNotification(request, borrowHist),
+// Date.from(time.atZone(ZoneId.systemDefault()).toInstant())
+// );
+// scheduledTasks.put(borrowHist.getBorrowSeq(), future);
+// log.info("리뷰 요청 작업이 {}에 예약되었습니다.", time);
+// }
+// @Async
+// public void SendReviewNotification(PushRequest request,BorrowHistJpaEntity
+// borrowHist) {
+// try {
+// log.info("리뷰 요청 작업이 {}에 시작되었습니다.", LocalDateTime.now());
+// ReviewAlertJpaEntity
+// reviewAlert=reviewAlertRepository.findOneByBorrowHistAndType(borrowHist,"REVIEW");
+// if(reviewAlert==null){
+// //해당 스케줄러 백업 등록
+// reviewAlert = ReviewAlertJpaEntity.builder()
+// .borrowHist(borrowHist)
+// .status("PENDING")
+// .type("REVIEW")
+// .build();
+// ReviewAlertJpaEntity
+// savedReviewAlert=reviewAlertRepository.save(reviewAlert);
+// savedReviewAlert.setStatus("COMPLETED");
+// reviewAlert=savedReviewAlert;
+// }else{
+// reviewAlert.setStatus("COMPLETED");
+// }
 //
-//        LocalDateTime time = borrowHist.getEndedAt().plusDays(1).atStartOfDay().plusHours(9);
-//        PushRequest request=PushRequest.builder()
-//                .userId(borrowHist.getBorrower().getUserId())
-//                .title("물건을 잘 이용하셨나요?")
-//                .pushType(PushType.REVIEW_ALERT)
-//                .content(borrowHist.getBorrower().getNickname()+"님! 이용하신 <"+borrowHist.getItem().getTitle()+"> 는 어떠셨나요? 이용 후기를 남겨주세요!")
-//                .moveToId(String.valueOf(borrowHist.getBorrowSeq()))
-//                .build();
-//         // 작업 스케줄링 및 참조 저장
-//        ScheduledFuture<?> future = taskScheduler.schedule(
-//                () -> SendReviewNotification(request, borrowHist),
-//                Date.from(time.atZone(ZoneId.systemDefault()).toInstant())
-//        );
-//        scheduledTasks.put(borrowHist.getBorrowSeq(), future);
-//        log.info("리뷰 요청 작업이 {}에 예약되었습니다.", time);
-//    }
-//    @Async
-//    public void SendReviewNotification(PushRequest request,BorrowHistJpaEntity borrowHist)  {
-//        try {
-//                log.info("리뷰 요청 작업이 {}에 시작되었습니다.", LocalDateTime.now());
-//                ReviewAlertJpaEntity reviewAlert=reviewAlertRepository.findOneByBorrowHistAndType(borrowHist,"REVIEW");
-//                if(reviewAlert==null){
-//                    //해당 스케줄러 백업 등록
-//                    reviewAlert = ReviewAlertJpaEntity.builder()
-//                            .borrowHist(borrowHist)
-//                            .status("PENDING")
-//                            .type("REVIEW")
-//                            .build();
-//                    ReviewAlertJpaEntity savedReviewAlert=reviewAlertRepository.save(reviewAlert);
-//                    savedReviewAlert.setStatus("COMPLETED");
-//                    reviewAlert=savedReviewAlert;
-//                }else{
-//                    reviewAlert.setStatus("COMPLETED");
-//                }
+// reviewAlertRepository.save(reviewAlert);
 //
-//                reviewAlertRepository.save(reviewAlert);
+// if(!borrowHistRepository.CheckUsersForReviews(borrowHist)){
+// pushService.sendPush(request);
+// }
 //
-//                if(!borrowHistRepository.CheckUsersForReviews(borrowHist)){
-//                    pushService.sendPush(request);
-//                }
-//
-//            } catch (IOException e) {
-//                throw new CustomException(ErrorCode.BadRequest, " 리뷰 관련 알림 오류입니다. 담당자에게 문의해주세요", HttpStatus.BAD_REQUEST);
-//            }
-//    }
-//    @Async
-//    public void SendReturnNotification(PushRequest request,BorrowHistJpaEntity borrowHist)  {
-//        try {
-//            ReviewAlertJpaEntity returnAlert = reviewAlertRepository.findOneByBorrowHistAndType(borrowHist, "RETURN");
-//            if (returnAlert == null) {
-//                returnAlert = ReviewAlertJpaEntity.builder()
-//                        .borrowHist(borrowHist)
-//                        .status("PENDING")
-//                        .type("RETURN")
-//                        .build();
-//                ReviewAlertJpaEntity savedReturnAlert = reviewAlertRepository.save(returnAlert);
-//                savedReturnAlert.setStatus("COMPLETED");
-//                returnAlert = savedReturnAlert;
-//            } else {
-//                returnAlert.setStatus("COMPLETED");
-//            }
-//            reviewAlertRepository.save(returnAlert);
-//            pushService.sendPush(request);
-//        }catch (IOException e) {
-//                throw new CustomException(ErrorCode.BadRequest, " 반납 관련 알림 오류입니다. 담당자에게 문의해주세요", HttpStatus.BAD_REQUEST);
-//            }
-//    }
+// } catch (IOException e) {
+// throw new CustomException(ErrorCode.BadRequest, " 리뷰 관련 알림 오류입니다. 담당자에게
+// 문의해주세요", HttpStatus.BAD_REQUEST);
+// }
+// }
+// @Async
+// public void SendReturnNotification(PushRequest request,BorrowHistJpaEntity
+// borrowHist) {
+// try {
+// ReviewAlertJpaEntity returnAlert =
+// reviewAlertRepository.findOneByBorrowHistAndType(borrowHist, "RETURN");
+// if (returnAlert == null) {
+// returnAlert = ReviewAlertJpaEntity.builder()
+// .borrowHist(borrowHist)
+// .status("PENDING")
+// .type("RETURN")
+// .build();
+// ReviewAlertJpaEntity savedReturnAlert =
+// reviewAlertRepository.save(returnAlert);
+// savedReturnAlert.setStatus("COMPLETED");
+// returnAlert = savedReturnAlert;
+// } else {
+// returnAlert.setStatus("COMPLETED");
+// }
+// reviewAlertRepository.save(returnAlert);
+// pushService.sendPush(request);
+// }catch (IOException e) {
+// throw new CustomException(ErrorCode.BadRequest, " 반납 관련 알림 오류입니다. 담당자에게
+// 문의해주세요", HttpStatus.BAD_REQUEST);
+// }
+// }
