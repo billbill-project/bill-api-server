@@ -1,6 +1,7 @@
 package site.billbill.apiserver.api.chat.service;
 
 import java.time.temporal.ChronoUnit;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,6 +20,7 @@ import site.billbill.apiserver.api.chat.dto.response.ChatResponse.ViewChannelInf
 import site.billbill.apiserver.api.chat.dto.response.ChatResponse.ViewChatInfoResponse;
 import site.billbill.apiserver.api.chat.dto.response.ChatResponse.ViewUnreadChatCountResponse;
 import site.billbill.apiserver.api.push.dto.request.PushRequest.SendChatPushRequest;
+import site.billbill.apiserver.api.push.dto.request.PushRequest.SendPushRequest;
 import site.billbill.apiserver.api.push.service.PushService;
 import site.billbill.apiserver.common.enums.exception.ErrorCode;
 import site.billbill.apiserver.common.utils.ULID.ULIDUtil;
@@ -175,6 +177,12 @@ public class ChatServiceImpl implements ChatService {
     @RabbitListener(queues = "push.queue")
     public void receivePushRequest(SendChatPushRequest request) {
         log.info("Push 요청 수신 성공: {}", request);
-        pushService.sendChatPush(request);
+        try {
+            SendPushRequest sendPushRequest = pushService.sendChatPush(request);
+            pushService.sendPush(sendPushRequest);
+        } catch (IOException e) {
+            log.error("Push 발송 실패: {}", request, e);
+            throw new RuntimeException("Push 발송 실패", e);
+        }
     }
 }
